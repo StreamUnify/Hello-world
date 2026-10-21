@@ -1,0 +1,1 @@
+Upload index.html, streamunify-logo.jpg, and server.mjs to the ROOT of your GitHub StreamUnify/Hello-world repository. Replace index.html and server.mjs. Commit changes. Render should redeploy. The server serves the logo and app-config.js automatically. Do not upload README.txt unless desired.

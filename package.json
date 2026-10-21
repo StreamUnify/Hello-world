@@ -1,14 +1,18 @@
 {
-  "name": "streamunify-mobile",
-  "version": "0.1.0",
+  "name": "streamunify",
+  "version": "0.7.1",
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "node server.mjs",
     "ios": "npx cap open ios",
     "android": "npx cap open android",
     "sync": "npx cap sync",
     "add:ios": "npx cap add ios",
     "add:android": "npx cap add android"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@capacitor/core": "^7.0.0"
