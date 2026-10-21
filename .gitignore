@@ -1,0 +1,23 @@
+node_modules/
+.DS_Store
+*.log
+android/.gradle/
+android/local.properties
+ios/Pods/
+ios/DerivedData/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+*.p12
+*.mobileprovision
+*.p8
+*.key
+*.pem
+
+# Apple and Android build files
+ios/App/build/
+android/.idea/
+android/build/
+android/app/build/
