@@ -26,9 +26,9 @@ workflows:
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build/ios \
+            -derivedDataPath ios-build-output \
             CODE_SIGNING_ALLOWED=NO \
             build
 
     artifacts:
-      - build/ios/Build/Products/Debug-iphonesimulator/*.app
+      - ios-build-output/Build/Products/Debug-iphonesimulator/*.app
