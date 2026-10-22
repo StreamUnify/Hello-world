@@ -14,9 +14,12 @@ workflows:
         script: |
           npm ci
 
+      - name: Validate catalog and platform assets
+        script: npm test
+
       - name: Sync Capacitor iOS
         script: |
-          npx cap sync ios
+          npm run sync:ios
 
       - name: Build iOS Simulator app
         script: |
@@ -32,3 +35,25 @@ workflows:
 
     artifacts:
       - ios-build-output/Build/Products/Debug-iphonesimulator/*.app
+
+  streamunify-android:
+    name: StreamUnify Android Debug Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 22
+      java: 21
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Validate catalog and platform assets
+        script: npm test
+      - name: Sync Capacitor Android
+        script: npm run sync:android
+      - name: Build Android debug APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/apk/debug/*.apk
