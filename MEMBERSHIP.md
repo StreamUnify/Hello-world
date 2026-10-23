@@ -9,15 +9,15 @@ Premium subscriptions cost USD $2.99/month or $30/year. They cover StreamUnify d
 ## Environments
 
 - Development: `acxxymkxgqjirnhlmwcv`, us-east-2.
-- Production: `iazbcpglkyxicclmxisj`, us-east-2, in StreamUnify's Org (selected by the owner).
-- Previous unused production foundation: `nrhgzrarngqnlsrnvnla`, in StreamUnify LLC. Do not mix its credentials with the selected production project.
+- Production: `nrhgzrarngqnlsrnvnla`, us-east-2, in StreamUnify LLC. The owner selected this accessible project on 2026-10-23.
+- Alternate project: `iazbcpglkyxicclmxisj`, in StreamUnify's Org. Previously configured; no longer the Render target. Do not mix its keys or SMTP verification with the current production project.
 - Render: StreamUnify workspace, existing Hello-world-1 service `srv-dbc2vibrjlhs73al1u9g`.
 
 Both migrations were applied to the original development/production foundation databases. On 2026-10-23, their schema was also installed through the Supabase SQL Editor in the owner-selected production project `iazbcpglkyxicclmxisj` (not through the connector migration history). Production verification found seven tables, RLS enabled on all seven, no anonymous table read access, service-only billing execution, and correct month-end anchoring. The selected production URL and publishable key are saved in Render. The production server secret still needs to be configured. `MEMBERSHIP_ENABLED=false` and `BILLING_ENABLED=false` preserve existing access until the dependencies below are ready. Environment variables are managed through Render, not duplicated in a Blueprint.
 
 ## Account activation
 
-1. Custom SMTP is saved in the selected production project: Namecheap Private Email, `mail.privateemail.com:465`, sender `support@streamunify.com`, name StreamUnify. The owner confirmed receiving the controlled test sign-in email. Full signup/confirmation/recovery tests remain outstanding.
+1. Verify custom SMTP in current Production `nrhgzrarngqnlsrnvnla`: Namecheap Private Email, `mail.privateemail.com:465`, sender `support@streamunify.com`, name StreamUnify. The earlier confirmed email delivery applied to alternate project `iazbcpglkyxicclmxisj`, not this project. Full signup/confirmation/recovery tests remain outstanding.
 2. In Authentication → URL Configuration set Site URL to `https://streamunify.com` and allow `https://streamunify.com/` and `https://streamunify.com/?recover=1`. Keep email confirmation enabled. PKCE confirmation links should be opened in the same browser where signup began.
 3. Test signup, confirmation, sign-in, recovery, sign-out, and revoked-session rejection using real controlled test accounts. Do not turn off verification to bypass email setup.
 4. Plan mobile rollout before enforcing the shared catalog API: older installed mobile builds do not yet send account tokens. Updating only the server would prevent them from searching. Native builds need the new account client, supported session storage/deep-link handling, and store purchase integration before launch.
@@ -83,3 +83,11 @@ The owner-selected Supabase project now contains the membership and billing sche
 
 Stripe was rechecked after this work: charges and payouts remain disabled with `requirements.past_due`. Account-owner onboarding and the persistent restricted Stripe key remain required, along with the selected Supabase server secret. Email delivery is confirmed; the test app user is not yet confirmed/signed in. Native authentication and StoreKit/Play Billing remain unimplemented. This progress does not activate paid memberships.
 
+
+## Current production target — supersedes earlier connection notes
+
+On 2026-10-23 the owner confirmed that their accessible account contains only Development `acxxymkxgqjirnhlmwcv` and Production `nrhgzrarngqnlsrnvnla`, then authorized switching Render to that Production project. All seven membership/billing tables exist with RLS and zero membership rows. The security advisor reports only the four intentional informational service-only/no-policy findings. A fresh query confirmed anonymous and authenticated roles cannot execute the billing transaction, service_role can, and month-end reset behavior passes. Render's URL and publishable key have been changed together; both launch flags remain false. No project or data was deleted.
+
+The owner reports creating a Stripe server key with custom permissions and saving it directly in Render as STRIPE_API_KEY. It has not yet been validated by an enabled billing flow. The last direct Stripe inspection in this conversation showed charges/payouts enabled, no currently-due items, and company.tax_id pending review. Earlier disabled-account notes above are historical.
+
+Still required: current Production's SUPABASE_SECRET_KEY in Render, current Production SMTP/redirect checks and account tests, end-to-end sandbox billing delivery/entitlement tests, and the mobile authentication/store purchase rollout. Do not enable memberships solely because the configuration deploy succeeds.
