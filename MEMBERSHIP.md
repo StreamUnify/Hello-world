@@ -50,3 +50,13 @@ Apple Pay and Google Pay can appear in eligible web Checkout sessions according 
 - Security advisors: four informational `rls_enabled_no_policy` findings are intentional for service-only billing tables and private retry receipts. Client grants are revoked and no client policies exist; no warning/error findings were reported. See https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy.
 
 `npm run build` regenerates the committed browser bundle from `membership-client-src.js` using the pinned local bundler. Production installs from `package-lock.json`; Node 22+ is required. No runtime Supabase CLI is needed.
+
+## Stripe sandbox validation — 2026-10-23
+
+CLI authorization is confirmed for StreamUnify sandbox (`acct_1UT6g1CCo1MPp3sS`). Sandbox prices were created via the authorized CLI; use the price IDs below only with this sandbox:
+
+- Monthly: `price_1UTaDpCCo1MPp3sS6fmqkMBE`, USD 299 cents/month.
+- Annual: `price_1UTaDtCCo1MPp3sSaWeRMHwy`, USD 3000 cents/year.
+- Customer portal configuration: `bpc_1UTaFOCCo1MPp3sSVgEZXc73`.
+
+Both hosted Checkout Sessions were created successfully. Separate API subscription tests using Stripe's test payment method returned active subscriptions and paid invoices for 299 and 3000 cents. A customer portal session was created, and both test subscriptions were then cancelled successfully. All objects reported livemode=false. This validates sandbox API operations; it does not establish end-to-end website signup, payment-to-database webhook delivery, renewals, native purchases, or production readiness. The production server still requires its own restricted Stripe key and Supabase server secret, a production webhook/signing secret, live prices/portal settings, and verified production email delivery before activation.
