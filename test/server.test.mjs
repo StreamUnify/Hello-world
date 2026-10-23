@@ -1,5 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import {createAccountRoutes} from '../account-routes.mjs';
+test('signed webhook processing is available while customer accounts are disabled',async()=>{
+  let received=false;let response;
+  const route=createAccountRoutes({enabled:false},{async webhook(raw,signature){assert.equal(raw.toString(),'{}');assert.equal(signature,'signed-fixture');received=true;}});
+  const req={method:'POST',headers:{'stripe-signature':'signed-fixture'},async *[Symbol.asyncIterator](){yield Buffer.from('{}');}};
+  assert.equal(await route(req,{setHeader(){}},new URL('https://example.com/api/billing/webhook'),(_res,status,data)=>{response={status,data};}),true);
+  assert.equal(received,true);assert.equal(response.status,200);
+});
 test('HTTP routes preserve public access while disabled and require accounts when enabled',async()=>{
   process.env.PORT='0';process.env.BILLING_ENABLED='false';process.env.TMDB_API_KEY='';process.env.WATCHMODE_API_KEY='';
   for(const enabled of [false,true]){

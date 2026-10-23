@@ -23,6 +23,18 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
     const saved=await db.from('billing_customers').upsert({user_id:actor.id,customer_id:customer.id},{onConflict:'user_id'});if(saved.error)throw Error('Billing lookup failed');return customer.id;
   }
   return {enabled,
+    async verifyConnections(){
+      requireEnabled();
+      await Promise.all([
+        stripe.customers.list({limit:1}),
+        stripe.subscriptions.list({limit:1}),
+        stripe.checkout.sessions.list({limit:1}),
+        stripe.invoices.list({limit:1}),
+        ...(env.STRIPE_PORTAL_CONFIGURATION_ID?[stripe.billingPortal.configurations.retrieve(env.STRIPE_PORTAL_CONFIGURATION_ID)]:[]),
+      ]);
+      const {error}=await db.from('billing_customers').select('user_id').limit(1);
+      if(error)throw Error('Billing database connection failed');
+    },
     async checkout(actor,interval){
       requireEnabled();if(!Object.hasOwn(prices,interval))throw new MembershipError(400,'invalid_plan','Choose monthly or annual');
       return serialize(actor.id,async()=>{

@@ -14,6 +14,14 @@ test('billing requires complete configuration and matching API key mode',()=>{
   assert.throws(()=>createBilling({env:{BILLING_ENABLED:'true'}}));
   assert.throws(()=>createBilling({env:{...env,STRIPE_API_KEY:'rk_live_fixture'}}));
 });
+test('connection checks reject invalid Stripe access and denied database access',async()=>{
+  const list=async()=>({data:[]});
+  const stripe={customers:{list},subscriptions:{list},checkout:{sessions:{list}},invoices:{list}};
+  const db={from:()=>({select:()=>({limit:async()=>({error:null})})})};
+  await createBilling({env,stripeClient:stripe,dbClient:db}).verifyConnections();
+  await assert.rejects(createBilling({env,stripeClient:{...stripe,customers:{list:async()=>{throw Error('Denied');}}},dbClient:db}).verifyConnections());
+  await assert.rejects(createBilling({env,stripeClient:stripe,dbClient:{from:()=>({select:()=>({limit:async()=>({error:{message:'denied'}})})})}}).verifyConnections(),/database connection failed/);
+});
 test('checkout accepts only the server monthly/annual prices and ignores client amounts',async()=>{
   const {billing,calls}=fixture();
   await assert.rejects(billing.checkout(actor,'price_attacker'),e=>e.status===400);

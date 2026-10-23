@@ -7,6 +7,7 @@ import {createAccountRoutes} from './account-routes.mjs';
 import {createBilling} from './billing.mjs';
 const membership=createMembership();
 const billing=createBilling();
+if(billing.enabled)billing.verifyConnections().then(()=>console.log('Billing connection checks passed')).catch(()=>console.error('Billing connection checks failed; keep memberships disabled'));
 const accountRoutes=createAccountRoutes(membership,billing);
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';

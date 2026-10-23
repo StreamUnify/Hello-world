@@ -10,11 +10,11 @@ export function createAccountRoutes(membership,billing){
     if(!u.pathname.startsWith('/api/account')&&!u.pathname.startsWith('/api/watchlist')&&!u.pathname.startsWith('/api/billing'))return false;
     res.setHeader('Cache-Control','no-store');
     if(u.pathname==='/api/account/config'&&req.method==='GET'){json(res,200,{...membership.publicConfig(),billingEnabled:billing.enabled});return true;}
-    if(!membership.enabled)throw new MembershipError(503,'membership_unavailable','Accounts are not available yet');
     if(u.pathname==='/api/billing/webhook'&&req.method==='POST'){
       const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>1000000)throw new MembershipError(413,'too_large','Request too large');chunks.push(chunk);}
       await billing.webhook(Buffer.concat(chunks),req.headers['stripe-signature']);json(res,200,{received:true});return true;
     }
+    if(!membership.enabled)throw new MembershipError(503,'membership_unavailable','Accounts are not available yet');
     const actor=await membership.authenticate(req);
     if(u.pathname==='/api/account'&&req.method==='GET')json(res,200,await membership.status(actor));
     else if(u.pathname==='/api/watchlist'&&req.method==='GET')json(res,200,{items:await membership.listWatchlist(actor)});
