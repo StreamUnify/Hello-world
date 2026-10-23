@@ -61,3 +61,34 @@ Official adapter references:
 - https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
 - https://podcastindex-org.github.io/docs-api/
 - https://developers.google.com/youtube/v3/docs/search/list
+
+## iOS and Android companion upgrade
+
+This branch targets `ios-development` and includes the existing native projects.
+Website PR #2 targets `main`; merge both PRs only after approval. The root
+`index.html` and catalog backend match the website upgrade. Run
+`npm run prepare:platforms` after editing root sources: it refreshes `www/` for
+both apps, adds native safe-area padding, and refreshes the standalone `backend/`
+copy. `mobile.config.json` preserves the existing public Render API origin.
+`STREAMUNIFY_API_BASE` can override that origin at build time for a test backend;
+only an HTTPS origin is accepted. It must never contain credentials.
+
+Use `npm run sync:android` and `npm run sync:ios` to prepare assets and sync the
+native projects. Both commands ran successfully here. iOS skipped CocoaPods and
+Xcode steps because those tools are unavailable on Linux. Generated native asset
+directories remain ignored by Git and are recreated during the build.
+
+Codemagic now prepares fresh assets before iOS sync and includes an Android debug
+APK workflow. These workflows have not been executed by this change. Xcode,
+CocoaPods, Android SDK, Java 21, device/emulator testing, and signed release builds
+remain required on the appropriate build hosts. No app store release was made.
+
+Additional validation: six automated checks pass; a jsdom interaction check passes
+for website and mobile HTML (rendering, video filter, string IDs, direct links,
+watchlist across new searches and reloads). Both native copied HTML files match
+`www/index.html`. This checks script behavior and asset preparation, not visual
+layout or native device behavior. Browser download failed in this environment.
+
+The new app search categories require the upgraded shared Render backend to be
+deployed separately with provider credentials. Until then, apps continue receiving
+the existing TMDB-only API response. No backend deployment is authorized here.

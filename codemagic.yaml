@@ -1,0 +1,102 @@
+workflows:
+  streamunify-ios:
+    name: StreamUnify iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+
+      - name: Validate catalog and platform assets
+        script: npm test
+
+      - name: Sync Capacitor iOS
+        script: |
+          npm run sync:ios
+
+      - name: Build iOS Simulator app
+        script: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath ios-build-output \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+    artifacts:
+      - ios-build-output/Build/Products/Debug-iphonesimulator/*.app
+
+  streamunify-android:
+    name: StreamUnify Android Debug Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 22
+      java: 21
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Validate catalog and platform assets
+        script: npm test
+      - name: Sync Capacitor Android
+        script: npm run sync:android
+      - name: Build Android debug APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/apk/debug/*.apk
+
+  streamunify-ios-testflight:
+    name: StreamUnify iOS TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: streamunify
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.streamunify.app
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Validate catalog and platform assets
+        script: npm test
+      - name: Sync Capacitor iOS
+        script: npm run sync:ios
+      - name: Apply App Store signing profile
+        script: xcode-project use-profiles
+      - name: Set unique iOS build number
+        script: |
+          set -eu
+          : "${PROJECT_BUILD_NUMBER:?Codemagic project build number is required}"
+          cd ios/App
+          agvtool new-version -all "$PROJECT_BUILD_NUMBER"
+      - name: Build signed iPhone IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Upload for internal TestFlight setup; no external beta review or store release.
+        submit_to_testflight: false
+        submit_to_app_store: false

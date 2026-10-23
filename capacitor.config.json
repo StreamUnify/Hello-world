@@ -1,0 +1,10 @@
+{
+  "appId": "com.streamunify.app",
+  "appName": "StreamUnify",
+  "webDir": "www",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}

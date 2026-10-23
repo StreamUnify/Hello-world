@@ -3,3 +3,11 @@ node_modules/
 .env.*
 !.env.example
 supabase/.temp/
+
+ios-build-output/
+build/
+android/.gradle/
+android/local.properties
+ios/App/Pods/
+*.p8
+*service-account*.json
