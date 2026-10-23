@@ -22,7 +22,7 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
     if(!match)throw new MembershipError(401,'sign_in_required','Please sign in');
     const user=await request('/auth/v1/user',match[1]);
     if(!user?.id||!user.email_confirmed_at||user.is_anonymous)throw new MembershipError(403,'verify_email','Verify your email before continuing');
-    return {id:user.id,email:user.email,token:match[1]};
+    return {id:user.id,email:user.email,token:match[1],signedInAt:user.last_sign_in_at};
   }
   const rpc=(actor,name)=>request('/rest/v1/rpc/'+name,actor.token,{method:'POST',body:{}});
   async function premium(actor){const status=await rpc(actor,'membership_status');if(status?.plan!=='premium')throw new MembershipError(403,'premium_required','Upgrade to Premium to use your watchlist');}
@@ -31,6 +31,12 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
     publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
     authenticate,
     status:actor=>rpc(actor,'membership_status'),
+    async deleteAccount(actor){
+      if(!Number.isFinite(Date.parse(actor.signedInAt))||Date.now()-Date.parse(actor.signedInAt)>600000)throw new MembershipError(401,'reauthenticate','Sign out and sign in again before deleting your account');
+      if(!env.SUPABASE_SECRET_KEY)throw new MembershipError(503,'account_unavailable','Account deletion is temporarily unavailable');
+      const response=await fetcher(origin+'/auth/v1/admin/users/'+encodeURIComponent(actor.id),{method:'DELETE',headers:{apikey:env.SUPABASE_SECRET_KEY,Authorization:'Bearer '+env.SUPABASE_SECRET_KEY},signal:AbortSignal.timeout(10000)});
+      if(!response.ok)throw new MembershipError(503,'account_unavailable','Account deletion could not be completed');
+    },
     async consumeSearch(actor,requestId,query){if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId||''))throw new MembershipError(400,'invalid_search','Please submit a new search');const status=await request('/rest/v1/rpc/consume_search_once',actor.token,{method:'POST',body:{p_request_id:requestId,p_query:query}});if(!status?.allowed){const error=new MembershipError(429,'search_limit','Your 10 free searches are used. Upgrade or wait until your reset date.');error.membership=status;throw error;}return status;},
     async listWatchlist(actor){await premium(actor);const items=[];for(let offset=0;;offset+=500){const page=await request('/rest/v1/watchlist_items?select=title_id,snapshot,saved_at&order=saved_at.desc,title_id.asc&limit=500&offset='+offset,actor.token);items.push(...page);if(page.length<500)return items;}},
     async saveWatchlist(actor,input){await premium(actor);const snapshot=cleanWatchlistItem(input);return request('/rest/v1/watchlist_items?on_conflict=user_id,title_id',actor.token,{method:'POST',body:{user_id:actor.id,title_id:snapshot.id,snapshot},headers:{Prefer:'resolution=merge-duplicates,return=representation'}});},
