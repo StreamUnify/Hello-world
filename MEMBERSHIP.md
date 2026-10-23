@@ -60,3 +60,19 @@ CLI authorization is confirmed for StreamUnify sandbox (`acct_1UT6g1CCo1MPp3sS`)
 - Customer portal configuration: `bpc_1UTaFOCCo1MPp3sSVgEZXc73`.
 
 Both hosted Checkout Sessions were created successfully. Separate API subscription tests using Stripe's test payment method returned active subscriptions and paid invoices for 299 and 3000 cents. A customer portal session was created, and both test subscriptions were then cancelled successfully. All objects reported livemode=false. This validates sandbox API operations; it does not establish end-to-end website signup, payment-to-database webhook delivery, renewals, native purchases, or production readiness. The production server still requires its own restricted Stripe key and Supabase server secret, a production webhook/signing secret, live prices/portal settings, and verified production email delivery before activation.
+
+## Production Stripe preparation — 2026-10-23
+
+Created under live StreamUnify account `acct_1UTYg1Flkqkekzc2`:
+
+- Product: `prod_VUZQBWKepzpKph`.
+- Monthly price: `price_1UTaIAFlkqkekzc2hxwUondt` (USD 299 cents/month).
+- Annual price: `price_1UTaIDFlkqkekzc2ilNeQM1O` (USD 3000 cents/year).
+- Customer portal: `bpc_1UTaIGFlkqkekzc2uJuQld0I` (cancel at period end, invoice history, payment-method updates).
+- Webhook endpoint: `we_1UTaIdFlkqkekzc2KzFr1SaI`, `https://streamunify.com/api/billing/webhook`, API `2026-08-26.dahlia`, membership event list described above. Its signing secret is saved only in Render.
+
+Render is configured with these live IDs, the portal configuration ID, signing secret, and `STRIPE_MODE=live`. Both activation flags remain false. Production does not yet have its restricted Stripe server key or Supabase server secret configured by this workflow.
+
+Stripe's live account inspection returned charges_enabled=false, payouts_enabled=false, details_submitted=false. Currently-due requirements included business_profile.mcc, business_profile.product_description, business_profile.support_phone, business_type, the account representative's email, and settings.payments.statement_descriptor. The account owner must complete Stripe onboarding; do not invent identity, business-type, tax, or banking information.
+
+The domain MX records point to mx1.privateemail.com and mx2.privateemail.com, confirming Namecheap Private Email. SMTP setup requires mail.privateemail.com, port 465 (SSL) or 587 (STARTTLS), username/sender support@streamunify.com, sender name StreamUnify, and the mailbox password entered directly into Supabase Production's SMTP settings. Never ask for that password in chat. Public signup/recovery email delivery must be tested before activation.
