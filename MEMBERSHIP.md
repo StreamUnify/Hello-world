@@ -9,15 +9,15 @@ Premium subscriptions cost USD $2.99/month or $30/year. They cover StreamUnify d
 ## Environments
 
 - Development: `acxxymkxgqjirnhlmwcv`, us-east-2.
-- Production: `nrhgzrarngqnlsrnvnla`, us-east-2.
-- Organization: StreamUnify LLC.
+- Production: `iazbcpglkyxicclmxisj`, us-east-2, in StreamUnify's Org (selected by the owner).
+- Previous unused production foundation: `nrhgzrarngqnlsrnvnla`, in StreamUnify LLC. Do not mix its credentials with the selected production project.
 - Render: StreamUnify workspace, existing Hello-world-1 service `srv-dbc2vibrjlhs73al1u9g`.
 
-Both migrations have been applied to both databases. No customer test fixtures remain. Production URL and public key are configured in Render. `MEMBERSHIP_ENABLED=false` and `BILLING_ENABLED=false` preserve existing access until the dependencies below are ready. Environment variables are managed through Render, not duplicated in a Blueprint.
+Both migrations were applied to the original development/production foundation databases. On 2026-10-23, their schema was also installed through the Supabase SQL Editor in the owner-selected production project `iazbcpglkyxicclmxisj` (not through the connector migration history). Production verification found seven tables, RLS enabled on all seven, no anonymous table read access, service-only billing execution, and correct month-end anchoring. The selected production URL and publishable key are saved in Render. The production server secret still needs to be configured. `MEMBERSHIP_ENABLED=false` and `BILLING_ENABLED=false` preserve existing access until the dependencies below are ready. Environment variables are managed through Render, not duplicated in a Blueprint.
 
 ## Account activation
 
-1. Configure a production SMTP sender in Supabase Production → Authentication → Email → SMTP. The default Supabase sender only delivers to project-team addresses and cannot support public signups. Verify the sender's domain with its email provider.
+1. Custom SMTP is saved in the selected production project: Namecheap Private Email, `mail.privateemail.com:465`, sender `support@streamunify.com`, name StreamUnify. The owner confirmed receiving the controlled test sign-in email. Full signup/confirmation/recovery tests remain outstanding.
 2. In Authentication → URL Configuration set Site URL to `https://streamunify.com` and allow `https://streamunify.com/` and `https://streamunify.com/?recover=1`. Keep email confirmation enabled. PKCE confirmation links should be opened in the same browser where signup began.
 3. Test signup, confirmation, sign-in, recovery, sign-out, and revoked-session rejection using real controlled test accounts. Do not turn off verification to bypass email setup.
 4. Plan mobile rollout before enforcing the shared catalog API: older installed mobile builds do not yet send account tokens. Updating only the server would prevent them from searching. Native builds need the new account client, supported session storage/deep-link handling, and store purchase integration before launch.
@@ -25,7 +25,7 @@ Both migrations have been applied to both databases. No customer test fixtures r
 
 ## Billing activation
 
-Use a separate Stripe sandbox first. The currently connected Stripe account exposes live mode only. The ChatGPT connection does not supply an API key to the running Render application.
+Use the authorized separate Stripe sandbox first; CLI access to the sandbox and live accounts is confirmed. The ChatGPT connection and CLI authorization do not supply a persistent API key to the running Render application.
 
 Set these directly in Render's Environment page; never put secret values in chat, source control, or browser assets:
 
@@ -76,3 +76,10 @@ Render is configured with these live IDs, the portal configuration ID, signing s
 Stripe's live account inspection returned charges_enabled=false, payouts_enabled=false, details_submitted=false. Currently-due requirements included business_profile.mcc, business_profile.product_description, business_profile.support_phone, business_type, the account representative's email, and settings.payments.statement_descriptor. The account owner must complete Stripe onboarding; do not invent identity, business-type, tax, or banking information.
 
 The domain MX records point to mx1.privateemail.com and mx2.privateemail.com, confirming Namecheap Private Email. SMTP setup requires mail.privateemail.com, port 465 (SSL) or 587 (STARTTLS), username/sender support@streamunify.com, sender name StreamUnify, and the mailbox password entered directly into Supabase Production's SMTP settings. Never ask for that password in chat. Public signup/recovery email delivery must be tested before activation.
+
+## Production connection progress — 2026-10-23
+
+The owner-selected Supabase project now contains the membership and billing schema. Render has been updated to its URL and publishable key, with both launch flags still false. The previously connected Supabase MCP account does not have access to this project; schema installation and verification used the authorized Dashboard session. No existing projects were deleted.
+
+Stripe was rechecked after this work: charges and payouts remain disabled with `requirements.past_due`. Account-owner onboarding and the persistent restricted Stripe key remain required, along with the selected Supabase server secret. Email delivery is confirmed; the test app user is not yet confirmed/signed in. Native authentication and StoreKit/Play Billing remain unimplemented. This progress does not activate paid memberships.
+
