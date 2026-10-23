@@ -7,9 +7,13 @@
     "start": "node server.mjs",
     "ios": "npx cap open ios",
     "android": "npx cap open android",
-    "sync": "npx cap sync",
+    "sync": "npm run prepare:platforms && cap sync",
     "add:ios": "npx cap add ios",
-    "add:android": "npx cap add android"
+    "add:android": "npx cap add android",
+    "test": "node --test",
+    "prepare:platforms": "node scripts/prepare-platforms.mjs",
+    "sync:ios": "npm run prepare:platforms && cap sync ios",
+    "sync:android": "npm run prepare:platforms && cap sync android"
   },
   "engines": {
     "node": ">=20"
