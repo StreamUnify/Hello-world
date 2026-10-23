@@ -1,6 +1,13 @@
 # Website visitor analytics
 
-## Activate
+## Active property
+
+The owner supplied public measurement ID `G-9FW1KRWQT7`, now the default.
+`GA4_MEASUREMENT_ID` on Render overrides it; an empty or invalid override disables
+analytics. The public ID is not an API credential. Visitor consent is still
+required before loading Google's tracker. Verify ingestion using Realtime.
+
+## Property configuration
 
 1. In Google Analytics, create/select a property for StreamUnify with time zone
    America/Chicago and currency USD. Create a Web data stream for
@@ -15,7 +22,7 @@
 4. Open the website and allow analytics. Check Google Analytics Realtime, then
    inspect acquisition and engagement reports as data becomes available.
 
-No ID or an invalid ID leaves analytics disabled with no consent UI or Google
+An empty or invalid environment override leaves analytics disabled with no consent UI or Google
 requests. A valid ID loads the consent UI; no Google script is requested until
 consent is granted. Preferences can be reopened from the footer. Global Privacy
 Control and Do Not Track suppress analytics. The native app API-base/Capacitor
