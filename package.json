@@ -5,9 +5,17 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "build": "esbuild membership-client-src.js --bundle --minify --format=iife --outfile=membership-client.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "stripe": "23.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
   }
 }

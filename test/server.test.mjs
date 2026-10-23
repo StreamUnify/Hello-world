@@ -1,0 +1,21 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+test('HTTP routes preserve public access while disabled and require accounts when enabled',async()=>{
+  process.env.PORT='0';process.env.BILLING_ENABLED='false';process.env.TMDB_API_KEY='';process.env.WATCHMODE_API_KEY='';
+  for(const enabled of [false,true]){
+    process.env.MEMBERSHIP_ENABLED=String(enabled);
+    process.env.SUPABASE_URL='https://example.supabase.co';process.env.SUPABASE_PUBLISHABLE_KEY='sb_publishable_fixture';
+    const {server}=await import('../server.mjs?membership='+enabled);
+    if(!server.listening)await new Promise(resolve=>server.once('listening',resolve));
+    const base='http://127.0.0.1:'+server.address().port;
+    try{
+      const configResponse=await fetch(base+'/api/account/config');
+      assert.equal(configResponse.headers.get('cache-control'),'no-store');
+      const config=await configResponse.json();assert.equal(config.enabled,enabled);assert.equal(config.billingEnabled,false);
+      assert.equal((await fetch(base+'/membership-client.js')).status,200);
+      assert.equal((await fetch(base+'/api/search?q=Title')).status,enabled?401:200);
+      assert.equal((await fetch(base+'/api/watchlist')).status,enabled?401:503);
+      const options=await fetch(base+'/api/watchlist',{method:'OPTIONS'});assert.match(options.headers.get('access-control-allow-headers'),/Authorization/);
+    }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+  }
+});
