@@ -21,3 +21,7 @@ ios/App/build/
 android/.idea/
 android/build/
 android/app/build/
+
+# Generated native archive and simulator output
+/build/
+/ios-build-output/
