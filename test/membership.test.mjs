@@ -21,7 +21,7 @@ test('authentication checks the server identity and rejects unverified users',as
 });
 test('exhausted quota returns a reset date without granting a search',async()=>{
   const client=createMembership({env,fetcher:async()=>Response.json({allowed:false,remaining:0,reset_at:'2026-11-23'})});
-  await assert.rejects(client.consumeSearch({token:'fixture'}),e=>e.status===429&&e.membership.reset_at==='2026-11-23');
+  await assert.rejects(client.consumeSearch({token:'fixture'},'11111111-1111-4111-8111-111111111111','US:title'),e=>e.status===429&&e.membership.reset_at==='2026-11-23');
 });
 test('account service failures fail closed without exposing tokens',async()=>{
   const client=createMembership({env,fetcher:async()=>{throw Error('private token');}});

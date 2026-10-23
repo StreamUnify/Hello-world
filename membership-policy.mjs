@@ -14,7 +14,7 @@ export function freeProviderId(name) {
 }
 export function restrictCatalog(results, membership) {
   if (membership?.plan === 'premium') return results;
-  return results.map(t=>({...t, providers:(t.providers||[]).filter(p=>freeProviderId(p.name))}))
+  return results.map(t=>({...t, ...(t.watchUrl?{watchUrl:''}:{}),providers:(t.providers||[]).filter(p=>freeProviderId(p.name))}))
     .filter(t=>t.providers.length>0);
 }
 export class MembershipError extends Error {
