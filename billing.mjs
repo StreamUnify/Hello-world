@@ -35,7 +35,7 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
       return {url:session.url};
       });
     },
-    async portal(actor){requireEnabled();return {url:(await stripe.billingPortal.sessions.create({customer:await customer(actor),return_url:origin+'/'})).url};},
+    async portal(actor){requireEnabled();return {url:(await stripe.billingPortal.sessions.create({customer:await customer(actor),return_url:origin+'/',...(env.STRIPE_PORTAL_CONFIGURATION_ID?{configuration:env.STRIPE_PORTAL_CONFIGURATION_ID}:{})})).url};},
     async webhook(raw,signature){
       requireEnabled();let event;
       try{event=stripe.webhooks.constructEvent(raw,signature,env.STRIPE_WEBHOOK_SECRET);}catch{throw new MembershipError(400,'invalid_signature','Invalid webhook signature');}
