@@ -5,6 +5,8 @@ let client,config,status,user,busy=false;
 const native=isNative;
 const button=document.createElement('button');button.type='button';button.className='su-action';button.textContent='Account';button.hidden=true;
 document.querySelector('.su-discover')?.append(button);
+const signupButton=document.createElement('button');signupButton.type='button';signupButton.className='su-action';signupButton.textContent='Sign up';signupButton.hidden=true;
+document.querySelector('.su-discover')?.append(signupButton);
 const dialog=document.createElement('dialog');dialog.className='membership-dialog';
 dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose" class="close" aria-label="Close account">×</button><h2>StreamUnify membership</h2><p id="accountStatus" role="status" aria-live="polite"></p><div id="accountFields"><section aria-label="Membership options"><h3>New to StreamUnify?</h3><p>Free membership: 10 searches per month across our 10 selected US providers.</p><p id="signupPricing"><strong>Premium: $2.99/month or $30/year</strong><br>Save $5.88 with annual billing. Unlimited searches, all supported providers, and your synced watchlist.</p><p>Create and verify your account, then choose a plan. Paid plans renew until canceled; provider subscriptions are separate.</p></section><label>Email<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label>Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="12" maxlength="128" required></label><button type="submit" class="primary">Sign in</button><button type="button" id="accountSignup">Sign up</button><button type="button" id="accountReset">Forgot password?</button></div><div id="accountPlans"><p>Free: 10 searches per month across the 10 selected US providers. Premium: unlimited searches, all supported providers, and your synced watchlist.</p><p id="membershipPriceNote"><strong>$2.99/month or $30/year</strong> — save $5.88 annually. Subscriptions renew until cancelled. Streaming service subscriptions are separate.</p><button type="button" data-plan="monthly">Choose monthly</button><button type="button" data-plan="annual">Choose annual</button><button type="button" id="accountPortal">Manage subscription</button><button type="button" id="accountImport">Import this device’s saved titles</button><button type="button" id="accountLogout">Sign out</button></div><p><a href="https://www.streamunify.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://www.streamunify.com/terms" target="_blank" rel="noopener noreferrer">Membership terms</a></p><p id="accountMessage" role="status" aria-live="polite"></p></form>`;
 document.body.append(dialog);
@@ -14,8 +16,10 @@ let storePrices={};
 const $=id=>document.getElementById(id);
 const message=text=>{$('accountMessage').textContent=text;};
 const show=()=>{if(!dialog.open)dialog.showModal();};
-button.onclick=show;$('accountClose').onclick=()=>dialog.close();
+signupButton.onclick=()=>{show();$('accountPassword').autocomplete='new-password';$('accountEmail').focus();};
+button.onclick=()=>{$('accountPassword').autocomplete='current-password';show();};$('accountClose').onclick=()=>dialog.close();
 function draw(){
+  signupButton.hidden=!!user;
   button.textContent=user?(status?.plan==='premium'?'Premium':'My account'):'Sign in';
   $('accountFields').hidden=!!user;$('accountPlans').hidden=!user;
   $('accountStatus').textContent=!user?'Sign in or create a free account.':status?.plan==='premium'?'Premium is active.':`${status?.remaining??10} of 10 searches remaining.${status?.reset_at?' Resets '+new Date(status.reset_at).toLocaleString()+'.':''}`;
@@ -51,7 +55,7 @@ window.membershipReady=(async()=>{
   if(native())$('signupPricing').textContent='Premium includes unlimited searches, all supported providers, and your synced watchlist. Store pricing is shown after sign-in.';
   if(native())$('membershipPriceNote').textContent='Your store displays the subscription price and currency before purchase. Subscriptions renew until canceled in the original store. Streaming service subscriptions are separate.';
   client=createClient(config.supabaseUrl,config.publishableKey,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:!native(),...(native()?{storage:createNativeSessionStorage()}: {})}});
-  button.hidden=false;
+  button.hidden=false;signupButton.hidden=false;
   client.auth.onAuthStateChange((event)=>{
     if(event==='PASSWORD_RECOVERY')setTimeout(()=>{show();const input=$('accountPassword');input.value='';$('accountFields').hidden=false;$('accountPlans').hidden=true;$('accountEmail').required=false;$('accountForm').onsubmit=e=>{e.preventDefault();action(async()=>{const {error}=await client.auth.updateUser({password:input.value});input.value='';if(error)throw error;message('Password updated.');await client.auth.signOut();location.assign('/');});};$('accountForm').querySelector('[type=submit]').textContent='Save new password';message('Enter a new password of at least 12 characters.');},0);
     else if(['SIGNED_IN','SIGNED_OUT','TOKEN_REFRESHED'].includes(event))setTimeout(()=>refresh().catch(e=>message(e.message)),0);
