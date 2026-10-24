@@ -1,0 +1,27 @@
+name: Xbox app validation
+on:
+  pull_request:
+    paths: ['xbox/**', 'scripts/prepare-xbox.mjs', 'package*.json', '.github/workflows/xbox.yml']
+  push:
+    branches: [upgrade/xbox-marketplace]
+  workflow_dispatch:
+jobs:
+  xbox:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: microsoft/setup-msbuild@v2
+      - run: npm ci
+      - run: npm run build:xbox
+      - run: node --test test/xbox.test.mjs
+      - name: Compile x64 development package (unsigned)
+        run: msbuild xbox/StreamUnify.Xbox/StreamUnify.Xbox.csproj /restore /m /p:Configuration=Debug /p:Platform=x64 /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never /p:UwpAppxPackageBuildMode=SideloadOnly
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StreamUnify-Xbox-development-unsigned
+          path: xbox/StreamUnify.Xbox/AppPackages/**
+          if-no-files-found: error
