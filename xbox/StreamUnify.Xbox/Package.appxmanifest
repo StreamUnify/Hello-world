@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap">
+  <Identity Name="StreamUnify.XboxPreview" Publisher="CN=StreamUnifyPreview" Version="0.1.0.0" />
+  <Properties><DisplayName>StreamUnify Preview</DisplayName><PublisherDisplayName>StreamUnify</PublisherDisplayName><Logo>Assets\StoreLogo.png</Logo></Properties>
+  <Dependencies><TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" /></Dependencies>
+  <Resources><Resource Language="en-us" /></Resources>
+  <Applications><Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="StreamUnify.Xbox.App"><uap:VisualElements DisplayName="StreamUnify Preview" Description="Find movies and TV shows on your streaming services." BackgroundColor="#090D19" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png"><uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#090D19" /></uap:VisualElements></Application></Applications>
+  <Capabilities><Capability Name="internetClient" /></Capabilities>
+</Package>
