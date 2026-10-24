@@ -1,0 +1,14 @@
+import {mkdir,readFile,writeFile,copyFile,rm} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {build} from 'esbuild';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const config=JSON.parse(await readFile(path.join(root,'mobile.config.json'),'utf8'));
+const api=new URL(process.env.STREAMUNIFY_XBOX_API_BASE||config.apiBase);
+if(api.protocol!=='https:'||api.username||api.password||api.search||api.hash||api.pathname!=='/')throw Error('Xbox API base must be an HTTPS origin without credentials, path, query or fragment');
+const output=path.join(root,'xbox/StreamUnify.Xbox/Web');
+await rm(output,{recursive:true,force:true});await mkdir(output,{recursive:true});
+for(const file of ['index.html','tv.css'])await copyFile(path.join(root,'xbox/web',file),path.join(output,file));
+await writeFile(path.join(output,'config.js'),'window.STREAMUNIFY_XBOX_API_BASE = '+JSON.stringify(api.origin)+';\n');
+await build({entryPoints:[path.join(root,'xbox/web/app-src.js')],bundle:true,minify:true,format:'iife',target:'chrome110',outfile:path.join(output,'app.js')});
+console.log('Prepared packaged Xbox interface. API: '+api.origin);

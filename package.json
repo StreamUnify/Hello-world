@@ -14,7 +14,8 @@
     "add:android": "npx cap add android",
     "prepare:platforms": "npm run build && node scripts/prepare-platforms.mjs",
     "sync:ios": "npm run prepare:platforms && cap sync ios",
-    "sync:android": "npm run prepare:platforms && cap sync android"
+    "sync:android": "npm run prepare:platforms && cap sync android",
+    "build:xbox": "node scripts/prepare-xbox.mjs"
   },
   "engines": {
     "node": ">=22"
