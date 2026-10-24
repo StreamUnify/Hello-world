@@ -23,6 +23,8 @@ test('HTTP routes preserve public access while disabled and require accounts whe
       assert.equal((await fetch(base+'/membership-client.js')).status,200);
       assert.equal((await fetch(base+'/api/search?q=Title')).status,enabled?401:200);
       assert.equal((await fetch(base+'/api/watchlist')).status,enabled?401:503);
+      assert.equal((await fetch(base+'/api/movie-order?id=invalid')).status,400);
+      assert.equal((await fetch(base+'/api/movie-order?id=671')).status,enabled?401:503);
       const options=await fetch(base+'/api/watchlist',{method:'OPTIONS'});assert.match(options.headers.get('access-control-allow-headers'),/Authorization/);
     }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
   }

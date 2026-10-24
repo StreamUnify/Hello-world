@@ -1,3 +1,4 @@
+import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
 import {createHash} from 'node:crypto';
 
 export const safeUrl = value => {
@@ -61,7 +62,9 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   }
   async function films(q, country, status) {
     const data = await tmdb(q ? 'search/multi' : 'trending/all/week', q ? {query:q, include_adult:'false', language:'en-US'} : {language:'en-US'});
-    return Promise.all((data.results || []).filter(x => x.id && ['movie','tv'].includes(x.media_type)).slice(0,18).map(async x => {
+    return Promise.all((data.results || []).filter(x => x.id && ['movie','tv'].includes(x.media_type)).slice(0,18).map(x => film(x,country,status)));
+  }
+  async function film(x,country,status) {
       const series = x.media_type === 'tv';
       let providers = [], watchUrl = '';
       try {
@@ -71,8 +74,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
           for (const p of w?.[field] || []) providers.push({id:p.provider_id, name:p.provider_name, type, source:'tmdb'});
         }
       } catch { status.tmdbAvailability = 'unavailable'; }
-      return {id:x.id * 10 + (series ? 1 : 0), source:'tmdb', sourceId:x.id, name:x.title || x.name, type:series?'series':'movie', year:(x.release_date || x.first_air_date || '').slice(0,4), desc:x.overview || '', poster:x.poster_path?'https://image.tmdb.org/t/p/w500'+x.poster_path:null, providers, watchUrl};
-    }));
+      return {id:x.id * 10 + (series ? 1 : 0), source:'tmdb', sourceId:x.id, name:x.title || x.name, type:series?'series':'movie', year:(x.release_date || x.first_air_date || '').slice(0,4), releaseDate:x.release_date || x.first_air_date || '', desc:x.overview || '', poster:x.poster_path?'https://image.tmdb.org/t/p/w500'+x.poster_path:null, providers, watchUrl};
   }
   async function youtube(q, country) {
     const data = await request('youtube', q+country, endpoint('https://www.googleapis.com/youtube/v3/search', {key:env.YOUTUBE_API_KEY, part:'snippet', type:'video', q, regionCode:country, safeSearch:'moderate', maxResults:8}), {}, 900_000);
@@ -107,6 +109,32 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   }
   return {
     configured,
+    async movieOrder(id,country) {
+      if(!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_movie');
+      if(!configured.tmdb)throw Error('unavailable');
+      const status={};
+      const movie=await tmdb(`movie/${id}`,{language:'en-US'});
+      if(movie.adult)return {name:'',release:[],chronological:null,note:'No supported movie collection found.',sources:[],availability:'ok'};
+      const story=storyForMovie(id);
+      let name=story?.name,parts=[];
+      if(story) {
+        // Bounded curated sets; all-or-error avoids silently incomplete timelines.
+        parts=await Promise.all(story.ids.map(movieId=>tmdb(`movie/${movieId}`,{language:'en-US'})));
+      } else if(movie.belongs_to_collection?.id) {
+        const collection=await tmdb(`collection/${movie.belongs_to_collection.id}`,{language:'en-US'});
+        name=collection.name;parts=collection.parts||[];
+      }
+      const unique=[...new Map(parts.filter(x=>x.id&&!x.adult).map(x=>[x.id,x])).values()];
+      if(unique.length>60)throw Error('unavailable');
+      const items=await Promise.all(unique.map(x=>film({...x,media_type:'movie'},country,status)));
+      if(configured.watchmode&&items.length) {
+        try {await enrich(items,country);}catch {status.watchmode='unavailable';}
+      }
+      const release=releaseOrder(items);
+      return {name:name||'',release,chronological:chronologicalOrder(items,story),
+        note:story?.note||'Story chronology has not been curated for this collection. Release order is shown; it does not imply story order.',
+        sources:story?.sources||[],availability:Object.keys(status).length?'partial':'ok'};
+    },
     async search(q, country) {
       const status = Object.fromEntries(Object.entries(configured).map(([k,v])=>[k,v?'idle':'not_configured']));
       const tasks = {tmdb:()=>films(q,country,status)};
