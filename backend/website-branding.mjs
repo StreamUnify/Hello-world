@@ -15,9 +15,9 @@ const websiteBannerStyle = `<style id="su-website-banner-fit">
 .hero .su-original-artwork {
   border-radius: 0;
   background: transparent;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 9%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent), linear-gradient(0deg, transparent, #000 24%, #000 95%, transparent);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 9%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent), linear-gradient(0deg, transparent, #000 24%, #000 95%, transparent);
   mask-composite: intersect;
 }
 @media (min-width: 900px) {
