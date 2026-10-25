@@ -1,5 +1,5 @@
 export const MEMBERSHIP_PRICES = Object.freeze({currency:'usd', monthly:299, annual:3000});
-export const FREE_PROVIDERS = Object.freeze(['netflix','disney','hulu','peacock','sling','max','discovery','paramount','cue','tubi']);
+export const FREE_PROVIDERS = Object.freeze(['netflix','disney','hulu','peacock','sling','max','discovery','paramount','crunchyroll','tubi']);
 const aliases = new Map(Object.entries({
   netflix:'netflix', disneyplus:'disney', disney:'disney', hulu:'hulu',
   peacock:'peacock', peacockpremium:'peacock', peacockpremiumplus:'peacock',
@@ -7,7 +7,7 @@ const aliases = new Map(Object.entries({
   max:'max', hbomax:'max', hbomaxamazonchannel:'max',
   discoveryplus:'discovery', discoveryplusamazonchannel:'discovery',
   paramountplus:'paramount', paramountpluswithshowtime:'paramount',
-  cuebroadcast:'cue', tubi:'tubi', tubitv:'tubi',
+  crunchyroll:'crunchyroll', tubi:'tubi', tubitv:'tubi',
 }));
 export function freeProviderId(name) {
   return aliases.get(String(name||'').toLowerCase().replace(/[^a-z0-9]/g,'')) || null;
