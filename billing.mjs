@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import {randomBytes,randomUUID} from 'node:crypto';
 import {createClient} from '@supabase/supabase-js';
 import {MembershipError} from './membership-policy.mjs';
 const id=o=>typeof o==='string'?o:o?.id;
@@ -13,6 +14,9 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
   const stripe=stripeClient||(enabled?new Stripe(env.STRIPE_API_KEY,{apiVersion:'2026-08-26.dahlia',maxNetworkRetries:2}):null);
   const db=dbClient||(enabled?createClient(env.SUPABASE_URL,env.SUPABASE_SECRET_KEY,{auth:{persistSession:false,autoRefreshToken:false}}):null);
   const requireEnabled=()=>{if(!enabled)throw new MembershipError(503,'billing_unavailable','Membership checkout is not available yet');};
+  const publishableKey=/^pk_(test|live)_/.test(env.STRIPE_PUBLISHABLE_KEY||'')&&env.STRIPE_PUBLISHABLE_KEY.startsWith('pk_'+mode+'_')?env.STRIPE_PUBLISHABLE_KEY:null;
+  const embeddedEnabled=enabled&&env.STRIPE_EMBEDDED_ENABLED==='true'&&!!publishableKey;
+  const integration='streamunify_membership_'+Array.from(randomBytes(8),n=>String.fromCharCode(97+n%26)).join('');
   const pending=new Map();
   async function serialize(userId,fn){const previous=pending.get(userId)||Promise.resolve();const task=previous.catch(()=>{}).then(fn);pending.set(userId,task);try{return await task;}finally{if(pending.get(userId)===task)pending.delete(userId);}}
   async function customer(actor,create=false){
@@ -22,7 +26,7 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
     const customer=await stripe.customers.create({email:actor.email,metadata:{streamunify_user_id:actor.id}},{idempotencyKey:'streamunify-customer-'+actor.id});
     const saved=await db.from('billing_customers').upsert({user_id:actor.id,customer_id:customer.id},{onConflict:'user_id'});if(saved.error)throw Error('Billing lookup failed');return customer.id;
   }
-  return {enabled,
+  return {enabled,publicConfig:()=>({embeddedEnabled,...(embeddedEnabled?{publishableKey}: {})}),
     async verifyConnections(){
       requireEnabled();
       await Promise.all([
@@ -35,16 +39,23 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
       const {error}=await db.from('billing_customers').select('user_id').limit(1);
       if(error)throw Error('Billing database connection failed');
     },
-    async checkout(actor,interval){
+    async checkout(actor,interval,surface='hosted'){
+      if(!['hosted','embedded'].includes(surface))throw new MembershipError(400,'invalid_checkout','Invalid checkout option');
+      if(surface==='embedded'&&!embeddedEnabled)throw new MembershipError(503,'embedded_unavailable','On-page checkout is temporarily unavailable. Use secure checkout instead.');
       requireEnabled();if(!Object.hasOwn(prices,interval))throw new MembershipError(400,'invalid_plan','Choose monthly or annual');
       return serialize(actor.id,async()=>{
       const customerId=await customer(actor,true);
       const subscriptions=await stripe.subscriptions.list({customer:customerId,status:'all',limit:100});
       if(subscriptions.data.some(s=>['active','trialing','past_due','unpaid','incomplete','paused'].includes(s.status)))throw new MembershipError(409,'subscription_exists','Manage your existing subscription instead');
-      const open=await stripe.checkout.sessions.list({customer:customerId,status:'open',limit:10});
-      if(open.data.length)return {url:open.data[0].url};
-      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled',integration_identifier:'streamunify_membership_abcdefgh'},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+Math.floor(Date.now()/1800000)});
-      return {url:session.url};
+      const open=await stripe.checkout.sessions.list({customer:customerId,status:'open',limit:100,expand:['data.line_items']});
+      const embedded=surface==='embedded';
+      const matching=open.data.find(s=>(embedded?['embedded','embedded_page'].includes(s.ui_mode):!s.ui_mode||['hosted','hosted_page'].includes(s.ui_mode))&&s.line_items?.data?.length===1&&id(s.line_items.data[0].price)===prices[interval]&&s.line_items.data[0].quantity===1);
+      // Keep one resumable session for this customer's selected plan and surface.
+      for(const session of open.data)if(session.id!==matching?.id)await stripe.checkout.sessions.expire(session.id);
+      const output=session=>embedded?{clientSecret:session.client_secret}:{url:session.url};
+      if(matching)return output(matching);
+      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},...(embedded?{ui_mode:'embedded_page',redirect_on_completion:'if_required',return_url:origin+'/?billing=return'}:{success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled'}),integration_identifier:integration},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+interval+'-'+surface+'-'+randomUUID()});
+      return output(session);
       });
     },
     async portal(actor){requireEnabled();return {url:(await stripe.billingPortal.sessions.create({customer:await customer(actor),return_url:origin+'/',...(env.STRIPE_PORTAL_CONFIGURATION_ID?{configuration:env.STRIPE_PORTAL_CONFIGURATION_ID}:{})})).url};},
