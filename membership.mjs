@@ -1,3 +1,4 @@
+import {passkeyConfiguration} from './passkey-config.mjs';
 import {MEMBERSHIP_PRICES,FREE_PROVIDERS,MembershipError,cleanWatchlistItem} from './membership-policy.mjs';
 
 // No service-role or Stripe credentials are used here. Every database request
@@ -28,7 +29,7 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
   async function premium(actor){const status=await rpc(actor,'membership_status');if(status?.plan!=='premium')throw new MembershipError(403,'premium_required','Upgrade to Premium to use your watchlist');}
   return {
     enabled,configured,
-    publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
+    publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,passkeys:passkeyConfiguration(env).publicConfig,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
     authenticate,
     status:actor=>rpc(actor,'membership_status'),
     async deleteAccount(actor){
