@@ -1,3 +1,4 @@
+import {titleWords,compactTitle,titleScore,titleThreshold,createTitleIndex} from './title-index.mjs';
 import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
 import {createHash} from 'node:crypto';
 
@@ -5,25 +6,6 @@ export const safeUrl = value => {
   try { const u = new URL(value); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; }
 };
 
-// Compare titles without spaces, punctuation, or accents. Keep corrections
-// conservative: upstream results win, and unrelated fallback titles are excluded.
-const titleWords = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-const compactTitle = value => titleWords(value).replace(/ /g,'');
-function titleScore(query,title) {
-  const a=compactTitle(query),b=compactTitle(title);
-  if(!a||!b)return 0;
-  if(a===b)return 1;
-  if(a.length>=5&&b.startsWith(a))return .94;
-  // Compare a partial query with the same-length beginning of a longer title.
-  const target=b.length>a.length+3?b.slice(0,a.length):b;
-  let row=Array.from({length:target.length+1},(_,i)=>i);
-  for(let i=1;i<=a.length;i++) {
-    const next=[i];
-    for(let j=1;j<=target.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(a[i-1]===target[j-1]?0:1));
-    row=next;
-  }
-  return 1-row[target.length]/Math.max(a.length,target.length);
-}
 const seedWords='the a an and of in on to for with from at by is it its part chapter episode harry potter star wars lord rings game thrones breaking bad stranger things spider man bat super iron mission impossible fast furious jurassic park world toy story finding nemo dory hunger games fantastic beasts back future walking dead dark knight avengers captain america winter soldier black panther doctor strange guardians galaxy pirates caribbean john wick home alone inside out frozen lion king dragon house how train your'.split(' ');
 function splitTitle(query,words) {
   const text=compactTitle(query);
@@ -41,7 +23,7 @@ function splitTitle(query,words) {
 
 // Bounded caches, in-flight deduplication, and provider-wide cooldowns keep
 // repeated searches from multiplying API calls or retrying exhausted quotas.
-export function createCatalog({env = process.env, fetcher = fetch, now = Date.now} = {}) {
+export function createCatalog({env = process.env, fetcher = fetch, now = Date.now, titleIndex = fetcher===fetch?createTitleIndex():{find:()=>[]}} = {}) {
   const cache = new Map(), pending = new Map(), cooldown = new Map();
   const configured = {
     tmdb: !!(env.TMDB_READ_ACCESS_TOKEN || env.TMDB_API_KEY),
@@ -51,6 +33,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     youtube: !!env.YOUTUBE_API_KEY,
   };
   const words=new Set(seedWords), knownTitles=new Map();
+  if(configured.tmdb)titleIndex.warm?.();
   let active = 0;
   const queue = [];
   async function limited(run) {
@@ -99,19 +82,21 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     const valid = items => (items || []).filter(x=>x.id&&!x.adult&&['movie','tv'].includes(x.media_type));
     const search = async query => valid((await tmdb('search/multi',{query,include_adult:'false',language:'en-US'})).results);
     let items=q?await search(q):valid((await tmdb('trending/all/week',{language:'en-US'})).results);
-    if(q&&!items.length&&compactTitle(q).length>=5) {
+    if(q&&compactTitle(q).length>=4&&(!items.length||!items.some(x=>titleScore(q,x.title||x.name)>=.94))) {
       const normalized=titleWords(q), tokens=normalized.split(' ');
-      const learned=[...knownTitles.values()].map(name=>({name,score:titleScore(q,name)})).filter(x=>x.score>=.8).sort((a,b)=>b.score-a.score)[0]?.name;
+      const learned=[...knownTitles.values()].map(name=>({name,score:titleScore(q,name)})).filter(x=>x.score>=titleThreshold(q)).sort((a,b)=>b.score-a.score)[0]?.name;
       const split=splitTitle(q,words);
-      const probes=[learned,split, tokens.length>1?tokens[0]:normalized.slice(0,4),tokens.length>1?tokens.slice(1).join(' '):''];
-      const queries=[...new Set(probes.filter(x=>x&&x.length>=3&&x!==q))].slice(0,3);
+      const probes=[...titleIndex.find(q),learned,split, tokens.length>1?tokens[0]:normalized.slice(0,4),tokens.length>1?tokens.slice(1).join(' '):''];
+      const queries=[...new Set(probes.filter(x=>x&&x.length>=3&&x!==q))].slice(0,4);
       const outcomes=await Promise.allSettled(queries.map(search));
-      const candidates=outcomes.flatMap(x=>x.status==='fulfilled'?x.value:[]);
+      const original=items;
+      const candidates=[...items,...outcomes.flatMap(x=>x.status==='fulfilled'?x.value:[])];
       items=[...new Map(candidates.map(x=>[x.media_type+':'+x.id,x])).values()]
         .map(item=>({item,score:Math.max(titleScore(q,item.title||item.name),titleScore(q,item.original_title||item.original_name))}))
-        .filter(x=>x.score>=.8).sort((a,b)=>b.score-a.score||(b.item.popularity||0)-(a.item.popularity||0)).map(x=>x.item);
-      if(items.length)status.searchMatch={query:q,title:items[0].title||items[0].name};
+        .filter(x=>x.score>=titleThreshold(q)).sort((a,b)=>b.score-a.score||(b.item.popularity||0)-(a.item.popularity||0)).map(x=>x.item);
+      if(items.length&&(!original.length||items[0].id!==original[0].id))status.searchMatch={query:q,title:items[0].title||items[0].name};
       else if(outcomes.some(x=>x.status==='rejected'))status.tmdbFallback='unavailable';
+      if(!items.length)items=original;
     }
     for(const item of items) {
       const name=item.title||item.name;
