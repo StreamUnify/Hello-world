@@ -96,7 +96,12 @@
   outline-offset: 2px;
 }
 </style>
-<style id="su-cinematic-redesign">body{background:radial-gradient(ellipse at 82% 8%,#1454c055,transparent 40%),radial-gradient(ellipse at 38% 28%,#6532cb44,transparent 45%),#080e20}.hero{position:relative;overflow:hidden;border:1px solid #3954a1;background:radial-gradient(ellipse at 85% 45%,#087eff66,transparent 45%),radial-gradient(ellipse at 55% 100%,#9c35f366,transparent 50%),linear-gradient(120deg,#07142e,#15113f 65%,#071e4b);box-shadow:0 18px 65px #0006}.hero .search{border:2px solid #6b9cff;box-shadow:0 0 16px #377bff55}.su-search-button{box-shadow:0 0 15px #486fff88}</style><style id="su-original-artwork-style">.su-original-artwork{max-width:910px;margin:10px auto 20px;text-align:center}.su-original-artwork img{display:block;width:100%;height:auto;border-radius:12px}@media(max-width:750px){.su-original-artwork{margin:10px auto 15px}}</style>
+<style id="su-cinematic-redesign">body{background:radial-gradient(ellipse at 82% 8%,#1454c055,transparent 40%),radial-gradient(ellipse at 38% 28%,#6532cb44,transparent 45%),#080e20}.hero{position:relative;overflow:hidden;border:1px solid #3954a1;background:radial-gradient(ellipse at 85% 45%,#087eff66,transparent 45%),radial-gradient(ellipse at 55% 100%,#9c35f366,transparent 50%),linear-gradient(120deg,#07142e,#15113f 65%,#071e4b);box-shadow:0 18px 65px #0006}.hero .search{border:2px solid #6b9cff;box-shadow:0 0 16px #377bff55}.su-search-button{box-shadow:0 0 15px #486fff88}</style><style id="su-original-artwork-style">.su-original-artwork{max-width:910px;margin:10px auto 20px;text-align:center}.su-original-artwork img{display:block;width:100%;height:auto;border-radius:12px}@media(max-width:750px){.su-original-artwork{margin:10px auto 15px}}</style><style id="su-banner-edge-crop">
+/* The approved artwork has white export margins at rows 0–59 and 664–724.
+   Clip only those margins and their antialiasing; preserve the provider tiles. */
+.su-original-artwork{position:relative;overflow:hidden;aspect-ratio:2170 / 600;align-self:center;border-radius:12px;background:#07142e}
+.su-original-artwork img{position:absolute;left:0;top:-10.333333%;width:100%;height:auto;margin:0;border-radius:0}
+</style>
 <style id="su-approved-hero-layout">
 @media (min-width: 900px) {
   .hero {
