@@ -51,3 +51,51 @@ test('Twitch app token is reused and all external links use HTTPS',async()=>{
  assert.equal(tokens,1);assert.equal(r.results[0].id,'twitch:3');assert.equal(r.results[0].live,true);
  for(const u of ['javascript:alert(1)','data:text/html,x','http://example.com',''])assert.equal(safeUrl(u),'');
 });
+
+function smartCatalog(queries,lookups=[]) {
+ return createCatalog({env:{TMDB_API_KEY:'key'},fetcher:async url=>{
+  const u=new URL(url);
+  if(u.pathname.endsWith('/watch/providers'))return response({results:{US:{flatrate:[{provider_id:8,provider_name:'Netflix'}]}}});
+  const q=u.searchParams.get('query');lookups.push(q);
+  return response({results:queries[q]||[]});
+ }});
+}
+const potter={id:671,media_type:'movie',title:'Harry Potter and the Philosopher’s Stone',popularity:50};
+const stranger={id:66732,media_type:'tv',name:'Stranger Things'};
+test('missing spaces recover movie and TV titles with individual availability',async()=>{
+ for(const [query,split,item] of [['harrypotter','harry potter',potter],['strangerthings','stranger things',stranger]]) {
+  const calls=[],c=smartCatalog({[split]:[item]},calls),r=await c.search(query,'US');
+  assert.equal(r.results[0].sourceId,item.id);
+  assert.equal(r.results[0].providers[0].name,'Netflix');
+  assert.equal(r.searchMatch.title,item.title||item.name);
+  assert.equal(calls[0],query);assert.ok(calls.length<=4);
+ }
+});
+test('minor typos and partial titles recover only close candidates',async()=>{
+ const calls=[],c=smartCatalog({harry:[potter,{id:9,media_type:'movie',title:'An Unrelated Movie'}]},calls);
+ const r=await c.search('harry poter','US');
+ assert.deepEqual(r.results.map(x=>x.sourceId),[671]);
+ assert.equal(r.searchMatch.query,'harry poter');
+ const no=await smartCatalog({abcd:[potter]}).search('abcdefgh','US');
+ assert.deepEqual(no.results,[]);assert.equal(no.searchMatch,undefined);
+});
+test('successful exact searches do not invoke correction or replace the query',async()=>{
+ const calls=[],r=await smartCatalog({'Harry Potter':[potter]},calls).search('Harry Potter','US');
+ assert.deepEqual(calls,['Harry Potter']);assert.equal(r.searchMatch,undefined);
+});
+test('learned catalog titles support corrections beyond the starter vocabulary',async()=>{
+ const item={id:123,media_type:'tv',name:'Severance'},calls=[];
+ const c=smartCatalog({Severance:[item]},calls);
+ await c.search('Severance','US');
+ const r=await c.search('severence','US');
+ assert.equal(r.results[0].sourceId,123);assert.equal(r.searchMatch.title,'Severance');
+});
+test('failed correction lookups preserve other sources and are reported as partial',async()=>{
+ let calls=0;
+ const c=createCatalog({env:{TMDB_API_KEY:'key',PODCAST_INDEX_KEY:'key',PODCAST_INDEX_SECRET:'secret'},fetcher:async url=>{
+  if(String(url).includes('podcastindex'))return response({feeds:[{id:5,title:'Podcast'}]});
+  calls++;return calls===1?response({results:[]}):response({},500);
+ }});
+ const r=await c.search('harrypotter','US');
+ assert.equal(r.results[0].type,'podcast');assert.equal(r.sources.tmdbFallback,'unavailable');
+});
