@@ -11,3 +11,11 @@ android/local.properties
 ios/App/Pods/
 *.p8
 *service-account*.json
+
+# Xbox build output and local signing material
+xbox/StreamUnify.Xbox/Web/
+xbox/**/bin/
+xbox/**/obj/
+xbox/**/AppPackages/
+xbox/**/*.pfx
+xbox/**/*.cer
