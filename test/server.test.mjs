@@ -21,6 +21,10 @@ test('HTTP routes preserve public access while disabled and require accounts whe
       assert.equal(configResponse.headers.get('cache-control'),'no-store');
       const config=await configResponse.json();assert.equal(config.enabled,enabled);assert.equal(config.billingEnabled,false);
       assert.equal((await fetch(base+'/membership-client.js')).status,200);
+      const robots=await fetch(base+'/robots.txt');assert.equal(robots.status,200);assert.match(robots.headers.get('content-type'),/text\/plain/);assert.match(await robots.text(),/Sitemap: https:\/\/www\.streamunify\.com\/sitemap\.xml/);
+      const sitemap=await fetch(base+'/sitemap.xml');assert.equal(sitemap.status,200);assert.match(sitemap.headers.get('content-type'),/application\/xml/);const xml=await sitemap.text();assert.equal([...xml.matchAll(/<loc>/g)].length,3);assert.doesNotMatch(xml,/localhost|onrender|<lastmod>/);
+      for(const pathname of ['/','/privacy','/terms']){const page=await fetch(base+pathname);assert.equal(page.status,200);const html=await page.text();assert.ok(html.includes('rel="canonical" href="https://www.streamunify.com'+pathname+'"'));}
+
       assert.equal((await fetch(base+'/api/search?q=Title')).status,enabled?401:200);
       assert.equal((await fetch(base+'/api/watchlist')).status,enabled?401:503);
       assert.equal((await fetch(base+'/api/movie-order?id=invalid')).status,400);
