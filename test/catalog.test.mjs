@@ -99,3 +99,47 @@ test('failed correction lookups preserve other sources and are reported as parti
  const r=await c.search('harrypotter','US');
  assert.equal(r.results[0].type,'podcast');assert.equal(r.sources.tmdbFallback,'unavailable');
 });
+
+const actorPerson=(id,name)=>({id,name,media_type:'person',known_for_department:'Acting',known_for:[{id:999,title:'Known-for sample'}]});
+function actorCatalog(people,credits,requests=[]){
+ return createCatalog({env:{TMDB_API_KEY:'key'},fetcher:async url=>{
+  const u=new URL(url);requests.push(u.pathname);
+  if(u.pathname.endsWith('/watch/providers'))return response({results:{CA:{link:'https://example.com/watch',flatrate:[{provider_id:8,provider_name:'Netflix'}]}}});
+  if(u.pathname.endsWith('/movie_credits'))return response(credits);
+  return response({results:people});
+ }});
+}
+test('actor name searches return all acting credits across pages, not known-for titles or crew work',async()=>{
+ const movies=Array.from({length:41},(_,i)=>({id:i+1,title:'Movie '+i,popularity:100-i,release_date:'2020-01-01',character:'Role '+i}));
+ const calls=[],c=actorCatalog([actorPerson(31,'Tom Hanks')],{cast:[...movies,movies[0],{id:99,title:'Adult movie',adult:true}],crew:[{id:777,title:'Crew-only movie'}]},calls);
+ const first=await c.search('Tom Hanks','CA');
+ assert.deepEqual(first.actor,{id:31,name:'Tom Hanks',total:41,page:1,pages:3});
+ assert.equal(first.results.length,18);assert.equal(first.results[0].character,'Role 0');
+ assert.equal(first.results[0].providers[0].name,'Netflix');assert.equal(first.results[0].watchUrl,'https://example.com/watch');
+ assert.equal(first.searchMatch,undefined);assert.equal(first.sources.tmdb,'ok');
+ const second=await c.search('Tom Hanks','CA',{personId:31,page:2});
+ const third=await c.search('Tom Hanks','CA',{personId:31,page:3});
+ const ids=[...first.results,...second.results,...third.results].map(x=>x.sourceId);
+ assert.equal(new Set(ids).size,41);assert.ok(!ids.includes(999)&&!ids.includes(777)&&!ids.includes(99));
+ assert.equal(calls.filter(x=>x.endsWith('/movie_credits')).length,1);
+ assert.equal(calls.filter(x=>x.endsWith('/watch/providers')).length,41);
+});
+test('partial and duplicate actor names require a selection and never mix filmographies',async()=>{
+ const people=[actorPerson(1,'Chris Evans'),actorPerson(2,'Chris Hemsworth')];
+ const calls=[],c=actorCatalog(people,{cast:[{id:8,title:'Selected actor movie'}]},calls);
+ const choices=await c.search('Chris','US');
+ assert.equal(choices.actor,undefined);assert.deepEqual(choices.actors.map(x=>x.name),people.map(x=>x.name));assert.deepEqual(choices.results,[]);
+ assert.ok(!calls.some(x=>x.endsWith('/movie_credits')));
+ const selected=await c.search('Chris','US',{personId:2});assert.equal(selected.actor.name,'Chris Hemsworth');
+ assert.ok(calls.includes('/3/person/2/movie_credits'));
+ const duplicate=await actorCatalog([actorPerson(1,'Chris Evans'),actorPerson(2,'Chris Evans')],{cast:[]}).search('Chris Evans','US');
+ assert.equal(duplicate.actor,undefined);assert.equal(duplicate.actors.length,2);
+});
+test('actor credit failures are reported instead of fabricating empty filmographies',async()=>{
+ const r=await actorCatalog([actorPerson(31,'Tom Hanks')],{}).search('Tom Hanks','US');
+ assert.equal(r.sources.tmdb,'unavailable');assert.equal(r.actor,undefined);assert.deepEqual(r.results,[]);
+ const c=actorCatalog([actorPerson(31,'Tom Hanks')],{cast:[]});
+ const empty=await c.search('Tom Hanks','US');assert.equal(empty.actor.total,0);assert.equal(empty.sources.tmdb,'ok');
+ const invalid=await c.search('Tom Hanks','US',{personId:999});assert.equal(invalid.sources.tmdb,'unavailable');
+ const beyond=await c.search('Tom Hanks','US',{personId:31,page:2});assert.equal(beyond.sources.tmdb,'unavailable');
+});

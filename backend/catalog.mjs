@@ -78,10 +78,27 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     if (!env.TMDB_READ_ACCESS_TOKEN) u.searchParams.set('api_key', env.TMDB_API_KEY);
     return request('tmdb', path + JSON.stringify(params), u, {headers: env.TMDB_READ_ACCESS_TOKEN ? {Authorization: 'Bearer ' + env.TMDB_READ_ACCESS_TOKEN} : {}});
   }
-  async function films(q, country, status) {
+  async function films(q, country, status, {personId, page=1}={}) {
     const valid = items => (items || []).filter(x=>x.id&&!x.adult&&['movie','tv'].includes(x.media_type));
     const search = async query => valid((await tmdb('search/multi',{query,include_adult:'false',language:'en-US'})).results);
-    let items=q?await search(q):valid((await tmdb('trending/all/week',{language:'en-US'})).results);
+    const initial=q?(await tmdb('search/multi',{query:q,include_adult:'false',language:'en-US'})).results:[];
+    const people=(initial||[]).filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&x.media_type==='person'&&(x.known_for_department==='Acting'||!x.known_for_department));
+    status.actors=people.slice(0,8).map(x=>({id:x.id,name:x.name,knownFor:(x.known_for||[]).map(t=>t.title||t.name).filter(Boolean).slice(0,3).join(', ')}));
+    const exact=people.filter(x=>titleWords(x.name)===titleWords(q));
+    const person=personId?people.find(x=>x.id===personId):exact.length===1?exact[0]:null;
+    if(personId&&!person)throw Error('unavailable');
+    if(person){
+      const data=await tmdb(`person/${person.id}/movie_credits`,{language:'en-US'});
+      if(!Array.isArray(data.cast))throw Error('unavailable');
+      // Use acting credits, never the short "known for" list or crew credits.
+      const credits=[...new Map(data.cast.filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&x.title).map(x=>[x.id,x])).values()]
+        .sort((a,b)=>(b.popularity||0)-(a.popularity||0)||String(b.release_date||'').localeCompare(String(a.release_date||''))||a.id-b.id);
+      const pages=Math.max(1,Math.ceil(credits.length/18));
+      if(!Number.isSafeInteger(page)||page<1||page>pages)throw Error('unavailable');
+      status.actor={id:person.id,name:person.name,total:credits.length,page,pages};
+      return Promise.all(credits.slice((page-1)*18,page*18).map(async x=>({...await film({...x,media_type:'movie'},country,status),character:x.character||''})));
+    }
+    let items=q?valid(initial):valid((await tmdb('trending/all/week',{language:'en-US'})).results);
     if(q&&compactTitle(q).length>=4&&(!items.length||!items.some(x=>titleScore(q,x.title||x.name)>=.94))) {
       const normalized=titleWords(q), tokens=normalized.split(' ');
       const learned=[...knownTitles.values()].map(name=>({name,score:titleScore(q,name)})).filter(x=>x.score>=titleThreshold(q)).sort((a,b)=>b.score-a.score)[0]?.name;
@@ -178,21 +195,22 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         note:story?.note||'Story chronology has not been curated for this collection. Release order is shown; it does not imply story order.',
         sources:story?.sources||[],availability:Object.keys(status).length?'partial':'ok'};
     },
-    async search(q, country) {
+    async search(q, country, options={}) {
       const status = Object.fromEntries(Object.entries(configured).map(([k,v])=>[k,v?'idle':'not_configured']));
-      const tasks = {tmdb:()=>films(q,country,status)};
-      if (q) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
-      const results = (await Promise.all(Object.entries(tasks).map(async ([name,run])=>{
+      const tasks = {tmdb:()=>films(q,country,status,options)};
+      if (q&&!options.personId) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
+      let results = (await Promise.all(Object.entries(tasks).map(async ([name,run])=>{
         if (!configured[name]) return [];
         try { const items = await run(); status[name]='ok'; return items; }
         catch (e) { status[name]=e.message === 'rate_limited'?'rate_limited':'unavailable'; return []; }
       }))).flat();
+      const {actor,actors,searchMatch}=status;delete status.actor;delete status.actors;delete status.searchMatch;
+      if(actor)results=results.filter(x=>x.source==='tmdb');
       if (configured.watchmode && results.some(x=>x.source==='tmdb')) {
         try { await enrich(results.filter(x=>x.source==='tmdb'),country); status.watchmode='ok'; }
         catch (e) { status.watchmode=e.message === 'rate_limited'?'rate_limited':'unavailable'; }
       }
-      const searchMatch=status.searchMatch;delete status.searchMatch;
-      return {results,country,sources:status,...searchMatch?{searchMatch}:{}};
+      return {results,country,sources:status,...searchMatch?{searchMatch}:{},...actors?.length?{actors}:{},...actor?{actor}:{}};
     },
   };
 }

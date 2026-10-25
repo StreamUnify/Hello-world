@@ -39,8 +39,10 @@ data.release=restrict(data.release);if(data.chronological)data.chronological=res
 return json(res,200,{...data,country});
 }if(u.pathname==='/api/search'||u.pathname==='/api/trending'){let country=countries.has(u.searchParams.get('country'))?u.searchParams.get('country'):'US';const q=(u.searchParams.get('q')||'').trim().slice(0,120);let actor,status;const searching=u.pathname==='/api/search'&&q;
 if(membership.enabled){if(req.headers.authorization){actor=await membership.authenticate(req);await stores.refreshActor(actor);status=await membership.status(actor);}if(searching&&!actor)throw new MembershipError(401,'sign_in_required','Sign in to use your 10 free monthly searches');if(status?.plan!=='premium')country='US';}
-const data=await catalog.search(searching?q:'',country);
-if(membership.enabled){if(searching){if(!Object.values(data.sources||{}).includes('ok'))throw new MembershipError(503,'catalog_unavailable','Search is temporarily unavailable. Your allowance was not used.');status=await membership.consumeSearch(actor,req.headers['x-search-id'],country+':'+q.toLowerCase());}data.results=restrictCatalog(data.results,status);data.membership=status||{plan:'free',remaining:10,watchlist:false};}
+const personId=u.searchParams.get('personId'),page=u.searchParams.get('page');
+if((personId!==null&&(!/^[1-9][0-9]{0,9}$/.test(personId)||Number(personId)>2147483647))||(page!==null&&(!/^[1-9][0-9]{0,5}$/.test(page)))||((personId!==null||page!==null)&&!searching))return json(res,400,{error:'Invalid actor search'});
+const data=await catalog.search(searching?q:'',country,{personId:personId===null?undefined:Number(personId),page:page===null?1:Number(page)});
+if(membership.enabled){if(searching){if(!Object.values(data.sources||{}).includes('ok'))throw new MembershipError(503,'catalog_unavailable','Search is temporarily unavailable. Your allowance was not used.');status=await membership.consumeSearch(actor,req.headers['x-search-id'],country+':'+q.toLowerCase());}data.results=data.actor?data.results.map(item=>restrictCatalog([item],status)[0]||{...item,providers:[],watchUrl:''}):restrictCatalog(data.results,status);data.membership=status||{plan:'free',remaining:10,watchlist:false};}
 return json(res,200,data)}if(u.pathname==='/streamunify-seamless-artwork.png'){
 const img=await readFile(path.join(root,'streamunify-seamless-artwork.png'));
 res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public, max-age=3600'});

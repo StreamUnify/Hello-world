@@ -30,6 +30,9 @@ test('HTTP routes preserve public access while disabled and require accounts whe
       for(const [file,type,magic] of [['favicon.ico','image/x-icon',[0,0,1,0]],['favicon.png','image/png',[137,80,78,71]]]){const icon=await fetch(base+'/'+file);assert.equal(icon.status,200);assert.equal(icon.headers.get('content-type'),type);assert.deepEqual([...new Uint8Array(await icon.arrayBuffer()).slice(0,4)],magic);}
       assert.equal((await fetch(base+'/favicon/../../package.json')).status,404);
       assert.equal((await fetch(base+'/api/search?q=Title')).status,enabled?401:200);
+      if(!enabled){
+       for(const query of ['q=Tom&personId=invalid','q=Tom&page=0','q=Tom&page=1.5','personId=31'])assert.equal((await fetch(base+'/api/search?'+query)).status,400);
+      }
       assert.equal((await fetch(base+'/api/watchlist')).status,enabled?401:503);
       assert.equal((await fetch(base+'/api/movie-order?id=invalid')).status,400);
       assert.equal((await fetch(base+'/api/movie-order?id=671')).status,enabled?401:503);
