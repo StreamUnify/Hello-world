@@ -88,15 +88,15 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     const person=personId?people.find(x=>x.id===personId):exact.length===1?exact[0]:null;
     if(personId&&!person)throw Error('unavailable');
     if(person){
-      const data=await tmdb(`person/${person.id}/movie_credits`,{language:'en-US'});
+      const data=await tmdb(`person/${person.id}/combined_credits`,{language:'en-US'});
       if(!Array.isArray(data.cast))throw Error('unavailable');
       // Use acting credits, never the short "known for" list or crew credits.
-      const credits=[...new Map(data.cast.filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&x.title).map(x=>[x.id,x])).values()]
-        .sort((a,b)=>(b.popularity||0)-(a.popularity||0)||String(b.release_date||'').localeCompare(String(a.release_date||''))||a.id-b.id);
+      const credits=[...new Map(data.cast.filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&((x.media_type==='movie'&&x.title)||(x.media_type==='tv'&&x.name))).map(x=>[x.media_type+':'+x.id,x])).values()]
+        .sort((a,b)=>(b.popularity||0)-(a.popularity||0)||String(b.release_date||b.first_air_date||'').localeCompare(String(a.release_date||a.first_air_date||''))||a.media_type.localeCompare(b.media_type)||a.id-b.id);
       const pages=Math.max(1,Math.ceil(credits.length/18));
       if(!Number.isSafeInteger(page)||page<1||page>pages)throw Error('unavailable');
       status.actor={id:person.id,name:person.name,total:credits.length,page,pages};
-      return Promise.all(credits.slice((page-1)*18,page*18).map(async x=>({...await film({...x,media_type:'movie'},country,status),character:x.character||''})));
+      return Promise.all(credits.slice((page-1)*18,page*18).map(async x=>({...await film(x,country,status),character:x.character||''})));
     }
     let items=q?valid(initial):valid((await tmdb('trending/all/week',{language:'en-US'})).results);
     if(q&&compactTitle(q).length>=4&&(!items.length||!items.some(x=>titleScore(q,x.title||x.name)>=.94))) {
