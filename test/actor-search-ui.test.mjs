@@ -12,7 +12,7 @@ test('actor selection and pagination keep one search allowance and append movies
  vm.runInContext("let actorSearch=null,actorChoices=[],searchContext=null,TITLES=[],saved=new Set(),savedTitles={},country='US',filter='all',liveStatus='',loadSerial=0;function render(){renderActorSearch();}"+script,sandbox);
  const response=(page,results)=>({actor:{id:31,name:'Tom Hanks',total:3,page,pages:2},actors:[{id:31,name:'Tom Hanks'}],results,sources:{tmdb:'ok'}});
  answers.push(response(1,[{id:1},{id:2}]));await vm.runInContext('loadTitles(true)',sandbox);
- assert.match(nodes.get('actorSummary').textContent,/3 movie acting credits.*2 loaded/);
+ assert.match(nodes.get('actorSummary').textContent,/3 movie and TV acting credits.*2 loaded/);
  answers.push(response(2,[{id:3}]));await nodes.get('loadActorMovies').onclick();
  assert.equal(vm.runInContext('TITLES.length',sandbox),3);assert.equal(nodes.get('loadActorMovies').hidden,true);
  assert.equal(requests[0].id,requests[1].id);assert.match(requests[1].url,/personId=31/);assert.match(requests[1].url,/page=2/);
