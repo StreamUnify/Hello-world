@@ -57,7 +57,7 @@ function smartCatalog(queries,lookups=[]) {
   const u=new URL(url);
   if(u.pathname.endsWith('/watch/providers'))return response({results:{US:{flatrate:[{provider_id:8,provider_name:'Netflix'}]}}});
   const q=u.searchParams.get('query');lookups.push(q);
-  return response({results:queries[q]||[]});
+  return response({results:Object.entries(queries).find(([key])=>key.toLowerCase()===q.toLowerCase())?.[1]||[]});
  }});
 }
 const potter={id:671,media_type:'movie',title:'Harry Potter and the Philosopher’s Stone',popularity:50};
@@ -81,7 +81,7 @@ test('minor typos and partial titles recover only close candidates',async()=>{
 });
 test('successful exact searches do not invoke correction or replace the query',async()=>{
  const calls=[],r=await smartCatalog({'Harry Potter':[potter]},calls).search('Harry Potter','US');
- assert.deepEqual(calls,['Harry Potter']);assert.equal(r.searchMatch,undefined);
+ assert.deepEqual(calls,['harry potter']);assert.equal(r.searchMatch,undefined);
 });
 test('learned catalog titles support corrections beyond the starter vocabulary',async()=>{
  const item={id:123,media_type:'tv',name:'Severance'},calls=[];
@@ -158,4 +158,78 @@ test('actor filmography includes movies and TV with colliding IDs and correct re
  assert.deepEqual(r.results.map(x=>[x.id,x.type,x.name,x.character]),[[421,'series','A Series','Series role'],[420,'movie','A Movie','Movie role']]);
  assert.ok(calls.includes('/3/tv/42/watch/providers'));assert.ok(calls.includes('/3/movie/42/watch/providers'));
  assert.ok(r.results.every(x=>x.providers[0].name==='Netflix'));
+});
+
+
+test('search case shares cached provider requests and preserves displayed spelling',async()=>{
+ const calls=[],c=smartCatalog({rambo:[{id:1,media_type:'movie',title:'Rambo'}]},calls);
+ for(const query of ['RAMBO','rambo','RaMbO']){
+  const r=await c.search(query,'US');assert.equal(r.results[0].name,'Rambo');assert.equal(r.searchMatch,undefined);
+ }
+ assert.deepEqual(calls,['rambo']);
+});
+test('typo returned by initial provider still gets a correction',async()=>{
+ const r=await smartCatalog({rambi:[{id:1,media_type:'movie',title:'Rambo'}]}).search('RAMBI','US');
+ assert.equal(r.searchMatch.title,'Rambo');
+});
+function sharedCatalog({fail=false,duplicate=false}={}){
+ return createCatalog({env:{TMDB_API_KEY:'test'},fetcher:async url=>{
+  const u=new URL(url);
+  if(u.pathname.endsWith('search/person')){
+   const name=u.searchParams.get('query');const id=name==='tom hanks'?1:name==='meg ryan'?2:3;
+   return response({results:name==='missing'?[]:[actorPerson(id,name),...(duplicate&&id===2?[actorPerson(9,name)]:[])]});
+  }
+  if(u.pathname.endsWith('/combined_credits')){
+   if(fail&&u.pathname.includes('/2/'))return response({},500);
+   const id=Number(u.pathname.split('/').at(-2));
+   return response({cast:[...Array.from({length:20},(_,i)=>({id:i+10,media_type:i%2?'tv':'movie',title:'Shared '+i,name:'Shared '+i})),{id:99+id,media_type:'movie',title:'Only '+id}, {id:10,media_type:'movie',title:'Shared 0'}],crew:[{id:500,title:'Crew'}]});
+  }
+  if(u.pathname.endsWith('/watch/providers'))return response({results:{US:{}}});
+  return response({results:[]});
+ }});
+}
+test('multiple actors intersect movie and TV acting credits, deduplicate and paginate',async()=>{
+ const c=sharedCatalog();
+ for(const separator of [' and ',', ',' & ',' + ']){
+  const r=await c.search('TOM HANKS'+separator+'Meg Ryan','US');
+  assert.equal(r.actor.total,20);assert.equal(r.actor.people.length,2);assert.equal(r.results.length,18);
+  assert.ok(r.results.every(x=>x.name.startsWith('Shared')));
+ }
+ const r=await c.search('tom hanks and meg ryan','US',{page:2});assert.equal(r.results.length,2);
+});
+test('missing and ambiguous actors never silently return one actor’s credits',async()=>{
+ for(const [catalog,q] of [[sharedCatalog(),'tom hanks and missing'],[sharedCatalog({duplicate:true}),'tom hanks and meg ryan']]){
+  const r=await catalog.search(q,'US');assert.deepEqual(r.results,[]);assert.ok(r.actorNotice);assert.equal(r.actor,undefined);
+ }
+ const failed=await sharedCatalog({fail:true}).search('tom hanks and meg ryan','US');assert.equal(failed.sources.tmdb,'unavailable');assert.equal(failed.actor,undefined);
+});
+
+
+test('genre browsing uses discover for movie and TV genre IDs, filtering unsupported types',async()=>{
+ const calls=[];
+ const c=createCatalog({env:{TMDB_API_KEY:'test'},fetcher:async url=>{
+  const u=new URL(url);calls.push(u);
+  if(u.pathname.endsWith('/watch/providers'))return response({results:{US:{}}});
+  return response({results:[{id:1,title:'Science movie',name:'Science series',genre_ids:[u.pathname.endsWith('/tv')?10765:878]},{id:2,title:'Other',name:'Other',genre_ids:[35]}]});
+ }});
+ const r=await c.search('','US',{genre:'scifi'});
+ assert.deepEqual(new Set(r.results.map(x=>x.type)),new Set(['movie','series']));assert.equal(r.results.length,2);
+ assert.equal(calls.find(u=>u.pathname.endsWith('discover/movie')).searchParams.get('with_genres'),'878');
+ assert.equal(calls.find(u=>u.pathname.endsWith('discover/tv')).searchParams.get('with_genres'),'10765');
+});
+test('genre applies before acting-credit pagination and keeps total accurate',async()=>{
+ const cast=Array.from({length:40},(_,i)=>({id:i+1,media_type:'movie',title:'Credit '+i,genre_ids:[i%2?35:18]}));
+ const c=actorCatalog([actorPerson(31,'Tom Hanks')],{cast});
+ const first=await c.search('TOM HANKS','CA',{genre:'comedy'});
+ assert.equal(first.actor.total,20);assert.equal(first.results.length,18);
+ const second=await c.search('tom hanks','CA',{genre:'comedy',personId:31,page:2});assert.equal(second.results.length,2);
+});
+test('movie titles with and keep title search when parts do not resolve to actors',async()=>{
+ const item={id:22,media_type:'movie',title:'Pride and Prejudice',genre_ids:[10749]};
+ const c=createCatalog({env:{TMDB_API_KEY:'test'},fetcher:async url=>{
+  const u=new URL(url);if(u.pathname.endsWith('search/person'))return response({results:[]});
+  if(u.pathname.endsWith('/watch/providers'))return response({results:{}});
+  return response({results:[item]});
+ }});
+ const r=await c.search('PRIDE AND PREJUDICE','US',{genre:'romance'});assert.equal(r.results[0].name,item.title);assert.equal(r.actor,undefined);
 });
