@@ -221,8 +221,9 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         genres:(data.genres||[]).map(x=>x.name).filter(Boolean),
         communityRating:data.vote_count>0&&Number.isFinite(data.vote_average)?data.vote_average:null,voteCount:data.vote_count||0,
         certification:certification||'',certificationCountry:country,
-        cast:(data.credits?.cast||[]).filter(x=>!x.adult&&x.name).slice(0,12).map(x=>({name:x.name,character:x.character||''})),
+        cast:(data.credits?.cast||[]).filter(x=>!x.adult&&x.name).slice(0,12).map(x=>({id:Number.isSafeInteger(x.id)&&x.id>0?x.id:null,name:x.name,character:x.character||''})),
         creators:media==='movie'?(data.credits?.crew||[]).filter(x=>x.job==='Director').map(x=>x.name):(data.created_by||[]).map(x=>x.name),
+        creatorProfiles:(media==='movie'?(data.credits?.crew||[]).filter(x=>x.job==='Director'):(data.created_by||[])).filter(x=>x.name).map(x=>({id:Number.isSafeInteger(x.id)&&x.id>0?x.id:null,name:x.name})),
         status:data.status||'',seasonCount:media==='tv'?data.number_of_seasons:null,episodeCount:media==='tv'?data.number_of_episodes:null,
         seasons:media==='tv'?(data.seasons||[]).filter(x=>x.season_number>0).slice(0,50).map(x=>({name:x.name,episodes:x.episode_count,date:x.air_date||''})):[]},
         availability:Object.keys(status).length?'partial':'ok'};
