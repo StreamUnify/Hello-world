@@ -5,6 +5,8 @@
   if (!/^G-[A-Z0-9]{5,20}$/.test(id || '')) return;
   if (window.Capacitor?.isNativePlatform?.() || window.STREAMUNIFY_API_BASE) return;
 
+  const ids = [...new Set([id, 'G-L98XTZJ5CZ'])];
+
   const preferenceKey = 'su_analytics_consent_v1';
   let loaded = false;
   const readPreference = () => { try { return localStorage.getItem(preferenceKey); } catch { return null; } };
@@ -15,13 +17,13 @@
   function enable() {
     if (loaded || blocked()) return;
     loaded = true;
-    window['ga-disable-' + id] = false;
+    for (const destination of ids) window['ga-disable-' + destination] = false;
     window.gtag = gtag;
     gtag('consent', 'default', {analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
     gtag('consent', 'update', {analytics_storage:'granted'});
     gtag('js', new Date());
     // Do not include search parameters, fragments, account IDs, or watchlists.
-    gtag('config', id, {
+    for (const destination of ids) gtag('config', destination, {
       page_location: location.origin + location.pathname,
       page_referrer: (() => { try { return new URL(document.referrer).origin; } catch { return ''; } })(),
       page_title: 'StreamUnify',
@@ -36,7 +38,7 @@
   }
 
   function disable() {
-    window['ga-disable-' + id] = true;
+    for (const destination of ids) window['ga-disable-' + destination] = true;
     if (loaded) gtag('consent', 'update', {analytics_storage:'denied'});
     // Remove this host's Google Analytics cookies when consent is withdrawn.
     for (const cookie of document.cookie.split(';')) {
