@@ -113,6 +113,8 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # Upload for internal TestFlight setup; no external beta review or store release.
-        submit_to_testflight: false
+        # Submit for beta review and distribute to the existing tester group.
+        submit_to_testflight: true
+        beta_groups:
+          - StreamUnify Testers
         submit_to_app_store: false
