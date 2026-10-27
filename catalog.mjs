@@ -1,6 +1,7 @@
 import {titleWords,compactTitle,titleScore,titleThreshold,createTitleIndex} from './title-index.mjs';
 import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
 import {createHash} from 'node:crypto';
+import {normalizeContentRating,usContentRating} from './content-ratings.mjs';
 
 export const safeUrl = value => {
   try { const u = new URL(value); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; }
@@ -99,7 +100,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       status.actor={...(people.length===1?{id:people[0].id}:{people:people.map(p=>({id:p.id,name:p.name}))}),name:people.map(p=>p.name).join(' & '),total:credits.length,page,pages};
       return Promise.all(credits.slice((page-1)*18,page*18).map(async x=>({...await film(x,country,status),character:x.character||''})));
   }
-  async function films(q, country, status, {personId, page=1,genre=''}={}) {
+  async function films(q, country, status, {personId, page=1,genre='',rating=''}={}) {
     const valid = items => (items || []).filter(x=>x.id&&!x.adult&&['movie','tv'].includes(x.media_type));
     const search = async query => valid((await tmdb('search/multi',{query,include_adult:'false',language:'en-US'})).results);
     const parts=q.split(/\s*(?:,|&|\+|\band\b)\s*/i).map(x=>x.trim());
@@ -130,10 +131,11 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     if(person)return actingResults([person],country,status,page,genre);
     let items;
     if(q)items=valid(initial);
-    else if(genre){
+    else if(genre||rating){
       const batches=await Promise.all(['movie','tv'].map(async type=>{
-        const ids=GENRES[genre]?.[type]||[];if(!ids.length)return [];
-        const data=await tmdb('discover/'+type,{with_genres:ids.join('|'),include_adult:'false',language:'en-US',sort_by:'popularity.desc'});
+        const ids=GENRES[genre]?.[type]||[];if(genre&&!ids.length)return [];
+        if(rating&&rating!=='NR'&&(rating.startsWith('TV-')?type!=='tv':type!=='movie'))return [];
+        const data=await tmdb('discover/'+type,{...(ids.length?{with_genres:ids.join('|')}:{}),...(rating&&type==='movie'&&rating!=='NR'?{certification_country:'US',certification:rating}:{}),include_adult:'false',language:'en-US',sort_by:'popularity.desc'});
         return (data.results||[]).map(x=>({...x,media_type:type}));
       }));
       items=valid(batches.flat()).sort((a,b)=>(b.popularity||0)-(a.popularity||0));
@@ -206,8 +208,33 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     const failure = outcomes.find(x=>x.status==='rejected');
     if (failure) throw failure.reason;
   }
+  async function filterByRating(items,rating){
+    if(!rating)return items;
+    rating=normalizeContentRating(rating);if(!rating)throw Error('invalid_rating');
+    const output=[];
+    for(let offset=0;offset<items.length;offset+=36){
+      const checked=await Promise.all(items.slice(offset,offset+36).map(async item=>{
+        if(!['movie','series'].includes(item.type))return null;
+        const id=Number(item.sourceId||(Number(item.id)-(item.type==='series'?1:0))/10);
+        if(!Number.isSafeInteger(id)||id<1||id>2147483647)return null;
+        const media=item.type==='movie'?'movie':'tv';
+        const data=await tmdb(`${media}/${id}/${media==='movie'?'release_dates':'content_ratings'}`);
+        const contentRating=usContentRating(item.type,data);
+        return contentRating===rating?{...item,contentRating,ratingCountry:'US'}:null;
+      }));
+      output.push(...checked.filter(Boolean));
+    }
+    return output;
+  }
   return {
     configured,
+    filterByRating,
+    async availability(type,id,country){
+      if(!configured.tmdb||!['movie','series'].includes(type)||!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_title');
+      const status={},title=await film({id,media_type:type==='movie'?'movie':'tv'},country,status);
+      if(status.tmdbAvailability)throw Error('unavailable');
+      return title;
+    },
     async details(type,id,country) {
       if(!['movie','series'].includes(type)||!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_title');
       if(!configured.tmdb)throw Error('unavailable');
@@ -270,6 +297,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         try { await enrich(results.filter(x=>x.source==='tmdb'),country); status.watchmode='ok'; }
         catch (e) { status.watchmode=e.message === 'rate_limited'?'rate_limited':'unavailable'; }
       }
+      if(options.rating){try{results=await filterByRating(results,options.rating);}catch{results=[];status.tmdb='unavailable';status.ratings='unavailable';}}
       return {results,country,sources:status,...actorNotice?{actorNotice}:{},...searchMatch?{searchMatch}:{},...actors?.length?{actors}:{},...actor?{actor}:{}};
     },
   };

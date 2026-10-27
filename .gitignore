@@ -11,3 +11,5 @@ android/local.properties
 ios/App/Pods/
 *.p8
 *service-account*.json
+
+feature-preview/

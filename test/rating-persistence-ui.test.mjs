@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+test('persisted rating applies on reload without spending a search; refinements preserve request identity',async()=>{
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+ const script=html.slice(html.indexOf('let searchBusy=false;'),html.indexOf('let searchDebounce;'));
+ const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{value:id==='search'?'The Matrix':'',querySelectorAll:()=>[]});return nodes.get(id);};
+ const requests=[];let counter=0;
+ const sandbox=vm.createContext({URLSearchParams,crypto:{randomUUID:()=>String(++counter)},document:{querySelectorAll:()=>[]},window:{membershipReady:Promise.resolve()},$:node,esc:String,store(){},member:()=>({enabled:true,async search(url,id){requests.push({url,id});return {results:[],sources:{tmdb:'ok'}};}})});
+ vm.runInContext("let activeRating='PG',actorSearch=null,actorChoices=[],searchContext=null,TITLES=[],saved=new Set(),savedTitles={},country='US',filter='all',liveStatus='',loadSerial=0;function render(){renderActorSearch();}"+script,sandbox);
+ await vm.runInContext('loadTitles()',sandbox);
+ assert.match(requests[0].url,/^\/api\/trending\?.*rating=PG/);assert.equal(requests[0].id,null);
+ await vm.runInContext('loadTitles(true)',sandbox);const id=requests[1].id;
+ assert.match(requests[1].url,/rating=PG/);
+ await vm.runInContext("activeRating='PG-13';loadTitles(true,{refine:true})",sandbox);
+ assert.equal(requests[2].id,id);assert.match(requests[2].url,/rating=PG-13/);
+ await vm.runInContext("activeRating='';loadTitles(true,{refine:true})",sandbox);
+ assert.equal(requests[3].id,id);assert.doesNotMatch(requests[3].url,/rating=/);
+});

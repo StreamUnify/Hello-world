@@ -19,9 +19,9 @@ await writeFile(path.join(root,'www/app-config.js'),'window.STREAMUNIFY_API_BASE
 for(const name of ['streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg']){
  for(const dir of ['www','backend'])await copyFile(path.join(root,name),path.join(root,dir,name));
 }
-const serverFiles=['website-branding.mjs','favicon.ico','favicon.png','index.html','server.mjs','public-pages.mjs','seo-routes.mjs','watch-pages.mjs','catalog.mjs','title-index.mjs','title-index-worker.mjs','search-title-index.json','movie-order.mjs','membership.mjs','membership-policy.mjs','account-routes.mjs','billing.mjs','store-billing.mjs','store-policy.mjs','legal-pages.mjs','membership-client.js','website-analytics.js'];
+const serverFiles=['website-branding.mjs','favicon.ico','favicon.png','index.html','server.mjs','public-pages.mjs','seo-routes.mjs','watch-pages.mjs','catalog.mjs','content-ratings.mjs','availability-alerts.mjs','availability-policy.mjs','streaming-services.mjs','availability-client.js','title-index.mjs','title-index-worker.mjs','search-title-index.json','movie-order.mjs','membership.mjs','membership-policy.mjs','account-routes.mjs','billing.mjs','store-billing.mjs','store-policy.mjs','legal-pages.mjs','membership-client.js','website-analytics.js'];
 for(const name of serverFiles)await copyFile(path.join(root,name),path.join(root,'backend',name));
-for(const name of ['membership-client.js','website-analytics.js'])await copyFile(path.join(root,name),path.join(root,'www',name));
+for(const name of ['membership-client.js','website-analytics.js','availability-client.js'])await copyFile(path.join(root,name),path.join(root,'www',name));
 await writeFile(path.join(root,'www/analytics-config.js'),'window.STREAMUNIFY_ANALYTICS = {measurementId:null};\n');
 await mkdir(path.join(root,'backend/certs'),{recursive:true});
 await copyFile(path.join(root,'certs/AppleRootCA-G3.pem'),path.join(root,'backend/certs/AppleRootCA-G3.pem'));
