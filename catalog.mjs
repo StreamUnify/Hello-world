@@ -177,18 +177,18 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   }
   async function youtube(q, country) {
     const data = await request('youtube', q+country, endpoint('https://www.googleapis.com/youtube/v3/search', {key:env.YOUTUBE_API_KEY, part:'snippet', type:'video', q, regionCode:country, safeSearch:'moderate', maxResults:8}), {}, 900_000);
-    return (data.items || []).filter(x=>x.id?.videoId).map(x=>({id:'youtube:'+x.id.videoId, source:'youtube', sourceId:x.id.videoId, type:'video', name:x.snippet.title, desc:x.snippet.description, year:x.snippet.publishedAt?.slice(0,4), poster:safeUrl(x.snippet.thumbnails?.medium?.url), watchUrl:'https://www.youtube.com/watch?v='+encodeURIComponent(x.id.videoId), providers:[{name:'YouTube',type:'Ad-supported'}]}));
+    return (data.items || []).filter(x=>x.id?.videoId).map(x=>({id:'youtube:'+x.id.videoId, source:'youtube', sourceId:x.id.videoId, type:'video', name:x.snippet.title, desc:x.snippet.description, creator:x.snippet.channelTitle||'',publishedAt:x.snippet.publishedAt||'', year:x.snippet.publishedAt?.slice(0,4), poster:safeUrl(x.snippet.thumbnails?.medium?.url), watchUrl:'https://www.youtube.com/watch?v='+encodeURIComponent(x.id.videoId), providers:[{name:'YouTube',type:'Ad-supported'}]}));
   }
   async function twitch(q) {
     const auth = await request('twitch', 'token', 'https://id.twitch.tv/oauth2/token', {method:'POST', body:new URLSearchParams({client_id:env.TWITCH_CLIENT_ID,client_secret:env.TWITCH_CLIENT_SECRET,grant_type:'client_credentials'})}, token => Math.max(0,Number(token.expires_in)-60)*1000);
     const data = await request('twitch', q, endpoint('https://api.twitch.tv/helix/search/channels',{query:q,first:8}), {headers:{'Client-Id':env.TWITCH_CLIENT_ID,Authorization:'Bearer '+auth.access_token}}, 60_000);
-    return (data.data || []).map(x=>({id:'twitch:'+x.id, source:'twitch', sourceId:x.id, type:'channel', name:x.display_name, desc:x.title || '', year:'', live:!!x.is_live, poster:safeUrl(x.thumbnail_url), watchUrl:'https://www.twitch.tv/'+encodeURIComponent(x.broadcaster_login), providers:[{name:'Twitch',type:'Ad-supported'}]}));
+    return (data.data || []).map(x=>({id:'twitch:'+x.id, source:'twitch', sourceId:x.id, type:'channel', name:x.display_name, desc:x.title || '',category:x.game_name||'',language:x.broadcaster_language||'', year:'', live:!!x.is_live, poster:safeUrl(x.thumbnail_url), watchUrl:'https://www.twitch.tv/'+encodeURIComponent(x.broadcaster_login), providers:[{name:'Twitch',type:'Ad-supported'}]}));
   }
   async function podcasts(q) {
     const date = String(Math.floor(now()/1000));
     const auth = createHash('sha1').update(env.PODCAST_INDEX_KEY + env.PODCAST_INDEX_SECRET + date).digest('hex');
     const data = await request('podcasts', q, endpoint('https://api.podcastindex.org/api/1.0/search/byterm',{q,max:8,clean:true}), {headers:{'User-Agent':'StreamUnify/0.8','X-Auth-Date':date,'X-Auth-Key':env.PODCAST_INDEX_KEY,Authorization:auth}}, 900_000);
-    return (data.feeds || []).map(x=>({id:'podcast:'+x.id, source:'podcasts', sourceId:x.id, type:'podcast', name:x.title, desc:String(x.description || '').replace(/<[^>]*>/g,''), year:'', poster:safeUrl(x.artwork || x.image), watchUrl:safeUrl(x.link || x.url), providers:[{name:'Podcast Index',type:'free'}]}));
+    return (data.feeds || []).map(x=>({id:'podcast:'+x.id, source:'podcasts', sourceId:x.id, type:'podcast', name:x.title, desc:String(x.description || '').replace(/<[^>]*>/g,''), creator:x.author||x.ownerName||'',language:x.language||'',episodeCount:Number.isSafeInteger(x.episodeCount)?x.episodeCount:null,year:'', poster:safeUrl(x.artwork || x.image), watchUrl:safeUrl(x.link || x.url), providers:[{name:'Podcast Index',type:'free'}]}));
   }
   async function enrich(items, country) {
     // At most three title lookups per request; cached by TMDB ID and region.
@@ -208,6 +208,25 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   }
   return {
     configured,
+    async details(type,id,country) {
+      if(!['movie','series'].includes(type)||!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_title');
+      if(!configured.tmdb)throw Error('unavailable');
+      const media=type==='series'?'tv':'movie',status={};
+      const data=await tmdb(`${media}/${id}`,{language:'en-US',append_to_response:media==='movie'?'credits,release_dates':'credits,content_ratings'});
+      if(!data.id||data.adult)throw Error('unavailable');
+      const title=await film({...data,media_type:media},country,status);
+      if(configured.watchmode){try{await enrich([title],country);}catch{status.watchmode='unavailable';}}
+      const certification=media==='movie'?(data.release_dates?.results||[]).find(x=>x.iso_3166_1===country)?.release_dates?.find(x=>x.certification)?.certification:(data.content_ratings?.results||[]).find(x=>x.iso_3166_1===country)?.rating;
+      return {title:{...title,runtime:media==='movie'?data.runtime||null:data.episode_run_time?.[0]||null,
+        genres:(data.genres||[]).map(x=>x.name).filter(Boolean),
+        communityRating:data.vote_count>0&&Number.isFinite(data.vote_average)?data.vote_average:null,voteCount:data.vote_count||0,
+        certification:certification||'',certificationCountry:country,
+        cast:(data.credits?.cast||[]).filter(x=>!x.adult&&x.name).slice(0,12).map(x=>({name:x.name,character:x.character||''})),
+        creators:media==='movie'?(data.credits?.crew||[]).filter(x=>x.job==='Director').map(x=>x.name):(data.created_by||[]).map(x=>x.name),
+        status:data.status||'',seasonCount:media==='tv'?data.number_of_seasons:null,episodeCount:media==='tv'?data.number_of_episodes:null,
+        seasons:media==='tv'?(data.seasons||[]).filter(x=>x.season_number>0).slice(0,50).map(x=>({name:x.name,episodes:x.episode_count,date:x.air_date||''})):[]},
+        availability:Object.keys(status).length?'partial':'ok'};
+    },
     async movieOrder(id,country) {
       if(!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_movie');
       if(!configured.tmdb)throw Error('unavailable');
