@@ -49,7 +49,7 @@ return json(res,200,{...data,country});
 if(membership.enabled){if(req.headers.authorization){actor=await membership.authenticate(req);await stores.refreshActor(actor);status=await membership.status(actor);}if(searching&&!actor)throw new MembershipError(401,'sign_in_required','Sign in to use your 10 free monthly searches');if(status?.plan!=='premium')country='US';}
 const personId=u.searchParams.get('personId'),page=u.searchParams.get('page');
 if((personId!==null&&(!/^[1-9][0-9]{0,9}$/.test(personId)||Number(personId)>2147483647))||(page!==null&&(!/^[1-9][0-9]{0,5}$/.test(page)))||((personId!==null||page!==null)&&!searching))return json(res,400,{error:'Invalid actor search'});
-const data=await catalog.search(searching?q:'',country,{genre,personId:personId===null?undefined:Number(personId),page:page===null?1:Number(page)});
+const data=await catalog.search(searching?q:'',country,{moviesTvOnly:true,genre,personId:personId===null?undefined:Number(personId),page:page===null?1:Number(page)});
 if(membership.enabled){if(searching){if(!Object.values(data.sources||{}).includes('ok'))throw new MembershipError(503,'catalog_unavailable','Search is temporarily unavailable. Your allowance was not used.');status=await membership.consumeSearch(actor,req.headers['x-search-id'],country+':'+(q.toLowerCase()||'genre:'+genre));}data.results=data.actor?data.results.map(item=>restrictCatalog([item],status)[0]||{...item,providers:[],watchUrl:''}):restrictCatalog(data.results,status);data.membership=status||{plan:'free',remaining:10,watchlist:false};}
 return json(res,200,data)}if(u.pathname==='/streamunify-seamless-artwork.png'){
 const img=await readFile(path.join(root,'streamunify-seamless-artwork.png'));

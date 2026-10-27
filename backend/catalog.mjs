@@ -258,7 +258,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       q=String(q||'').trim().toLowerCase();
       const status = Object.fromEntries(Object.entries(configured).map(([k,v])=>[k,v?'idle':'not_configured']));
       const tasks = {tmdb:()=>films(q,country,status,options)};
-      if (q&&!options.personId&&!options.genre) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
+      if (q&&!options.personId&&!options.genre&&!options.moviesTvOnly) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
       let results = (await Promise.all(Object.entries(tasks).map(async ([name,run])=>{
         if (!configured[name]) return [];
         try { const items = await run(); status[name]='ok'; return items; }
