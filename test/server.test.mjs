@@ -34,6 +34,9 @@ test('HTTP routes preserve public access while disabled and require accounts whe
        for(const query of ['q=Tom&personId=invalid','q=Tom&page=0','q=Tom&page=1.5','personId=31'])assert.equal((await fetch(base+'/api/search?'+query)).status,400);
       }
       assert.equal((await fetch(base+'/api/watchlist')).status,enabled?401:503);
+      assert.equal((await fetch(base+'/api/details?type=movie&id=invalid')).status,400);
+      assert.equal((await fetch(base+'/api/details?type=person&id=1')).status,400);
+      assert.equal((await fetch(base+'/api/details?type=movie&id=1')).status,503);
       assert.equal((await fetch(base+'/api/movie-order?id=invalid')).status,400);
       assert.equal((await fetch(base+'/api/movie-order?id=671')).status,enabled?401:503);
       const options=await fetch(base+'/api/watchlist',{method:'OPTIONS'});assert.match(options.headers.get('access-control-allow-headers'),/Authorization/);
