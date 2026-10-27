@@ -1,3 +1,4 @@
+import {CONTENT_RATINGS} from './content-ratings.mjs';
 import {MembershipError} from './membership-policy.mjs';
 
 export async function readBody(req,limit=40000){
@@ -5,9 +6,9 @@ export async function readBody(req,limit=40000){
   for await(const chunk of req){size+=chunk.length;if(size>limit)throw new MembershipError(413,'too_large','Request is too large');chunks.push(chunk);}
   try{return JSON.parse(Buffer.concat(chunks).toString()||'{}');}catch{throw new MembershipError(400,'invalid_json','Invalid request');}
 }
-export function createAccountRoutes(membership,billing,stores){
+export function createAccountRoutes(membership,billing,stores,alerts,catalog){
   return async(req,res,u,json)=>{
-    if(!u.pathname.startsWith('/api/account')&&!u.pathname.startsWith('/api/watchlist')&&!u.pathname.startsWith('/api/billing')&&!u.pathname.startsWith('/api/stores/'))return false;
+    if(!u.pathname.startsWith('/api/account')&&!u.pathname.startsWith('/api/watchlist')&&!u.pathname.startsWith('/api/availability-alerts')&&!u.pathname.startsWith('/api/billing')&&!u.pathname.startsWith('/api/stores/'))return false;
     res.setHeader('Cache-Control','no-store');
     if(u.pathname==='/api/account/config'&&req.method==='GET'){json(res,200,{...membership.publicConfig(),billingEnabled:billing.enabled,stores:stores?.publicConfig()});return true;}
     if(u.pathname==='/api/stores/apple/notifications'&&req.method==='POST'&&stores){await stores.appleNotification(await readBody(req,150000));json(res,200,{received:true});return true;}
@@ -18,10 +19,20 @@ export function createAccountRoutes(membership,billing,stores){
     }
     if(!membership.enabled)throw new MembershipError(503,'membership_unavailable','Accounts are not available yet');
     const actor=await membership.authenticate(req);
+    if(u.pathname.startsWith('/api/availability-alerts')){
+      if(!alerts?.enabled)throw new MembershipError(503,'alerts_unavailable','Availability alerts are not available yet');
+      if(u.pathname==='/api/availability-alerts'&&req.method==='GET')json(res,200,await alerts.list(actor));
+      else if(u.pathname==='/api/availability-alerts'&&req.method==='POST')json(res,200,await alerts.subscribe(actor,await readBody(req)));
+      else if(u.pathname==='/api/availability-alerts'&&req.method==='DELETE'){await alerts.remove(actor,u.searchParams.get('id')||'');json(res,200,{ok:true});}
+      else if(u.pathname==='/api/availability-alerts/preferences'&&req.method==='POST'){await alerts.preferences(actor,await readBody(req));json(res,200,{ok:true});}
+      else if(u.pathname==='/api/availability-alerts/read'&&req.method==='POST'){await alerts.markRead(actor,(await readBody(req)).id);json(res,200,{ok:true});}
+      else json(res,405,{error:'Method not allowed'});
+      return true;
+    }
     if(u.pathname==='/api/account'&&req.method==='GET'){await stores?.refreshActor(actor);json(res,200,await membership.status(actor));}
     else if(u.pathname==='/api/account/delete'&&req.method==='POST'){const body=await readBody(req);if(body.confirmation!=='DELETE')throw new MembershipError(400,'confirmation_required','Confirm account deletion');await membership.deleteAccount(actor);json(res,200,{deleted:true});}
     else if(u.pathname==='/api/stores/verify'&&req.method==='POST'&&stores){await stores.verify(actor,await readBody(req));json(res,200,await membership.status(actor));}
-    else if(u.pathname==='/api/watchlist'&&req.method==='GET')json(res,200,{items:await membership.listWatchlist(actor)});
+    else if(u.pathname==='/api/watchlist'&&req.method==='GET'){const rating=u.searchParams.get('rating')||'';if(rating&&!CONTENT_RATINGS.includes(rating))throw new MembershipError(400,'invalid_rating','Invalid content rating');let items=await membership.listWatchlist(actor);if(rating){const matching=await catalog.filterByRating(items.map(x=>x.snapshot),rating);const byId=new Map(matching.map(x=>[String(x.id),x]));items=items.filter(x=>byId.has(String(x.title_id))).map(x=>({...x,snapshot:byId.get(String(x.title_id))}));}json(res,200,{items});}
     else if(u.pathname==='/api/watchlist'&&req.method==='POST')json(res,200,{items:await membership.saveWatchlist(actor,await readBody(req))});
     else if(u.pathname==='/api/watchlist'&&req.method==='DELETE'){await membership.deleteWatchlist(actor,u.searchParams.get('id')||'');json(res,200,{ok:true});}
     else if(u.pathname==='/api/billing/checkout'&&req.method==='POST')json(res,200,await billing.checkout(actor,(await readBody(req)).interval));
