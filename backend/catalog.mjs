@@ -177,9 +177,14 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       } catch { status.tmdbAvailability = 'unavailable'; }
       return {id:x.id * 10 + (series ? 1 : 0), source:'tmdb', sourceId:x.id, name:x.title || x.name, type:series?'series':'movie', year:(x.release_date || x.first_air_date || '').slice(0,4), releaseDate:x.release_date || x.first_air_date || '', desc:x.overview || '', poster:x.poster_path?'https://image.tmdb.org/t/p/w500'+x.poster_path:null, providers, watchUrl};
   }
-  async function youtube(q, country) {
-    const data = await request('youtube', q+country, endpoint('https://www.googleapis.com/youtube/v3/search', {key:env.YOUTUBE_API_KEY, part:'snippet', type:'video', q, regionCode:country, safeSearch:'moderate', maxResults:8}), {}, 900_000);
-    return (data.items || []).filter(x=>x.id?.videoId).map(x=>({id:'youtube:'+x.id.videoId, source:'youtube', sourceId:x.id.videoId, type:'video', name:x.snippet.title, desc:x.snippet.description, creator:x.snippet.channelTitle||'',publishedAt:x.snippet.publishedAt||'', year:x.snippet.publishedAt?.slice(0,4), poster:safeUrl(x.snippet.thumbnails?.medium?.url), watchUrl:'https://www.youtube.com/watch?v='+encodeURIComponent(x.id.videoId), providers:[{name:'YouTube',type:'Ad-supported'}]}));
+  async function youtube(q, country, creatorsOnly=false) {
+    const type=creatorsOnly?'channel':'video';
+    const data = await request('youtube', type+':'+q+country, endpoint('https://www.googleapis.com/youtube/v3/search', {key:env.YOUTUBE_API_KEY, part:'snippet', type, q:q.replace(/^@/,''), regionCode:country, safeSearch:'moderate', maxResults:8}), {}, 900_000);
+    return (data.items || []).flatMap(x=>{
+      const id=creatorsOnly?x.id?.channelId:x.id?.videoId;
+      if(!id||!x.snippet?.title)return [];
+      return [{id:'youtube:'+id,source:'youtube',sourceId:id,type:creatorsOnly?'channel':'video',name:x.snippet.title,desc:x.snippet.description||'',creator:x.snippet.channelTitle||'',publishedAt:x.snippet.publishedAt||'',year:x.snippet.publishedAt?.slice(0,4)||'',poster:safeUrl(x.snippet.thumbnails?.medium?.url||x.snippet.thumbnails?.default?.url),watchUrl:creatorsOnly?'https://www.youtube.com/channel/'+encodeURIComponent(id):'https://www.youtube.com/watch?v='+encodeURIComponent(id),providers:[{name:'YouTube',type:'Ad-supported'}]}];
+    });
   }
   async function twitch(q) {
     const auth = await request('twitch', 'token', 'https://id.twitch.tv/oauth2/token', {method:'POST', body:new URLSearchParams({client_id:env.TWITCH_CLIENT_ID,client_secret:env.TWITCH_CLIENT_SECRET,grant_type:'client_credentials'})}, token => Math.max(0,Number(token.expires_in)-60)*1000);
@@ -286,6 +291,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       const status = Object.fromEntries(Object.entries(configured).map(([k,v])=>[k,v?'idle':'not_configured']));
       const tasks = {tmdb:()=>films(q,country,status,options)};
       if (q&&!options.personId&&!options.genre&&!options.moviesTvOnly) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
+      if(q&&options.youtubeCreators&&!options.personId&&!options.genre&&!options.rating)tasks.youtube=()=>youtube(q,country,true);
       let results = (await Promise.all(Object.entries(tasks).map(async ([name,run])=>{
         if (!configured[name]) return [];
         try { const items = await run(); status[name]='ok'; return items; }
