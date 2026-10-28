@@ -34,3 +34,17 @@ test('creator channels survive display filtering while movie filters and ratings
  const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
  for(const script of scripts.filter(s=>s.includes('function qualifying(')))new (await import('node:vm')).Script(script);
 });
+
+test('creator matching a TMDB actor retains channel results unless actor is explicitly selected',async()=>{
+ const catalog=createCatalog({env:{YOUTUBE_API_KEY:'fixture',TMDB_API_KEY:'fixture'},fetcher:async url=>{
+  const u=new URL(url);
+  const body=u.hostname==='www.googleapis.com'?{items:[{id:{channelId:'UCnilered'},snippet:{title:'NileRed'}}]}:
+   u.pathname.endsWith('/search/multi')?{results:[{id:123,media_type:'person',name:'NileRed',known_for_department:'Acting'}]}:
+   u.pathname.endsWith('/combined_credits')?{cast:[{id:234,media_type:'tv',name:'Scare the Coyote'}]}:{results:{}};
+  return new Response(JSON.stringify(body));
+ }});
+ const mixed=await catalog.search('nilered','US',{moviesTvOnly:true,youtubeCreators:true});
+ assert.equal(mixed.actor.name,'NileRed');assert.deepEqual(mixed.results.map(x=>x.source),['tmdb','youtube']);
+ const actor=await catalog.search('nilered','US',{moviesTvOnly:true,youtubeCreators:true,personId:123});
+ assert.deepEqual(actor.results.map(x=>x.source),['tmdb']);
+});
