@@ -298,7 +298,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         catch (e) { status[name]=e.message === 'rate_limited'?'rate_limited':'unavailable'; return []; }
       }))).flat();
       const {actor,actors,searchMatch,actorNotice}=status;delete status.actorNotice;delete status.actor;delete status.actors;delete status.searchMatch;
-      if(actor||actorNotice)results=results.filter(x=>x.source==='tmdb');
+      if(actor||actorNotice)results=results.filter(x=>x.source==='tmdb'||(options.youtubeCreators&&!options.personId&&x.source==='youtube'));
       if (configured.watchmode && results.some(x=>x.source==='tmdb')) {
         try { await enrich(results.filter(x=>x.source==='tmdb'),country); status.watchmode='ok'; }
         catch (e) { status.watchmode=e.message === 'rate_limited'?'rate_limited':'unavailable'; }
