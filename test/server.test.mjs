@@ -20,11 +20,15 @@ test('HTTP routes preserve public access while disabled and require accounts whe
     try{
       const configResponse=await fetch(base+'/api/account/config');
       assert.equal(configResponse.headers.get('cache-control'),'no-store');
+      assert.equal(configResponse.headers.get('x-robots-tag'),'noindex');
+      const duplicate=await fetch(base+'/index.html?q=The%20Matrix',{redirect:'manual'});
+      assert.equal(duplicate.status,301);assert.equal(duplicate.headers.get('location'),'/?q=The%20Matrix');
+      const missing=await fetch(base+'/unknown-page');assert.equal(missing.status,404);assert.equal(missing.headers.get('x-robots-tag'),'noindex');
       const config=await configResponse.json();assert.equal(config.enabled,enabled);assert.equal(config.billingEnabled,false);
       assert.equal((await fetch(base+'/membership-client.js')).status,200);
       const robots=await fetch(base+'/robots.txt');assert.equal(robots.status,200);assert.match(robots.headers.get('content-type'),/text\/plain/);assert.match(await robots.text(),/Sitemap: https:\/\/www\.streamunify\.com\/sitemap\.xml/);
       const sitemap=await fetch(base+'/sitemap.xml');assert.equal(sitemap.status,200);assert.match(sitemap.headers.get('content-type'),/application\/xml/);const xml=await sitemap.text();assert.equal([...xml.matchAll(/<loc>/g)].length,4+watchPaths.length);assert.doesNotMatch(xml,/localhost|onrender|<lastmod>/);
-      for(const pathname of ['/','/about','/privacy','/terms',...watchPaths]){const page=await fetch(base+pathname);assert.equal(page.status,200);const html=await page.text();assert.ok(html.includes('rel="icon" href="/favicon.ico"'));assert.ok(html.includes('rel="canonical" href="https://www.streamunify.com'+pathname+'"'));}
+      for(const pathname of ['/','/about','/privacy','/terms',...watchPaths]){const page=await fetch(base+pathname);assert.equal(page.status,200);assert.equal(page.headers.get('x-robots-tag'),null);const html=await page.text();assert.ok(html.includes('rel="icon" href="/favicon.ico"'));assert.ok(html.includes('rel="canonical" href="https://www.streamunify.com'+pathname+'"'));}
 
       assert.equal((await fetch(base+'/where-to-watch/nonexistent')).status,404);
       for(const [file,type,magic] of [['favicon.ico','image/x-icon',[0,0,1,0]],['favicon.png','image/png',[137,80,78,71]]]){const icon=await fetch(base+'/'+file);assert.equal(icon.status,200);assert.equal(icon.headers.get('content-type'),type);assert.deepEqual([...new Uint8Array(await icon.arrayBuffer()).slice(0,4)],magic);}
