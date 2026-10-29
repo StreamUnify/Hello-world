@@ -16,3 +16,16 @@ test('unknown paths are not indexed as duplicate title pages',()=>{
 test('title hub exposes ordinary crawlable links to all title guides',()=>{
  const html=watchPage('/where-to-watch');for(const t of watchTitles)assert.ok(html.includes('href="/where-to-watch/'+t.slug+'"'));
 });
+
+test('guide structured data describes canonical pages and their breadcrumb hierarchy',()=>{
+ for(const path of watchPaths){
+  const html=watchPage(path);
+  const schema=JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
+  const page=schema['@graph'].find(x=>x['@type']==='WebPage');
+  const trail=schema['@graph'].find(x=>x['@type']==='BreadcrumbList');
+  assert.equal(page.url,'https://www.streamunify.com'+path);
+  assert.equal(trail.itemListElement.at(-1).item,page.url);
+  assert.deepEqual(trail.itemListElement.map(x=>x.position),trail.itemListElement.map((_,i)=>i+1));
+  assert.ok(html.includes('name="twitter:card" content="summary_large_image"'));
+ }
+});
