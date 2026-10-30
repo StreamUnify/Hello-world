@@ -14,7 +14,8 @@
     "add:android": "npx cap add android",
     "prepare:platforms": "npm run build && node scripts/prepare-platforms.mjs",
     "sync:ios": "npm run prepare:platforms && cap sync ios",
-    "sync:android": "npm run prepare:platforms && cap sync android"
+    "sync:android": "npm run prepare:platforms && cap sync android",
+    "dev": "node server.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -23,16 +24,16 @@
     "@aparajita/capacitor-secure-storage": "7.1.6",
     "@apple/app-store-server-library": "3.1.0",
     "@capacitor/app": "7.1.2",
-    "@capacitor/core": "7.6.0",
+    "@capacitor/core": "7.6.10",
     "@capgo/native-purchases": "7.19.3",
     "@supabase/supabase-js": "2.118.0",
     "google-auth-library": "11.3.1",
     "stripe": "23.0.1"
   },
   "devDependencies": {
-    "@capacitor/android": "7.6.0",
-    "@capacitor/cli": "7.6.0",
-    "@capacitor/ios": "7.6.0",
+    "@capacitor/android": "7.6.10",
+    "@capacitor/cli": "7.6.10",
+    "@capacitor/ios": "7.6.10",
     "esbuild": "0.25.12"
   }
 }
