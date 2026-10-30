@@ -31,6 +31,9 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
     publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
     authenticate,
     status:actor=>rpc(actor,'membership_status'),
+    async listRecentSearches(actor){const rows=await request('/rest/v1/recent_searches?select=queries&user_id=eq.'+encodeURIComponent(actor.id),actor.token);return rows[0]?.queries||[];},
+    async rememberSearch(actor,query){return request('/rest/v1/rpc/remember_search',actor.token,{method:'POST',body:{p_query:query}});},
+    async clearRecentSearches(actor){return request('/rest/v1/recent_searches?user_id=eq.'+encodeURIComponent(actor.id),actor.token,{method:'DELETE'});},
     async deleteAccount(actor){
       if(!Number.isFinite(Date.parse(actor.signedInAt))||Date.now()-Date.parse(actor.signedInAt)>600000)throw new MembershipError(401,'reauthenticate','Sign out and sign in again before deleting your account');
       if(!env.SUPABASE_SECRET_KEY)throw new MembershipError(503,'account_unavailable','Account deletion is temporarily unavailable');

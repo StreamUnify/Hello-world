@@ -1,8 +1,15 @@
 import {createClient} from '@supabase/supabase-js';
+import {createRecentSearches} from './recent-searches-client.mjs';
 import {needsPasswordSetup,sendSignupEmail,saveVerifiedPassword} from './signup-flow.mjs';
 import {isNative,nativePlatform,nativeRedirect,createNativeSessionStorage,prepareNativeStorage,configureNativeAuth,nativeProducts,buyNative,restoreNative,listenNativePurchases,manageNative} from './native-client.mjs';
 const apiBase=(window.STREAMUNIFY_API_BASE||'').replace(/\/$/,'');
 let client,config,status,user,busy=false;
+const recentSearches=createRecentSearches({api,identity:()=>user?.id,runSearch:query=>{
+  const input=document.getElementById('search');input.value=query;
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  document.getElementById('suSearchButton').click();
+}});
+window.addEventListener('membershipchange',()=>recentSearches.reload());
 const native=isNative;
 const button=document.createElement('button');button.type='button';button.className='su-action';button.textContent='Account';button.hidden=true;
 document.querySelector('.su-discover')?.append(button);
@@ -90,7 +97,7 @@ $('accountPortal').onclick=()=>action(async()=>{if(native()){await manageNative(
 restoreButton.onclick=()=>action(async()=>{if(!user)throw Error('Sign in before restoring purchases');const count=await restoreNative(user,api);await refresh();message(count?'Purchases checked with the store.':'No purchases linked to this StreamUnify account were found.');});
 deleteButton.onclick=()=>action(async()=>{if(!window.confirm('Delete your StreamUnify account, saved watchlist and availability alerts permanently? This does not cancel subscriptions. Cancel any subscription in its original store or Manage subscription before deleting.'))return;await api('/api/account/delete',{method:'POST',body:JSON.stringify({confirmation:'DELETE'})});await client.auth.signOut({scope:'local'});user=null;status=null;draw();message('Your StreamUnify account has been deleted.');});
 $('accountImport').onclick=()=>action(async()=>{let saved={};try{saved=JSON.parse(localStorage.getItem('su_saved_titles')||'{}');}catch{}for(const item of Object.values(saved))await api('/api/watchlist',{method:'POST',body:JSON.stringify(item)});message('Saved titles imported. The original device copy is preserved.');window.dispatchEvent(new Event('membershipchange'));});
-window.StreamUnifyMembership={get enabled(){return !!config?.enabled;},get premium(){return status?.plan==='premium';},get status(){return status;},show,api,async search(url,searchId){const data=await api(url,{headers:searchId?{'X-Search-Id':searchId}:{}});if(data.membership){status=data.membership;draw();}return data;},async watchlist(rating=''){return (await api('/api/watchlist'+(rating?'?rating='+encodeURIComponent(rating):''))).items.map(row=>row.snapshot);},async save(item,remove){await api('/api/watchlist'+(remove?'?id='+encodeURIComponent(item.id):''),{method:remove?'DELETE':'POST',...(remove?{}:{body:JSON.stringify(item)})});}};
+window.StreamUnifyMembership={get enabled(){return !!config?.enabled;},get premium(){return status?.plan==='premium';},get status(){return status;},show,api,async search(url,searchId){const searchOwner=user?.id;const data=await api(url,{headers:searchId?{'X-Search-Id':searchId}:{}});if(data.membership){status=data.membership;draw();}if(searchId&&searchOwner===user?.id)recentSearches.reload();return data;},async watchlist(rating=''){return (await api('/api/watchlist'+(rating?'?rating='+encodeURIComponent(rating):''))).items.map(row=>row.snapshot);},async save(item,remove){await api('/api/watchlist'+(remove?'?id='+encodeURIComponent(item.id):''),{method:remove?'DELETE':'POST',...(remove?{}:{body:JSON.stringify(item)})});}};
 window.membershipReady=(async()=>{
   config=await fetch(apiBase+'/api/account/config').then(r=>{if(!r.ok)throw Error('Account configuration unavailable');return r.json();});
   if(!config.enabled)return;
