@@ -29,7 +29,9 @@ export function createAccountRoutes(membership,billing,stores,alerts,catalog){
       else json(res,405,{error:'Method not allowed'});
       return true;
     }
-    if(u.pathname==='/api/account'&&req.method==='GET'){await stores?.refreshActor(actor);json(res,200,await membership.status(actor));}
+    if(u.pathname==='/api/account/recent-searches'&&req.method==='GET')json(res,200,{queries:await membership.listRecentSearches(actor)});
+    else if(u.pathname==='/api/account/recent-searches'&&req.method==='DELETE'){await membership.clearRecentSearches(actor);json(res,200,{ok:true});}
+    else if(u.pathname==='/api/account'&&req.method==='GET'){await stores?.refreshActor(actor);json(res,200,await membership.status(actor));}
     else if(u.pathname==='/api/account/delete'&&req.method==='POST'){const body=await readBody(req);if(body.confirmation!=='DELETE')throw new MembershipError(400,'confirmation_required','Confirm account deletion');await membership.deleteAccount(actor);json(res,200,{deleted:true});}
     else if(u.pathname==='/api/stores/verify'&&req.method==='POST'&&stores){await stores.verify(actor,await readBody(req));json(res,200,await membership.status(actor));}
     else if(u.pathname==='/api/watchlist'&&req.method==='GET'){const rating=u.searchParams.get('rating')||'';if(rating&&!CONTENT_RATINGS.includes(rating))throw new MembershipError(400,'invalid_rating','Invalid content rating');let items=await membership.listWatchlist(actor);if(rating){const matching=await catalog.filterByRating(items.map(x=>x.snapshot),rating);const byId=new Map(matching.map(x=>[String(x.id),x]));items=items.filter(x=>byId.has(String(x.title_id))).map(x=>({...x,snapshot:byId.get(String(x.title_id))}));}json(res,200,{items});}
