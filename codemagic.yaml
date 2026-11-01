@@ -67,7 +67,15 @@ workflows:
       - android/app/build/outputs/apk/debug/*.apk
 
   streamunify-ios-testflight:
-    name: StreamUnify iOS TestFlight Upload Only
+    name: StreamUnify iOS TestFlight
+    triggering:
+      events:
+      - push
+      branch_patterns:
+      - pattern: main
+        include: true
+        source: true
+      cancel_previous_builds: true
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
@@ -80,66 +88,80 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.streamunify.app
     scripts:
-      - name: Verify upload will not auto-distribute to testers
-        script: |
-          python3 - <<'PYTHON'
-          import json, os, time, urllib.request
-          import jwt
-          from pathlib import Path
-          key = os.environ["APP_STORE_CONNECT_PRIVATE_KEY"]
-          if key.startswith("@file:"):
-              key = Path(os.path.expandvars(key[6:])).expanduser().read_text()
-          now = int(time.time())
-          token = jwt.encode(
-              {"iss": os.environ["APP_STORE_CONNECT_ISSUER_ID"], "iat": now,
-               "exp": now + 300, "aud": "appstoreconnect-v1"},
-              key, algorithm="ES256",
-              headers={"kid": os.environ["APP_STORE_CONNECT_KEY_IDENTIFIER"], "typ": "JWT"})
-          url = "https://api.appstoreconnect.apple.com/v1/apps/6825959035/betaGroups?limit=200"
-          unsafe = []
-          while url:
-              if not url.startswith("https://api.appstoreconnect.apple.com/"):
-                  raise SystemExit("Unexpected API pagination origin; upload blocked")
-              req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token})
-              with urllib.request.urlopen(req, timeout=60) as response:
-                  data = json.load(response)
-              for group in data["data"]:
-                  a = group["attributes"]
-                  automatic = a.get("hasAccessToAllBuilds")
-                  print(json.dumps({"group": a.get("name"), "internal": a.get("isInternalGroup"),
-                                    "automatic_all_build_access": automatic}))
-                  if automatic is not False:
-                      unsafe.append(a.get("name", group["id"]))
-              url = data.get("links", {}).get("next")
-          if unsafe:
-              raise SystemExit("UPLOAD BLOCKED: automatic tester distribution enabled or unknown: " + ", ".join(unsafe))
-          print("PASS: no beta group automatically receives uploaded builds")
-          PYTHON
-      - name: Install dependencies
-        script: npm ci
-      - name: Validate catalog and platform assets
-        script: npm test
-      - name: Sync Capacitor iOS
-        script: npm run sync:ios
-      - name: Apply App Store signing profile
-        script: xcode-project use-profiles
-      - name: Set unique iOS build number
-        script: |
-          set -eu
-          : "${PROJECT_BUILD_NUMBER:?Codemagic project build number is required}"
-          cd ios/App
-          agvtool new-version -all "$PROJECT_BUILD_NUMBER"
-      - name: Build signed iPhone IPA
-        script: |
-          xcode-project build-ipa \
-            --workspace ios/App/App.xcworkspace \
-            --scheme App
+    - name: Verify authorized existing TestFlight recipients
+      script: "python3 - <<'PYTHON'\nimport json, os, time, urllib.request, urllib.parse, hashlib\nfrom pathlib import\
+        \ Path\nimport jwt\nkey = os.environ[\"APP_STORE_CONNECT_PRIVATE_KEY\"]\nif key.startswith(\"@file:\"):\n\
+        \    key = Path(os.path.expandvars(key[6:])).expanduser().read_text()\ndef api(path, payload=None):\n    now\
+        \ = int(time.time())\n    token = jwt.encode({\"iss\": os.environ[\"APP_STORE_CONNECT_ISSUER_ID\"], \"iat\"\
+        : now,\n                        \"exp\": now + 300, \"aud\": \"appstoreconnect-v1\"}, key,\n             \
+        \          algorithm=\"ES256\", headers={\"kid\": os.environ[\"APP_STORE_CONNECT_KEY_IDENTIFIER\"], \"typ\"\
+        : \"JWT\"})\n    url = path if path.startswith(\"https://\") else \"https://api.appstoreconnect.apple.com/v1/\"\
+        \ + path\n    if not url.startswith(\"https://api.appstoreconnect.apple.com/\"):\n        raise SystemExit(\"\
+        Unexpected API origin\")\n    body = json.dumps(payload).encode() if payload is not None else None\n    req\
+        \ = urllib.request.Request(url, data=body, headers={\"Authorization\": \"Bearer \" + token, \"Content-Type\"\
+        : \"application/json\"})\n    with urllib.request.urlopen(req, timeout=60) as response:\n        result =\
+        \ response.read()\n    return json.loads(result) if result else {}\ndef all_items(path):\n    result=[]\n\
+        \    while path:\n        data=api(path)\n        result.extend(data[\"data\"])\n        path=data.get(\"\
+        links\",{}).get(\"next\")\n    return result\nexpected = {'42956bd0-9f18-434c-b2e7-ea3417467f2a': 'aa92365c37b108c164d9bfce81f0f7a1604b8c484a76d417fe793206dc90f217',\
+        \ '5d1d238d-95f0-4c94-9f0b-5b153f8508ee': 'd7ac7d7f51c7f03d2c4c2571932ddf4e3bcf97fbc6c661ecae46728da6cf5dcb'}\n\
+        groups = all_items(\"apps/6825959035/betaGroups?limit=200\")\nassert set(expected).issubset({g[\"id\"] for\
+        \ g in groups}), \"Expected tester group missing\"\nfor group in groups:\n    gid = group[\"id\"]\n    if\
+        \ gid not in expected:\n        assert not group[\"attributes\"].get(\"hasAccessToAllBuilds\"), \"Unexpected\
+        \ automatic group\"\n        continue\n    members = all_items(\"betaGroups/\" + gid + \"/betaTesters?limit=200\"\
+        )\n    emails = sorted(m[\"attributes\"][\"email\"].strip().lower() for m in members)\n    digest = hashlib.sha256(\"\
+        \\n\".join(emails).encode()).hexdigest()\n    assert digest == expected[gid], \"Tester membership changed;\
+        \ upload blocked\"\n    print(\"Verified existing tester group:\", len(members), \"authorized recipients\"\
+        )\nprint(\"PASS: existing internal owner and five external testers verified; no settings changed\")\nPYTHON\n"
+    - name: Install dependencies
+      script: npm ci
+    - name: Validate catalog and platform assets
+      script: npm test
+    - name: Sync Capacitor iOS
+      script: npm run sync:ios
+    - name: Apply App Store signing profile
+      script: xcode-project use-profiles
+    - name: Set unique iOS build number
+      script: 'set -eu
+  
+        : "${PROJECT_BUILD_NUMBER:?Codemagic project build number is required}"
+  
+        cd ios/App
+  
+        agvtool new-version -all "$PROJECT_BUILD_NUMBER"
+  
+        '
+    - name: Build signed iPhone IPA
+      script: "xcode-project build-ipa \\\n  --workspace ios/App/App.xcworkspace \\\n  --scheme App\n"
+    - name: Upload signed IPA without ambiguous group-name assignment
+      script: app-store-connect publish --path "build/ios/ipa/*.ipa"
+    - name: Wait for Apple processing and assign exact existing external group
+      script: "python3 - <<'PYTHON'\nimport json, os, time, urllib.request, urllib.parse, hashlib\nfrom pathlib import\
+        \ Path\nimport jwt\nkey = os.environ[\"APP_STORE_CONNECT_PRIVATE_KEY\"]\nif key.startswith(\"@file:\"):\n\
+        \    key = Path(os.path.expandvars(key[6:])).expanduser().read_text()\ndef api(path, payload=None):\n    now\
+        \ = int(time.time())\n    token = jwt.encode({\"iss\": os.environ[\"APP_STORE_CONNECT_ISSUER_ID\"], \"iat\"\
+        : now,\n                        \"exp\": now + 300, \"aud\": \"appstoreconnect-v1\"}, key,\n             \
+        \          algorithm=\"ES256\", headers={\"kid\": os.environ[\"APP_STORE_CONNECT_KEY_IDENTIFIER\"], \"typ\"\
+        : \"JWT\"})\n    url = path if path.startswith(\"https://\") else \"https://api.appstoreconnect.apple.com/v1/\"\
+        \ + path\n    if not url.startswith(\"https://api.appstoreconnect.apple.com/\"):\n        raise SystemExit(\"\
+        Unexpected API origin\")\n    body = json.dumps(payload).encode() if payload is not None else None\n    req\
+        \ = urllib.request.Request(url, data=body, headers={\"Authorization\": \"Bearer \" + token, \"Content-Type\"\
+        : \"application/json\"})\n    with urllib.request.urlopen(req, timeout=60) as response:\n        result =\
+        \ response.read()\n    return json.loads(result) if result else {}\ndef all_items(path):\n    result=[]\n\
+        \    while path:\n        data=api(path)\n        result.extend(data[\"data\"])\n        path=data.get(\"\
+        links\",{}).get(\"next\")\n    return result\nexternal_group = '5d1d238d-95f0-4c94-9f0b-5b153f8508ee'\nversion\
+        \ = os.environ[\"PROJECT_BUILD_NUMBER\"]\ndeadline = time.monotonic() + 1200\nbuild = None\nwhile time.monotonic()\
+        \ < deadline:\n    query=urllib.parse.urlencode({\"filter[app]\":\"6825959035\", \"filter[version]\":version,\
+        \ \"limit\":\"10\"})\n    builds=api(\"builds?\"+query)[\"data\"]\n    if builds:\n        assert len(builds)==1,\
+        \ \"Ambiguous uploaded build\"\n        build=builds[0]\n        state=build[\"attributes\"][\"processingState\"\
+        ]\n        print(\"Uploaded build\", version, \"processing state:\", state, flush=True)\n        if state\
+        \ == \"VALID\": break\n        if state in (\"FAILED\", \"INVALID\"): raise SystemExit(\"Apple rejected uploaded\
+        \ build\")\n    else: print(\"Waiting for uploaded build\", version, \"to appear\", flush=True)\n    time.sleep(20)\n\
+        else: raise SystemExit(\"Apple processing still pending after 20 minutes; inspect TestFlight before retrying\"\
+        )\napi(\"betaGroups/\"+external_group+\"/relationships/builds\", {\"data\":[{\"type\":\"builds\",\"id\":build[\"\
+        id\"]}]})\nprint(\"Assigned processed build to existing external tester group\")\nPath(\"/tmp/streamunify-asc-build-id\"\
+        ).write_text(build[\"id\"])\nPYTHON\n"
+    - name: Submit update to TestFlight beta review
+      script: app-store-connect builds submit-to-testflight "$(cat /tmp/streamunify-asc-build-id)"
     artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-    publishing:
-      app_store_connect:
-        auth: integration
-        # Upload only: no beta review, tester assignment, or tester notification.
-        submit_to_testflight: false
-        submit_to_app_store: false
+    - build/ios/ipa/*.ipa
+    - /tmp/xcodebuild_logs/*.log
