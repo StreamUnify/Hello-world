@@ -32,8 +32,8 @@ test('equal priority remains in source order without mutating source array',()=>
  assert.deepEqual(input.map(x=>x.name),['b','a','free']);
 });
 test('card badges, modal links and Watch in Order use shared ordering',()=>{
- assert.match(html,/orderedProviders\(t\)\.slice\(0,5\)/);
- assert.match(html,/function renderWatchOptions\(t\)\{const ps=orderedProviders\(t\)/);
+ assert.match(html,/renderProviderGroups\(t\)/);assert.doesNotMatch(html,/orderedProviders\(t\)\.slice\(0,5\)/);
+ assert.match(html,/renderProviderGroups\(t,true\)/);assert.match(html,/for\(const p of orderedProviders\(t\)\)/);
  assert.match(html,/const providers=orderedProviders\(item\),upcoming=/);
  assert.doesNotMatch(html,/tierOrder\.indexOf/);
 });

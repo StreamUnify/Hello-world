@@ -21,7 +21,7 @@ export function addonIdentity(name){
  for(const [host,pattern] of patterns){const match=name.trim().match(pattern);if(!match)continue;
   const product=match[1].trim(),key=norm(product);if(!key||key.length>80)return null;
   const [slug,label]=(Object.hasOwn(brands,key)?brands[key]:[key,product]),route=ADDON_HOSTS[host];
-  return {id:`addon:${host}:${slug}`,name:`${label} via ${route.name}`,product:label,host,hostId:route.hostId,addon:true};
+  return {id:`addon:${host}:${slug}`,name:`${label} via ${route.name}`,product:label,host,hostId:route.hostId,hostName:route.name,addon:true};
  }
  return null;
 }
@@ -45,5 +45,5 @@ export function sourceAddon(source,country){
  if(identity&&(!host||identity.host!==host))return null;
  if(host&&!identity){const suffix={amazon:' (Via Amazon Prime)',apple:' (Via Apple TV)',roku:' Roku Channel',hulu:' (Via Hulu)',youtube:' YouTube Primetime Channel'}[host];identity=addonIdentity(source.name+suffix);}
  if(!identity)identity={id:'addon:source:'+source.id,name:source.name+' via '+source.host_source,product:source.name,host:'source',hostId:'source:'+source.host_source_id,addon:true};
- return {...identity,countries:[country],region:country,kind:'Subscription add-on',color:'#8d9eed',url:ADDON_HOSTS[identity.host]?.url||'',source:'watchmode',providerIds:[source.id]};
+ return {...identity,hostName:source.host_source,countries:[country],region:country,kind:'Subscription add-on',color:'#8d9eed',url:ADDON_HOSTS[identity.host]?.url||'',source:'watchmode',providerIds:[source.id]};
 }
