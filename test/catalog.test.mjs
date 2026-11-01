@@ -29,7 +29,7 @@ test('deduplicates concurrent requests, caches results, and backs off on quota e
  const good=createCatalog({env:{YOUTUBE_API_KEY:'key'},fetcher:async()=>{goodCalls++;return response({items:[]})}});
  await good.search('hi','US');await good.search('hi','US');assert.equal(goodCalls,1);
 });
-test('TMDB numeric IDs remain stable; Watchmode only adds regional free links',async()=>{
+test('TMDB numeric IDs remain stable; Watchmode regional links preserve IDs and exclude TV-Everywhere',async()=>{
  const c=createCatalog({env:{TMDB_API_KEY:'key',WATCHMODE_API_KEY:'key'},fetcher:async u=>{
   u=String(u);
   if(u.includes('watchmode'))return response([{region:'US',name:'Tubi',type:'free',web_url:'https://tubitv.com/a'},{region:'CA',name:'Other',type:'free',web_url:'https://example.com'},{region:'US',name:'TVE',type:'tve',web_url:'https://example.com'}]);

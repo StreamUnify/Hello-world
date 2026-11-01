@@ -1,3 +1,4 @@
+import {addonService,addonIdentity,watchmodeOffer,sourceAddon} from './provider-entitlements-src.mjs';
 import {titleWords,compactTitle,titleScore,titleThreshold,createTitleIndex} from './title-index.mjs';
 import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
 import {createHash} from 'node:crypto';
@@ -210,17 +211,33 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     const data = await request('podcasts', q, endpoint('https://api.podcastindex.org/api/1.0/search/byterm',{q,max:8,clean:true}), {headers:{'User-Agent':'StreamUnify/0.8','X-Auth-Date':date,'X-Auth-Key':env.PODCAST_INDEX_KEY,Authorization:auth}}, 900_000);
     return (data.feeds || []).map(x=>({id:'podcast:'+x.id, source:'podcasts', sourceId:x.id, type:'podcast', name:x.title, desc:String(x.description || '').replace(/<[^>]*>/g,''), creator:x.author||x.ownerName||'',language:x.language||'',episodeCount:Number.isSafeInteger(x.episodeCount)?x.episodeCount:null,year:'', poster:safeUrl(x.artwork || x.image), watchUrl:safeUrl(x.link || x.url), providers:[{name:'Podcast Index',type:'free'}]}));
   }
+  async function watchmodeSources(country){
+    if(!configured.watchmode)return [];
+    const data=await request('watchmode','sources:'+country,endpoint('https://api.watchmode.com/v1/sources/',{apiKey:env.WATCHMODE_API_KEY,regions:country,types:'sub'}),{},86_400_000);
+    if(!Array.isArray(data))throw Error('unavailable');return data;
+  }
   async function enrich(items, country) {
-    // At most three title lookups per request; cached by TMDB ID and region.
-    const outcomes = await Promise.allSettled(items.slice(0,3).map(async item => {
+    // Enrich every returned title (search pages <=18, collections <=60).
+    // Shared six-request concurrency, hourly title cache, and provider cooldown still apply.
+    let directory=[];try{directory=await watchmodeSources(country);}catch{/* Offers remain useful when directory is temporarily unavailable. */}
+    const sourceMap=new Map(directory.map(source=>[source.id,source]));
+    const outcomes = await Promise.allSettled(items.map(async item => {
       const id = (item.type === 'movie' ? 'movie-' : 'tv-') + item.sourceId;
       const data = await request('watchmode', id+country, endpoint(`https://api.watchmode.com/v1/title/${id}/sources/`, {apiKey:env.WATCHMODE_API_KEY,regions:country}), {}, 3_600_000);
       for (const p of data || []) {
-        // TV Everywhere requires authentication; never label it free.
-        if (p.region !== country || p.type !== 'free') continue;
-        const url = safeUrl(p.web_url);
-        if (item.providers.some(x=>x.name===p.name && x.type==='free')) continue;
-        item.providers.push({id:p.source_id,name:p.name,type:'free',url,source:'watchmode'});
+        const offer=watchmodeOffer(p,country);if(!offer)continue;
+        const source=sourceMap.get(p.source_id);
+        // A regional title offer itself establishes this route's country even if directory regions lag.
+        const addon=source?sourceAddon({...source,regions:[country]},country):addonService(offer.name,country);
+        const verifiedDirect=source?.type==='sub'&&source.host_source_id===null&&source.host_source===null&&!addonIdentity(offer.name);
+        // Do not silently turn an unidentified channel named MAX into direct HBO Max.
+        if(offer.type==='Subscription'&&!verifiedDirect&&!addon)continue;
+        if(addon)offer.addon=addon;
+        // Keep host-specific subscriptions distinct; prefer verified title links from Watchmode.
+        const route=offer.addon?.id||addonIdentity(offer.name)?.id;
+        const existing=item.providers.find(x=>x.type===offer.type&&(route?(x.addon?.id||addonIdentity(x.name)?.id)===route:x.name===offer.name));
+        if(existing){if(!existing.url&&offer.url)existing.url=offer.url;if(offer.addon)existing.addon=offer.addon;continue;}
+        item.providers.push(offer);
       }
     }));
     const failure = outcomes.find(x=>x.status==='rejected');
@@ -247,10 +264,28 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   return {
     configured,
     filterByRating,
+    async providerAddons(country){
+      const services=new Map(),sources={tmdb:configured.tmdb?'pending':'not_configured',watchmode:configured.watchmode?'pending':'not_configured'};
+      await Promise.all([
+        (async()=>{if(!configured.tmdb)return;try{
+          const lists=await Promise.all(['movie','tv'].map(type=>tmdb('watch/providers/'+type,{watch_region:country,language:'en-US'})));
+          for(const list of lists)for(const row of list.results||[]){const service=addonService(row.provider_name,country);if(!service)continue;
+            if(!services.has(service.id))services.set(service.id,{...service,providerRefs:[]});
+            if(Number.isSafeInteger(row.provider_id))services.get(service.id).providerRefs.push({source:'tmdb',id:row.provider_id});
+          }sources.tmdb='ok';
+        }catch{sources.tmdb='unavailable';}})(),
+        (async()=>{if(!configured.watchmode)return;try{
+          for(const row of await watchmodeSources(country)){const service=sourceAddon(row,country);if(!service)continue;const {providerIds,source,...entry}=service;if(!services.has(service.id))services.set(service.id,{...entry,providerRefs:[]});services.get(service.id).providerRefs.push({source:'watchmode',id:row.id});}sources.watchmode='ok';
+        }catch{sources.watchmode='unavailable';}})()
+      ]);
+      if(!Object.values(sources).includes('ok'))throw Error('unavailable');
+      return {country,services:[...services.values()].map(s=>({...s,providerRefs:[...new Map(s.providerRefs.map(r=>[r.source+':'+r.id,r])).values()]})),sources,coverage:'source-reported'};
+    },
     async availability(type,id,country){
       if(!configured.tmdb||!['movie','series'].includes(type)||!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_title');
       const status={},title=await film({id,media_type:type==='movie'?'movie':'tv'},country,status);
       if(status.tmdbAvailability)throw Error('unavailable');
+      if(configured.watchmode)await enrich([title],country);
       return title;
     },
     async details(type,id,country,language='en-US') {

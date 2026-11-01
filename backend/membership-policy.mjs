@@ -1,11 +1,12 @@
+import {addonIdentity,validAddonId} from './provider-entitlements-src.mjs';
 export const MEMBERSHIP_PRICES = Object.freeze({currency:'usd', monthly:299, annual:3000});
 export const FREE_PROVIDERS = Object.freeze(['netflix','disney','hulu','peacock','sling','max','discovery','paramount','crunchyroll','tubi']);
 const aliases = new Map(Object.entries({
   netflix:'netflix', disneyplus:'disney', disney:'disney', hulu:'hulu',
   peacock:'peacock', peacockpremium:'peacock', peacockpremiumplus:'peacock',
   sling:'sling', slingtv:'sling', slingorange:'sling', slingblue:'sling',
-  max:'max', hbomax:'max', hbomaxamazonchannel:'max',
-  discoveryplus:'discovery', discoveryplusamazonchannel:'discovery',
+  max:'max', hbomax:'max',
+  discoveryplus:'discovery',
   paramountplus:'paramount', paramountpluswithshowtime:'paramount',
   crunchyroll:'crunchyroll', tubi:'tubi', tubitv:'tubi',
 }));
@@ -14,7 +15,7 @@ export function freeProviderId(name) {
 }
 export function restrictCatalog(results, membership) {
   if (membership?.plan === 'premium') return results;
-  return results.map(t=>({...t, ...(t.watchUrl?{watchUrl:''}:{}),providers:(t.providers||[]).filter(p=>freeProviderId(p.name))}))
+  return results.map(t=>({...t, ...(t.watchUrl?{watchUrl:''}:{}),providers:(t.providers||[]).filter(p=>!validAddonId(p.addon?.id)&&!addonIdentity(p.name)&&freeProviderId(p.name))}))
     .filter(t=>t.providers.length>0);
 }
 export class MembershipError extends Error {
