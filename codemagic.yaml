@@ -85,11 +85,12 @@ workflows:
           python3 - <<'PYTHON'
           import json, os, time, urllib.request
           import jwt
+          from codemagic.tools.app_store_connect.arguments import Types
           now = int(time.time())
           token = jwt.encode(
               {"iss": os.environ["APP_STORE_CONNECT_ISSUER_ID"], "iat": now,
                "exp": now + 300, "aud": "appstoreconnect-v1"},
-              os.environ["APP_STORE_CONNECT_PRIVATE_KEY"], algorithm="ES256",
+              Types.PrivateKeyArgument.from_environment_variable_default().value, algorithm="ES256",
               headers={"kid": os.environ["APP_STORE_CONNECT_KEY_IDENTIFIER"], "typ": "JWT"})
           url = "https://api.appstoreconnect.apple.com/v1/apps/6825959035/betaGroups?limit=200"
           unsafe = []
