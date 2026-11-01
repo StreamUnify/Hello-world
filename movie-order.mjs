@@ -10,7 +10,14 @@ export const STORY_ORDERS = [
     note:'The three Fantastic Beasts films precede the eight Harry Potter films. Ordered by the main events of each film.',
     sources:['https://www.harrypotter.com/discover/films','https://www.harrypotter.com/features/handy-guide-to-reading-harry-potter-for-first-time']},
 ];
-export const storyForMovie = id => STORY_ORDERS.find(x=>x.ids.includes(Number(id)));
+const GERMAN_STORY_TEXT={
+  1893:{name:'Star Wars: Skywalker-Saga und eigenständige Vorgeschichten',note:'Die neun Filme der Skywalker-Saga sowie Solo und Rogue One. Animationsfilme, Serien und weitere Ableger sind nicht enthalten. Sortiert nach den Hauptereignissen der Filme.'},
+  259316:{name:'Die magische Welt: Harry Potter und Phantastische Tierwesen',note:'Die drei Filme Phantastische Tierwesen spielen vor den acht Harry-Potter-Filmen. Sortiert nach den Hauptereignissen der Filme.'}
+};
+export const storyForMovie = (id,language='en-US') => {
+  const story=STORY_ORDERS.find(x=>x.ids.includes(Number(id)));
+  return story&&language==='de-DE'?{...story,...GERMAN_STORY_TEXT[story.ids[0]]}:story;
+};
 export function releaseOrder(items) {
   return [...new Map(items.filter(x=>Number.isSafeInteger(x.sourceId)&&x.sourceId>0).map(x=>[x.sourceId,x])).values()]
     .sort((a,b)=>(a.releaseDate||'9999-99-99').localeCompare(b.releaseDate||'9999-99-99')||a.sourceId-b.sourceId);
