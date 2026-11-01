@@ -67,15 +67,7 @@ workflows:
       - android/app/build/outputs/apk/debug/*.apk
 
   streamunify-ios-testflight:
-    name: StreamUnify iOS TestFlight
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: main
-          include: true
-          source: true
-      cancel_previous_builds: true
+    name: StreamUnify iOS TestFlight Upload Only
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
@@ -88,6 +80,37 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.streamunify.app
     scripts:
+      - name: Verify upload will not auto-distribute to testers
+        script: |
+          python3 - <<'PYTHON'
+          import json, os, time, urllib.request
+          import jwt
+          now = int(time.time())
+          token = jwt.encode(
+              {"iss": os.environ["APP_STORE_CONNECT_ISSUER_ID"], "iat": now,
+               "exp": now + 300, "aud": "appstoreconnect-v1"},
+              os.environ["APP_STORE_CONNECT_PRIVATE_KEY"], algorithm="ES256",
+              headers={"kid": os.environ["APP_STORE_CONNECT_KEY_IDENTIFIER"], "typ": "JWT"})
+          url = "https://api.appstoreconnect.apple.com/v1/apps/6825959035/betaGroups?limit=200"
+          unsafe = []
+          while url:
+              if not url.startswith("https://api.appstoreconnect.apple.com/"):
+                  raise SystemExit("Unexpected API pagination origin; upload blocked")
+              req = urllib.request.Request(url, headers={"Authorization": "Bearer " + token})
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  data = json.load(response)
+              for group in data["data"]:
+                  a = group["attributes"]
+                  automatic = a.get("hasAccessToAllBuilds")
+                  print(json.dumps({"group": a.get("name"), "internal": a.get("isInternalGroup"),
+                                    "automatic_all_build_access": automatic}))
+                  if automatic is not False:
+                      unsafe.append(a.get("name", group["id"]))
+              url = data.get("links", {}).get("next")
+          if unsafe:
+              raise SystemExit("UPLOAD BLOCKED: automatic tester distribution enabled or unknown: " + ", ".join(unsafe))
+          print("PASS: no beta group automatically receives uploaded builds")
+          PYTHON
       - name: Install dependencies
         script: npm ci
       - name: Validate catalog and platform assets
@@ -113,8 +136,6 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # Submit for beta review and distribute to the existing tester group.
-        submit_to_testflight: true
-        beta_groups:
-          - StreamUnify Testers
+        # Upload only: no beta review, tester assignment, or tester notification.
+        submit_to_testflight: false
         submit_to_app_store: false

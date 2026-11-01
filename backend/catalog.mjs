@@ -3,6 +3,9 @@ import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
 import {createHash} from 'node:crypto';
 import {normalizeContentRating,usContentRating} from './content-ratings.mjs';
 
+export const CATALOG_LANGUAGES=Object.freeze(['en-US','de-DE']);
+export const catalogLanguage=value=>CATALOG_LANGUAGES.includes(value)?value:'en-US';
+
 export const safeUrl = value => {
   try { const u = new URL(value); return u.protocol === 'https:' ? u.href : ''; } catch { return ''; }
 };
@@ -84,9 +87,19 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     if (!env.TMDB_READ_ACCESS_TOKEN) u.searchParams.set('api_key', env.TMDB_API_KEY);
     return request('tmdb', path + JSON.stringify(params), u, {headers: env.TMDB_READ_ACCESS_TOKEN ? {Authorization: 'Bearer ' + env.TMDB_READ_ACCESS_TOKEN} : {}});
   }
-  async function actingResults(people,country,status,page,genre) {
+  async function localizedMetadata(path,params){
+    const data=await tmdb(path,params);
+    if(params.language==='en-US'||(!data.id)||data.adult||((data.title||data.name)&&data.overview))return data;
+    try {
+      const fallback=await tmdb(path,{...params,language:'en-US'});
+      const merged={...data};
+      for(const key of ['title','name','overview'])if(!merged[key]&&fallback[key]){merged[key]=fallback[key];merged.metadataFallback='en-US';}
+      return merged;
+    }catch{return data;}
+  }
+  async function actingResults(people,country,status,page,genre,language='en-US') {
     const sets=await Promise.all(people.map(async person=>{
-      const data=await tmdb(`person/${person.id}/combined_credits`,{language:'en-US'});
+      const data=await tmdb(`person/${person.id}/combined_credits`,{language});
       if(!Array.isArray(data.cast))throw Error('unavailable');
       return data.cast;
     }));
@@ -100,27 +113,27 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       status.actor={...(people.length===1?{id:people[0].id}:{people:people.map(p=>({id:p.id,name:p.name}))}),name:people.map(p=>p.name).join(' & '),total:credits.length,page,pages};
       return Promise.all(credits.slice((page-1)*18,page*18).map(async x=>({...await film(x,country,status),character:x.character||''})));
   }
-  async function films(q, country, status, {personId, page=1,genre='',rating=''}={}) {
+  async function films(q, country, status, {personId, page=1,genre='',rating='',language='en-US'}={}) {
     const valid = items => (items || []).filter(x=>x.id&&!x.adult&&['movie','tv'].includes(x.media_type));
-    const search = async query => valid((await tmdb('search/multi',{query,include_adult:'false',language:'en-US'})).results);
+    const search = async query => valid((await tmdb('search/multi',{query,include_adult:'false',language})).results);
     const parts=q.split(/\s*(?:,|&|\+|\band\b)\s*/i).map(x=>x.trim());
     // Only interpret separators as an actor search when every part resolves to
     // one exact actor. Movie titles containing 'and' keep normal title search.
     if(parts.length>=2&&parts.length<=4&&parts.every(Boolean)&&!personId){
       const groups=await Promise.all(parts.map(async name=>{
-        const data=await tmdb('search/person',{query:name,include_adult:'false',language:'en-US'});
+        const data=await tmdb('search/person',{query:name,include_adult:'false',language});
         return (data.results||[]).filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&(x.known_for_department==='Acting'||!x.known_for_department)&&titleWords(x.name)===titleWords(name));
       }));
       if(groups.every(g=>g.length===1)){
         const selected=[...new Map(groups.map(g=>[g[0].id,g[0]])).values()];
-        if(selected.length>=2)return actingResults(selected,country,status,page,genre);
+        if(selected.length>=2)return actingResults(selected,country,status,page,genre,language);
       }
       if(groups.some(g=>g.length)){
-        status.actorNotice='Use each actor’s full name, separated by “and” or a comma. A name was missing or matched multiple people.';
+        status.actorNotice=language==='de-DE'?'Verwende die vollständigen Namen der Schauspieler, getrennt durch „and“ oder ein Komma. Ein Name fehlt oder passt zu mehreren Personen.':'Use each actor’s full name, separated by “and” or a comma. A name was missing or matched multiple people.';
         return [];
       }
     }
-    const initial=q?(await tmdb('search/multi',{query:q,include_adult:'false',language:'en-US'})).results:[];
+    const initial=q?(await tmdb('search/multi',{query:q,include_adult:'false',language})).results:[];
     const people=(initial||[]).filter(x=>Number.isSafeInteger(x.id)&&x.id>0&&!x.adult&&x.media_type==='person'&&(x.known_for_department==='Acting'||!x.known_for_department));
     status.actors=people.slice(0,8).map(x=>({id:x.id,name:x.name,knownFor:(x.known_for||[]).map(t=>t.title||t.name).filter(Boolean).slice(0,3).join(', ')}));
     const exact=people.filter(x=>titleWords(x.name)===titleWords(q));
@@ -128,21 +141,21 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     if(actorCorrection&&!valid(initial).some(x=>titleScore(q,x.title||x.name)>=.94))status.searchMatch={query:q,title:actorCorrection.name};
     const person=personId?people.find(x=>x.id===personId):exact.length===1?exact[0]:null;
     if(personId&&!person)throw Error('unavailable');
-    if(person)return actingResults([person],country,status,page,genre);
+    if(person)return actingResults([person],country,status,page,genre,language);
     let items;
     if(q)items=valid(initial);
     else if(genre||rating){
       const batches=await Promise.all(['movie','tv'].map(async type=>{
         const ids=GENRES[genre]?.[type]||[];if(genre&&!ids.length)return [];
         if(rating&&rating!=='NR'&&(rating.startsWith('TV-')?type!=='tv':type!=='movie'))return [];
-        const data=await tmdb('discover/'+type,{...(ids.length?{with_genres:ids.join('|')}:{}),...(rating&&type==='movie'&&rating!=='NR'?{certification_country:'US',certification:rating}:{}),include_adult:'false',language:'en-US',sort_by:'popularity.desc'});
+        const data=await tmdb('discover/'+type,{...(ids.length?{with_genres:ids.join('|')}:{}),...(rating&&type==='movie'&&rating!=='NR'?{certification_country:'US',certification:rating}:{}),include_adult:'false',language,sort_by:'popularity.desc'});
         return (data.results||[]).map(x=>({...x,media_type:type}));
       }));
       items=valid(batches.flat()).sort((a,b)=>(b.popularity||0)-(a.popularity||0));
-    }else items=valid((await tmdb('trending/all/week',{language:'en-US'})).results);
+    }else items=valid((await tmdb('trending/all/week',{language})).results);
     if(q&&compactTitle(q).length>=4&&(!items.length||!items.some(x=>titleScore(q,x.title||x.name)>=.94))) {
       const normalized=titleWords(q), tokens=normalized.split(' ');
-      const learned=[...knownTitles.values()].map(name=>({name,score:titleScore(q,name)})).filter(x=>x.score>=titleThreshold(q)).sort((a,b)=>b.score-a.score)[0]?.name;
+      const learned=[...knownTitles.entries()].filter(([key])=>key.startsWith(language+':')).map(([,name])=>({name,score:titleScore(q,name)})).filter(x=>x.score>=titleThreshold(q)).sort((a,b)=>b.score-a.score)[0]?.name;
       const split=splitTitle(q,words);
       const probes=[...titleIndex.find(q),learned,split, tokens.length>1?tokens[0]:normalized.slice(0,4),tokens.length>1?tokens.slice(1).join(' '):''];
       const queries=[...new Set(probes.filter(x=>x&&x.length>=3&&x!==q))].slice(0,4);
@@ -159,7 +172,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
     for(const item of items) {
       const name=item.title||item.name;
       if(!name)continue;
-      knownTitles.set(item.media_type+':'+item.id,name);
+      knownTitles.set(language+':'+item.media_type+':'+item.id,name);
       while(knownTitles.size>500)knownTitles.delete(knownTitles.keys().next().value);
       for(const word of titleWords(name).split(' '))if(words.size<3000)words.add(word);
     }
@@ -175,7 +188,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
           for (const p of w?.[field] || []) providers.push({id:p.provider_id, name:p.provider_name, type, source:'tmdb'});
         }
       } catch { status.tmdbAvailability = 'unavailable'; }
-      return {id:x.id * 10 + (series ? 1 : 0), source:'tmdb', sourceId:x.id, name:x.title || x.name, type:series?'series':'movie', year:(x.release_date || x.first_air_date || '').slice(0,4), releaseDate:x.release_date || x.first_air_date || '', desc:x.overview || '', poster:x.poster_path?'https://image.tmdb.org/t/p/w500'+x.poster_path:null, providers, watchUrl};
+      return {id:x.id * 10 + (series ? 1 : 0), source:'tmdb', sourceId:x.id, name:x.title || x.name, type:series?'series':'movie', year:(x.release_date || x.first_air_date || '').slice(0,4), releaseDate:x.release_date || x.first_air_date || '', desc:x.overview || '', poster:x.poster_path?'https://image.tmdb.org/t/p/w500'+x.poster_path:null, providers, watchUrl,...(x.metadataFallback?{metadataFallback:x.metadataFallback}:{})};
   }
   async function youtube(q, country, creatorsOnly=false) {
     const type=creatorsOnly?'channel':'video';
@@ -240,11 +253,12 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       if(status.tmdbAvailability)throw Error('unavailable');
       return title;
     },
-    async details(type,id,country) {
+    async details(type,id,country,language='en-US') {
+      language=catalogLanguage(language);
       if(!['movie','series'].includes(type)||!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_title');
       if(!configured.tmdb)throw Error('unavailable');
       const media=type==='series'?'tv':'movie',status={};
-      const data=await tmdb(`${media}/${id}`,{language:'en-US',append_to_response:media==='movie'?'credits,release_dates':'credits,content_ratings'});
+      const data=await localizedMetadata(`${media}/${id}`,{language,append_to_response:media==='movie'?'credits,release_dates':'credits,content_ratings'});
       if(!data.id||data.adult)throw Error('unavailable');
       const title=await film({...data,media_type:media},country,status);
       if(configured.watchmode){try{await enrich([title],country);}catch{status.watchmode='unavailable';}}
@@ -258,21 +272,22 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         creatorProfiles:(media==='movie'?(data.credits?.crew||[]).filter(x=>x.job==='Director'):(data.created_by||[])).filter(x=>x.name).map(x=>({id:Number.isSafeInteger(x.id)&&x.id>0?x.id:null,name:x.name})),
         status:data.status||'',seasonCount:media==='tv'?data.number_of_seasons:null,episodeCount:media==='tv'?data.number_of_episodes:null,
         seasons:media==='tv'?(data.seasons||[]).filter(x=>x.season_number>0).slice(0,50).map(x=>({name:x.name,episodes:x.episode_count,date:x.air_date||''})):[]},
-        availability:Object.keys(status).length?'partial':'ok'};
+        availability:Object.keys(status).length?'partial':'ok',language};
     },
-    async movieOrder(id,country) {
+    async movieOrder(id,country,language='en-US') {
+      language=catalogLanguage(language);
       if(!Number.isSafeInteger(id)||id<1||id>2147483647)throw Error('invalid_movie');
       if(!configured.tmdb)throw Error('unavailable');
       const status={};
-      const movie=await tmdb(`movie/${id}`,{language:'en-US'});
-      if(movie.adult)return {name:'',release:[],chronological:null,note:'No supported movie collection found.',sources:[],availability:'ok'};
-      const story=storyForMovie(id);
+      const movie=await localizedMetadata(`movie/${id}`,{language});
+      if(movie.adult)return {name:'',release:[],chronological:null,note:language==='de-DE'?'Keine unterstützte Filmreihe gefunden.':'No supported movie collection found.',sources:[],availability:'ok'};
+      const story=storyForMovie(id,language);
       let name=story?.name,parts=[];
       if(story) {
         // Bounded curated sets; all-or-error avoids silently incomplete timelines.
-        parts=await Promise.all(story.ids.map(movieId=>tmdb(`movie/${movieId}`,{language:'en-US'})));
+        parts=await Promise.all(story.ids.map(movieId=>localizedMetadata(`movie/${movieId}`,{language})));
       } else if(movie.belongs_to_collection?.id) {
-        const collection=await tmdb(`collection/${movie.belongs_to_collection.id}`,{language:'en-US'});
+        const collection=await tmdb(`collection/${movie.belongs_to_collection.id}`,{language});
         name=collection.name;parts=collection.parts||[];
       }
       const unique=[...new Map(parts.filter(x=>x.id&&!x.adult).map(x=>[x.id,x])).values()];
@@ -283,11 +298,12 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       }
       const release=releaseOrder(items);
       return {name:name||'',release,chronological:chronologicalOrder(items,story),
-        note:story?.note||'Story chronology has not been curated for this collection. Release order is shown; it does not imply story order.',
-        sources:story?.sources||[],availability:Object.keys(status).length?'partial':'ok'};
+        note:story?.note||(language==='de-DE'?'Für diese Filmreihe wurde keine Handlungsreihenfolge kuratiert. Die Veröffentlichungsreihenfolge ist nicht automatisch die Handlungsreihenfolge.':'Story chronology has not been curated for this collection. Release order is shown; it does not imply story order.'),
+        sources:story?.sources||[],availability:Object.keys(status).length?'partial':'ok',language};
     },
     async search(q, country, options={}) {
       q=String(q||'').trim().toLowerCase();
+      options={...options,language:catalogLanguage(options.language)};
       const status = Object.fromEntries(Object.entries(configured).map(([k,v])=>[k,v?'idle':'not_configured']));
       const tasks = {tmdb:()=>films(q,country,status,options)};
       if (q&&!options.personId&&!options.genre&&!options.moviesTvOnly) Object.assign(tasks, {youtube:()=>youtube(q,country), twitch:()=>twitch(q), podcasts:()=>podcasts(q)});
@@ -304,7 +320,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         catch (e) { status.watchmode=e.message === 'rate_limited'?'rate_limited':'unavailable'; }
       }
       if(options.rating){try{results=await filterByRating(results,options.rating);}catch{results=[];status.tmdb='unavailable';status.ratings='unavailable';}}
-      return {results,country,sources:status,...actorNotice?{actorNotice}:{},...searchMatch?{searchMatch}:{},...actors?.length?{actors}:{},...actor?{actor}:{}};
+      return {results,country,language:options.language,sources:status,...actorNotice?{actorNotice}:{},...searchMatch?{searchMatch}:{},...actors?.length?{actors}:{},...actor?{actor}:{}};
     },
   };
 }

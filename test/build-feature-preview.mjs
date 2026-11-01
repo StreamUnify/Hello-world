@@ -26,5 +26,5 @@ html=html.replace('<script src="app-config.js"></script>','')
  .replace(/<script defer src="\/(?:analytics-config|website-analytics)\.js"><\/script>/g,'')
  .replace('</body>','<div style="position:fixed;bottom:0;left:0;right:0;padding:8px;background:#f7cf53;color:#172036;text-align:center;z-index:1000;font:600 13px sans-serif">UI PREVIEW · sample titles · simulated alerts · no real account changes</div></body>');
 await writeFile(new URL('index.html',out),html);
-for(const name of ['availability-client.js','streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg'])await copyFile(new URL('../'+name,import.meta.url),new URL(name,out));
+for(const name of ['availability-client.js','i18n-client.js','streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg'])await copyFile(new URL('../'+name,import.meta.url),new URL(name,out));
 console.log('Built isolated rating and alert interface preview.');

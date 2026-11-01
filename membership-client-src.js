@@ -16,7 +16,7 @@ document.querySelector('.su-discover')?.append(button);
 const signupButton=document.createElement('button');signupButton.type='button';signupButton.className='su-action';signupButton.textContent='Sign up';signupButton.hidden=true;
 document.querySelector('.su-discover')?.append(signupButton);
 const dialog=document.createElement('dialog');dialog.className='membership-dialog';
-dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose" class="close" aria-label="Close account">×</button><h2 id="accountHeading">StreamUnify membership</h2><p id="accountStatus" role="status" aria-live="polite"></p><div id="accountFields"><section id="signupIntro" aria-label="Membership options"><p>Free membership: 10 searches per month across our 10 selected US providers.</p><p id="signupPricing"><strong>Premium: $2.99/month or $30/year</strong><br>Save $5.88 with annual billing. Unlimited searches, all supported providers, and your synced watchlist.</p><p>Paid plans renew until canceled; provider subscriptions are separate.</p><p id="signupWallets" hidden></p></section><label id="emailLabel">Email address<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label id="passwordLabel">Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label><p id="passwordHint" hidden>Use at least 12 characters.</p><label id="confirmLabel" hidden>Confirm password<input id="accountConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128"></label><section id="verificationInstructions" hidden><p>We’ve sent a verification link to <strong id="verificationEmail"></strong>.</p><div class="su-verification-note">Open the email from StreamUnify and select the verification link. You’ll then create your password.<br><br><strong>Can’t find it?</strong> Check your spam or junk folder. Delivery may take a few minutes. Open the link on the same device and browser where you requested it.</div><button type="button" id="accountResend">Resend verification email</button><button type="button" id="accountChangeEmail">Use a different email</button></section><button type="submit" id="accountSubmit" class="primary">Sign in</button><button type="button" id="accountSignup">Create a free account</button><button type="button" id="accountSignin" hidden>Already have an account? Sign in</button><button type="button" id="accountReset">Forgot password?</button></div><div id="accountPlans"><p>Free: 10 searches per month across the 10 selected US providers. Premium: unlimited searches, all supported providers, and your synced watchlist.</p><p id="membershipPriceNote"><strong>$2.99/month or $30/year</strong> — save $5.88 annually. Subscriptions renew until cancelled. Streaming service subscriptions are separate.</p><p id="accountWallets" hidden></p><button type="button" data-plan="monthly">Choose monthly</button><button type="button" data-plan="annual">Choose annual</button><button type="button" id="accountContinue">Continue with Free</button><button type="button" id="accountPortal">Manage subscription</button><button type="button" id="accountImport">Import this device’s saved titles</button><button type="button" id="accountLogout">Sign out</button></div><p><a href="https://www.streamunify.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://www.streamunify.com/terms" target="_blank" rel="noopener noreferrer">Membership terms</a></p><p id="accountMessage" role="status" aria-live="polite"></p></form>`;
+dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose" class="close" aria-label="Close account">×</button><h2 id="accountHeading">StreamUnify membership</h2><p id="accountStatus" role="status" aria-live="polite"></p><div id="accountFields"><section id="signupIntro" aria-label="Membership options"><p>Free membership: 10 searches per month across our 10 selected US providers.</p><p id="signupPricing"><strong>Premium: $2.99/month or $30/year</strong><br>Save $5.88 (16%) with annual billing versus $35.88 over 12 monthly payments. Unlimited searches, all supported providers, and your synced watchlist.</p><p>Paid plans renew until canceled; provider subscriptions are separate.</p><p id="signupWallets" hidden></p></section><label id="emailLabel">Email address<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label id="passwordLabel">Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label><p id="passwordHint" hidden>Use at least 12 characters.</p><label id="confirmLabel" hidden>Confirm password<input id="accountConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128"></label><section id="verificationInstructions" hidden><p>We’ve sent a verification link to <strong id="verificationEmail"></strong>.</p><div class="su-verification-note">Open the email from StreamUnify and select the verification link. You’ll then create your password.<br><br><strong>Can’t find it?</strong> Check your spam or junk folder. Delivery may take a few minutes. Open the link on the same device and browser where you requested it.</div><button type="button" id="accountResend">Resend verification email</button><button type="button" id="accountChangeEmail">Use a different email</button></section><button type="submit" id="accountSubmit" class="primary">Sign in</button><button type="button" id="accountSignup">Create a free account</button><button type="button" id="accountSignin" hidden>Already have an account? Sign in</button><button type="button" id="accountReset">Forgot password?</button></div><div id="accountPlans"><p>Free: 10 searches per month across the 10 selected US providers. Premium: unlimited searches, all supported providers, and your synced watchlist.</p><p id="membershipPriceNote"><strong>$2.99/month or $30/year</strong> — save $5.88 (16%) annually versus $35.88 over 12 monthly payments. Subscriptions renew until cancelled. Streaming service subscriptions are separate.</p><p id="accountWallets" hidden></p><button type="button" data-plan="monthly">Choose monthly</button><button type="button" data-plan="annual">Choose annual</button><button type="button" id="accountContinue">Continue with Free</button><button type="button" id="accountPortal">Manage subscription</button><button type="button" id="accountImport">Import this device’s saved titles</button><button type="button" id="accountLogout">Sign out</button></div><p><a href="https://www.streamunify.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://www.streamunify.com/terms" target="_blank" rel="noopener noreferrer">Membership terms</a></p><p id="accountMessage" role="status" aria-live="polite"></p></form>`;
 document.body.append(dialog);
 const restoreButton=document.createElement('button');restoreButton.type='button';restoreButton.textContent='Restore purchases';restoreButton.id='accountRestore';document.getElementById('accountPlans').append(restoreButton);
 const deleteButton=document.createElement('button');deleteButton.type='button';deleteButton.textContent='Delete account';deleteButton.id='accountDelete';document.getElementById('accountPlans').append(deleteButton);
@@ -25,6 +25,31 @@ const $=id=>document.getElementById(id);
 const message=text=>{$('accountMessage').textContent=text;};
 let authView='signin',recovery=false,resendAt=0;
 const show=()=>{if(!dialog.open)dialog.showModal();};
+// Homepage plans only open the existing account flow. They never initiate checkout.
+function drawHomepagePlans(){
+  const onDevice=native();
+  document.querySelectorAll('[data-su-web-pricing]').forEach(el=>{el.hidden=onDevice;});
+  document.querySelectorAll('[data-su-store-price]').forEach(el=>{
+    const interval=el.dataset.suStorePrice;
+    const price=storePrices[interval]?.priceString;
+    el.hidden=!onDevice;
+    el.textContent=price?`${price} / ${interval==='monthly'?'month':'year'} · Renews until canceled in your store.`:'See store pricing · Price and renewal terms are shown before purchase.';
+  });
+  const available=!!config?.enabled&&!!client;
+  document.querySelectorAll('[data-su-membership]').forEach(el=>{
+    el.disabled=!available||busy;
+    el.onclick=()=>{
+      if(!config?.enabled||!client||busy)return;
+      if(!user&&!['checkemail','password'].includes(authView))setAuthView('signup');
+      show();
+      if(!user&&!['checkemail','password'].includes(authView))$('accountEmail').focus();
+    };
+  });
+  const note=$('suPlansStatus');
+  if(note)note.textContent=!config?'Checking membership availability…':!config.enabled?'Membership enrollment is not enabled yet. You can continue exploring StreamUnify.':!client?'Account service is temporarily unavailable. Please try again shortly.':'Provider subscriptions are separate. Paid plans renew until canceled.';
+}
+drawHomepagePlans();
+
 function setAuthView(view){
   authView=view;$('accountPassword').value='';$('accountConfirm').value='';message('');draw();
 }
@@ -36,6 +61,7 @@ $('accountSignin').onclick=()=>setAuthView('signin');
 $('accountChangeEmail').onclick=()=>setAuthView('signup');
 $('accountContinue').onclick=()=>dialog.close();
 function draw(){
+  drawHomepagePlans();
   const setup=authView==='password',waiting=authView==='checkemail',signup=authView==='signup';
   signupButton.hidden=!!user;
   button.textContent=user?(status?.plan==='premium'?'Premium':'My account'):'Sign in';
@@ -100,6 +126,7 @@ $('accountImport').onclick=()=>action(async()=>{let saved={};try{saved=JSON.pars
 window.StreamUnifyMembership={get enabled(){return !!config?.enabled;},get premium(){return status?.plan==='premium';},get status(){return status;},show,api,async search(url,searchId){const searchOwner=user?.id;const data=await api(url,{headers:searchId?{'X-Search-Id':searchId}:{}});if(data.membership){status=data.membership;draw();}if(searchId&&searchOwner===user?.id)recentSearches.reload();return data;},async watchlist(rating=''){return (await api('/api/watchlist'+(rating?'?rating='+encodeURIComponent(rating):''))).items.map(row=>row.snapshot);},async save(item,remove){await api('/api/watchlist'+(remove?'?id='+encodeURIComponent(item.id):''),{method:remove?'DELETE':'POST',...(remove?{}:{body:JSON.stringify(item)})});}};
 window.membershipReady=(async()=>{
   config=await fetch(apiBase+'/api/account/config').then(r=>{if(!r.ok)throw Error('Account configuration unavailable');return r.json();});
+  drawHomepagePlans();
   if(!config.enabled)return;
   await prepareNativeStorage();
   if(native())$('signupPricing').textContent='Premium includes unlimited searches, all supported providers, and your synced watchlist. Store pricing is shown after sign-in.';
@@ -114,4 +141,4 @@ window.membershipReady=(async()=>{
   if(native()){try{storePrices=await nativeProducts(config.stores);}catch{message('Store pricing is temporarily unavailable.');}await listenNativePurchases(()=>user,api,refresh,message);}
   try{await refresh();}catch(e){message(e.message);}
   if(!native()&&new URLSearchParams(location.search).has('error')){if(!user)setAuthView('signup');show();message('This email link has expired or could not be verified. Enter your email and request a new link. Open it on this device and browser.');history.replaceState(null,'',location.pathname);}
-})().catch(()=>{config={enabled:true};button.hidden=false;button.textContent='Account unavailable';button.onclick=()=>{show();message('Account service is temporarily unavailable. Please try again shortly.');};});
+})().catch(()=>{config={enabled:true};drawHomepagePlans();button.hidden=false;button.textContent='Account unavailable';button.onclick=()=>{show();message('Account service is temporarily unavailable. Please try again shortly.');};});
