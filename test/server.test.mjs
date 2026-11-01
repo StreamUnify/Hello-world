@@ -26,6 +26,9 @@ test('HTTP routes preserve public access while disabled and require accounts whe
       const missing=await fetch(base+'/unknown-page');assert.equal(missing.status,404);assert.equal(missing.headers.get('x-robots-tag'),'noindex');
       const config=await configResponse.json();assert.equal(config.enabled,enabled);assert.equal(config.billingEnabled,false);
       assert.equal((await fetch(base+'/membership-client.js')).status,200);
+      const addonAsset=await fetch(base+'/provider-entitlements.js');assert.equal(addonAsset.status,200);assert.match(addonAsset.headers.get('content-type'),/javascript/);
+      const addonRegistry=await fetch(base+'/api/provider-addons?country=US');assert.equal(addonRegistry.status,503);assert.equal(addonRegistry.headers.get('cache-control'),'no-store');assert.deepEqual((await addonRegistry.json()).services,[]);
+      assert.equal((await fetch(base+'/api/provider-addons?country=INVALID')).status,400);
       const robots=await fetch(base+'/robots.txt');assert.equal(robots.status,200);assert.match(robots.headers.get('content-type'),/text\/plain/);assert.match(await robots.text(),/Sitemap: https:\/\/www\.streamunify\.com\/sitemap\.xml/);
       const sitemap=await fetch(base+'/sitemap.xml');assert.equal(sitemap.status,200);assert.match(sitemap.headers.get('content-type'),/application\/xml/);const xml=await sitemap.text();assert.equal([...xml.matchAll(/<loc>/g)].length,4+watchPaths.length);assert.doesNotMatch(xml,/localhost|onrender|<lastmod>/);
       for(const pathname of ['/','/about','/privacy','/terms',...watchPaths]){const page=await fetch(base+pathname);assert.equal(page.status,200);assert.equal(page.headers.get('x-robots-tag'),null);const html=await page.text();assert.ok(html.includes('rel="icon" href="/favicon.ico"'));assert.ok(html.includes('rel="canonical" href="https://www.streamunify.com'+pathname+'"'));}
