@@ -1,0 +1,45 @@
+name: Daily verified streaming highlights
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-release-highlights.yml'
+      - 'release-source-adapters.mjs'
+      - 'release-highlights-feed.mjs'
+      - 'scripts/refresh-release-highlights.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: daily-release-highlights
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read official streaming announcements
+        run: node scripts/refresh-release-highlights.mjs --output /tmp/release-highlights.json
+      - name: Persist snapshot on data-only branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch=data/release-highlights
+          if git ls-remote --heads origin "$branch" | grep -q .; then
+            git fetch origin "$branch"
+            git checkout --force -B "$branch" FETCH_HEAD
+          else
+            git checkout --orphan "$branch"
+            git rm -rf --ignore-unmatch .
+          fi
+          cp /tmp/release-highlights.json release-highlights.json
+          git add release-highlights.json
+          if git diff --cached --quiet; then exit 0; fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Refresh verified streaming release snapshot'
+          git push origin "HEAD:refs/heads/$branch"

@@ -1,0 +1,10 @@
+import {writeFile} from 'node:fs/promises';
+import {collectOfficialReleases} from '../release-source-adapters.mjs';
+import {nextDailyRefresh,validateReleaseSnapshot} from '../release-highlights-feed.mjs';
+const now=Date.now();
+const result=await collectOfficialReleases({now});
+const candidate={checkedAt:new Date(now).toISOString(),expiresAt:new Date(now+48*3600000).toISOString(),nextRefreshAt:nextDailyRefresh(now),releases:result.releases};
+const releases=validateReleaseSnapshot(candidate,'US',now).releases;
+const output=process.argv[process.argv.indexOf('--output')+1];if(!output||process.argv.indexOf('--output')<0)throw Error('Pass --output path');
+await writeFile(output,JSON.stringify({...candidate,releases,sources:result.sources},null,2)+'\n');
+console.log(JSON.stringify({checkedAt:candidate.checkedAt,nextRefreshAt:candidate.nextRefreshAt,count:releases.length,sources:result.sources}));
