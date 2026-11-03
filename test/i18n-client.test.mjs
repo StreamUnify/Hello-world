@@ -48,3 +48,15 @@ test('plain-text API supports safe dynamic labels and retains unsupported text a
  assert.equal(api.t('Sign in to Netflix (opens new tab)'),'Bei Netflix anmelden (öffnet neuen Tab)');
  assert.equal(api.t('$2.99'),'$2.99');assert.equal(api.t('<img src=x>'),'<img src=x>');assert.equal(api.t('Unknown content'),'Unknown content');
 });
+test('language picker is mounted only in footer with a simple visible label',()=>{
+ const children=[],listeners={};
+ function el(tag){return {tag,style:{},children:[],append(x){this.children.push(x);},setAttribute(k,v){this[k]=v;}};}
+ const footer={append:node=>children.push(node)};
+ const document={readyState:'loading',body:{},documentElement:{},addEventListener:(name,fn)=>listeners[name]=fn,getElementById:()=>null,querySelector:selector=>selector==='footer'?footer:null,createElement:el,createTextNode:nodeValue=>({nodeValue}),querySelectorAll:()=>[],createTreeWalker:()=>({nextNode:()=>null})};
+ const events=[],writes=[];
+ const context={document,window:{dispatchEvent:e=>events.push(e)},navigator:{languages:['en-US']},Intl,localStorage:{getItem:()=>null,setItem:(...args)=>writes.push(args)},CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},queueMicrotask};
+ vm.runInNewContext(source,context);listeners.DOMContentLoaded();
+ assert.equal(children.length,1);const wrap=children[0],select=wrap.children[1];
+ assert.equal(wrap.tag,'label');assert.equal(wrap.children[0].nodeValue,'Language');assert.equal(select.id,'suLanguage');assert.match(select['aria-label'],/Interface language/);assert.match(select.style.cssText,/min-height:44px/);
+ select.value='de';select.onchange();assert.equal(context.window.StreamUnifyI18n.locale,'de-DE');assert.equal(events[0].type,'su-languagechange');assert.deepEqual(writes,[['su_ui_locale','de']]);
+});

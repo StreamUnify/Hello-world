@@ -1,3 +1,4 @@
+import {nativeDiscoveryHtml} from './native-discovery.mjs';
 import {createHash} from 'node:crypto';
 import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -7,7 +8,8 @@ const config=JSON.parse(await readFile(path.join(root,'mobile.config.json'),'utf
 const apiBase=new URL(process.env.STREAMUNIFY_API_BASE || config.apiBase);
 if(apiBase.protocol!=='https:' || apiBase.username || apiBase.password || apiBase.search || apiBase.hash || apiBase.pathname!=='/')throw Error('Mobile API base must be an HTTPS origin without credentials, query, or path');
 const html=await readFile(path.join(root,'index.html'),'utf8');
-const scriptHashes=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].filter(x=>x[1].trim()).map(x=>"'sha256-"+createHash('sha256').update(x[1]).digest('base64')+"'");
+const nativeHtml=nativeDiscoveryHtml(html);
+const scriptHashes=[...nativeHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].filter(x=>x[1].trim()).map(x=>"'sha256-"+createHash('sha256').update(x[1]).digest('base64')+"'");
 const mobileCsp=`<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' ${scriptHashes.join(' ')}; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ${apiBase.origin} https://nrhgzrarngqnlsrnvnla.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'">`;
 const mobileStyle=`<style id="su-mobile-safe-areas">
 .su-header{padding-top:calc(8px + env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));}
@@ -17,7 +19,7 @@ const mobileStyle=`<style id="su-mobile-safe-areas">
 main{padding-bottom:max(80px,env(safe-area-inset-bottom));padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));}
 </style>`;
 for(const dir of ['www','backend'])await mkdir(path.join(root,dir),{recursive:true});
-await writeFile(path.join(root,'www/index.html'),html.replace('<head>','<head>'+mobileCsp).replace('</head>',mobileStyle+'</head>'));
+await writeFile(path.join(root,'www/index.html'),nativeHtml.replace('<head>','<head>'+mobileCsp).replace('</head>',mobileStyle+'</head>'));
 await writeFile(path.join(root,'www/app-config.js'),'window.STREAMUNIFY_API_BASE = '+JSON.stringify(apiBase.origin)+';\n');
 for(const name of ['streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg']){
  for(const dir of ['www','backend'])await copyFile(path.join(root,name),path.join(root,dir,name));
