@@ -16,7 +16,7 @@
  'Choose the streaming services you already have to personalize your results.':'Wähle deine vorhandenen Streamingdienste für persönliche Ergebnisse.',
  'No account linking or new subscription required.':'Keine Kontoverknüpfung und kein neues Abo erforderlich.',
  '＋ Your services · Add or manage':'＋ Deine Dienste · Hinzufügen oder verwalten',
- '🎲 Surprise Me':'🎲 Überrasche mich','🍿 Free Tonight':'🍿 Heute kostenlos','📺 My Services':'📺 Meine Dienste','♡ My Watchlist':'♡ Meine Merkliste',
+ 'Surprise Me':'Überrasche mich','Free Tonight':'Heute kostenlos','My Services':'Meine Dienste','♡ My Watchlist':'♡ Meine Merkliste',
  'Open menu':'Menü öffnen','Close menu':'Menü schließen','Close':'Schließen','Explore StreamUnify':'StreamUnify entdecken',
  '⌂ Home / Discover':'⌂ Start / Entdecken','♡ My Watchlist':'♡ Meine Merkliste','☷ Site Map':'☷ Seitenübersicht','▣ Compatible Devices':'▣ Unterstützte Geräte','? Help & Contact':'? Hilfe & Kontakt','ⓘ About StreamUnify':'ⓘ Über StreamUnify','♧ Privacy Policy':'♧ Datenschutz','▤ Terms of Service':'▤ Nutzungsbedingungen',
  'My streaming services':'Meine Streamingdienste','Add or remove services using the checkboxes. Only services listed for your selected country are displayed. Selections are saved on this device; regional coverage is preliminary and may change.':'Wähle Dienste über die Kontrollkästchen aus. Angezeigt werden nur Dienste für dein ausgewähltes Land. Die Auswahl wird auf diesem Gerät gespeichert; regionale Abdeckung kann sich ändern.',
