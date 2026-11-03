@@ -1,3 +1,4 @@
+import {nativePlanText} from './native-price-display.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {createRecentSearches} from './recent-searches-client.mjs';
 import {needsPasswordSetup,sendSignupEmail,saveVerifiedPassword} from './signup-flow.mjs';
@@ -20,7 +21,7 @@ dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose"
 document.body.append(dialog);
 const restoreButton=document.createElement('button');restoreButton.type='button';restoreButton.textContent='Restore purchases';restoreButton.id='accountRestore';document.getElementById('accountPlans').append(restoreButton);
 const deleteButton=document.createElement('button');deleteButton.type='button';deleteButton.textContent='Delete account';deleteButton.id='accountDelete';document.getElementById('accountPlans').append(deleteButton);
-let storePrices={};
+let storePrices={},storePricesState='loading';
 const $=id=>document.getElementById(id);
 const message=text=>{$('accountMessage').textContent=text;};
 let authView='signin',recovery=false,resendAt=0;
@@ -28,12 +29,12 @@ const show=()=>{if(!dialog.open)dialog.showModal();};
 // Homepage plans only open the existing account flow. They never initiate checkout.
 function drawHomepagePlans(){
   const onDevice=native();
-  document.querySelectorAll('[data-su-web-pricing]').forEach(el=>{el.hidden=onDevice;});
+  document.querySelectorAll('[data-su-web-pricing]').forEach(el=>{el.hidden=false;});
+  document.querySelectorAll('[data-su-web-reference]').forEach(el=>{el.hidden=!onDevice;});
   document.querySelectorAll('[data-su-store-price]').forEach(el=>{
     const interval=el.dataset.suStorePrice;
-    const price=storePrices[interval]?.priceString;
     el.hidden=!onDevice;
-    el.textContent=price?`${price} / ${interval==='monthly'?'month':'year'} · Renews until canceled in your store.`:'See store pricing · Price and renewal terms are shown before purchase.';
+    el.textContent=(nativePlatform()==='ios'?'App Store: ':'Google Play: ')+nativePlanText(interval,{configLoaded:!!config,enabled:config?.stores?.[nativePlatform()==='ios'?'apple':'google'],state:storePricesState,products:storePrices});
   });
   const available=!!config?.enabled&&!!client;
   document.querySelectorAll('[data-su-membership]').forEach(el=>{
@@ -138,7 +139,7 @@ window.membershipReady=(async()=>{
     else if(['SIGNED_IN','SIGNED_OUT','TOKEN_REFRESHED','USER_UPDATED'].includes(event))setTimeout(()=>refresh().catch(e=>message(e.message)),0);
   });
   await configureNativeAuth(client,text=>{if(!user)setAuthView('signup');show();message(text);});
-  if(native()){try{storePrices=await nativeProducts(config.stores);}catch{message('Store pricing is temporarily unavailable.');}await listenNativePurchases(()=>user,api,refresh,message);}
+  if(native()){try{storePrices=await nativeProducts(config.stores);storePricesState='ready';}catch{storePricesState='unavailable';message('Store pricing is temporarily unavailable.');}finally{drawHomepagePlans();}await listenNativePurchases(()=>user,api,refresh,message);}
   try{await refresh();}catch(e){message(e.message);}
   if(!native()&&new URLSearchParams(location.search).has('error')){if(!user)setAuthView('signup');show();message('This email link has expired or could not be verified. Enter your email and request a new link. Open it on this device and browser.');history.replaceState(null,'',location.pathname);}
 })().catch(()=>{config={enabled:true};drawHomepagePlans();button.hidden=false;button.textContent='Account unavailable';button.onclick=()=>{show();message('Account service is temporarily unavailable. Please try again shortly.');};});
