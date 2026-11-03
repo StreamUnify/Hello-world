@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-/BPZggmeUvs4/H9voa2Di0I2mALgb4R7J2nV1x/GdJI=' 'sha256-XEK6wc+1XaBsBiJ+Aj2mc5x81pNcRvreMjiMccCSSNs=' 'sha256-6EoP1uAhQTPpzBvPxDOYPGl+0ifTarXrTLb+RTtRCJw='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://hello-world-1-qz8g.onrender.com https://nrhgzrarngqnlsrnvnla.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>StreamUnify | Find Where to Watch Movies &amp; TV Shows</title>
+<!doctype html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-/BPZggmeUvs4/H9voa2Di0I2mALgb4R7J2nV1x/GdJI=' 'sha256-dJKHwcQvcXIgr327JnW2gm/HJfAMMopUq1OQVcqWimU=' 'sha256-wHUFOOlff1a2MBSc7gn42YNWJ8mLGe0FHufvEUk+x3Y='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://hello-world-1-qz8g.onrender.com https://nrhgzrarngqnlsrnvnla.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>StreamUnify | Find Where to Watch Movies &amp; TV Shows</title>
 <meta name="fo-verify" content="9faa0977-b59f-4cec-8d27-79950591f6c3" />
 <meta name="google-site-verification" content="Qi-CfA-eiXWMA02yU6-JiWo-a1BCgRCZ-ltwOJqH27c">
 <meta name="description" content="StreamUnify (Stream Unify) helps you find where to watch movies and TV shows. Compare streaming services, explore free options, and save a Premium watchlist.">
@@ -224,6 +224,9 @@
  .su-header>.su-discover .su-action{min-width:0;min-height:44px;width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.35;padding:9px 8px;font-size:12px;}
  .su-header .su-language-picker select{min-height:44px;min-width:44px;}
 }
+</style><style id="su-search-focus-size">
+/* Keep iOS focus from magnifying the search field; preserve user pinch zoom. */
+@media(max-width:750px){html.su-title-search-navigation .hero .search{font-size:max(16px,1rem);}}
 </style><style id="su-mobile-safe-areas">
 .su-header{padding-top:calc(8px + env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));}
 .su-drawer{padding-top:calc(22px + env(safe-area-inset-top));padding-bottom:calc(22px + env(safe-area-inset-bottom));}
@@ -410,7 +413,41 @@ function attachMovieOrder(t){
   }catch(e){if(section.isConnected){content.textContent='Could not load movie order. Please try again.';button.disabled=false;}}
  };
 }
+// Only explicit title submissions reveal results, never live typing or refreshes.
+let titleSearchIntent=0;
+function canRevealTitleResults(){return !window.Capacitor?.isNativePlatform?.()||window.Capacitor.getPlatform()==='ios';}
+function submitTitleSearch(){
+ clearTimeout(searchDebounce);
+ const revealResults=canRevealTitleResults()&&!!$('search').value.trim();
+ const intent=++titleSearchIntent;
+ if(revealResults&&document.activeElement===$('search'))$('search').blur();
+ return loadTitles(true,{revealResults,intent});
+}
+function revealTitleResults(current,intent,query){
+ // Wait for the iOS keyboard/visual viewport to settle, with a bounded fallback.
+ let quietTimer,maxTimer;
+ const viewport=window.visualViewport;
+ const finish=()=>{
+  clearTimeout(quietTimer);clearTimeout(maxTimer);viewport?.removeEventListener('resize',settle);
+  if(current!==loadSerial||intent!==titleSearchIntent||$('search').value.trim()!==query||!canRevealTitleResults())return;
+  if(document.querySelector('dialog[open],.modalback:not(.hidden)'))return;
+  const active=document.activeElement;
+  if(active&&active!==document.body&&active!==$('search')&&active!==$('suSearchButton'))return;
+  const heading=$('heading');
+  heading.tabIndex=-1;heading.setAttribute('aria-describedby','count');
+  heading.focus({preventScroll:true});
+  // The measured sticky header includes native safe-area padding and wrapped controls.
+  const header=document.querySelector('header');
+  const inset=Math.max(0,header?.getBoundingClientRect().bottom||0)+16;
+  const top=Math.max(0,window.scrollY+heading.getBoundingClientRect().top-inset);
+  window.scrollTo({top,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+ };
+ const settle=()=>{clearTimeout(quietTimer);quietTimer=setTimeout(finish,150);};
+ viewport?.addEventListener('resize',settle);
+ quietTimer=setTimeout(finish,350);maxTimer=setTimeout(finish,800);
+}
 let searchBusy=false;
+let activeSearchOptions=null,busySerial=0;
 function renderActorSearch(){
  $('genreFilter').disabled=searchBusy;
  const choices=$('actorChoices');
@@ -422,8 +459,15 @@ function renderActorSearch(){
  more.onclick=()=>loadTitles(true,{personId:actorSearch.id,page:actorSearch.page+1,append:true});
 }
 async function loadTitles(submitted=false,options={}){
- await window.membershipReady;if(searchBusy&&submitted&&!options.refine)return;
- const current=++loadSerial;
+ await window.membershipReady;
+ if(searchBusy&&submitted&&!options.refine){
+  if(!options.revealResults)return;
+  // Repeated submit joins the in-flight query instead of consuming another search.
+  if(searchContext?.query===$('search').value.trim()){
+   activeSearchOptions.revealResults=true;activeSearchOptions.intent=options.intent;return;
+  }
+ }
+ const current=++loadSerial;busySerial=current;activeSearchOptions=options;
  const genre=$('genreFilter').value||'';
  const rating=typeof activeRating==='string'?activeRating:'';
  const continuing=!!(options.personId||options.append||(options.refine&&searchContext))&&!!searchContext;
@@ -456,18 +500,20 @@ async function loadTitles(submitted=false,options={}){
   const failed=states.some(([,v])=>['unavailable','rate_limited'].includes(v));
   liveStatus=(ok.length?ok.join(' + '):'No sources available')+(failed?' · Some sources unavailable':'')+((!member()?.enabled||member().premium)&&data.sources?.youtube==='not_configured'?' · YouTube creator search is not connected':'')+(data.searchMatch?' · Showing likely matches for “'+data.searchMatch.title+'”':'');render();
  }catch(e){if(current!==loadSerial)return;if(!options.append)TITLES=[];liveStatus='Search unavailable: '+e.message;render();}
- finally{searchBusy=false;renderActorSearch();}
+ finally{if(current===busySerial){searchBusy=false;renderActorSearch();}if(current===loadSerial&&options.revealResults)revealTitleResults(current,options.intent,query);}
 }
 $('ratingFilter').onchange=async()=>{activeRating=$('ratingFilter').value;localStorage.setItem('su_content_rating',JSON.stringify(activeRating));renderRatingNotice();render();await syncMembership();await loadTitles(true,{refine:true,personId:actorSearch?.id});if(!$('modal').classList.contains('hidden'))$('close').click();};
 $('genreFilter').onchange=()=>{clearTimeout(searchDebounce);loadTitles(true,{refine:true,personId:actorSearch?.id});};
-let searchDebounce;function searchLive(){++loadSerial;clearTimeout(searchDebounce);searchDebounce=setTimeout(()=>loadTitles(true),350)}
-$('serviceSearch').oninput=renderServices;$('kindFilter').onchange=renderServices;$('clearServices').onclick=()=>{selected.clear();store();renderServices();render()};$('close').onclick=closeMediaDialog;$('modal').onclick=e=>{if(e.target===$('modal'))$('close').click()};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('close').click()});$('search').oninput=e=>{term=e.target.value.trim().toLowerCase();if(!member()?.enabled)searchLive()};document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{if(b.dataset.filter==='saved'&&member()?.enabled&&!member().premium){member().show();return;}filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});async function syncMembership(){await window.membershipReady;if(member()?.enabled){saved.clear();for(const key of Object.keys(savedTitles))delete savedTitles[key];if(member().premium){try{for(const t of await member().watchlist(activeRating)){saved.add(t.id);savedTitles[t.id]=t;}}catch{}}else country='US';$('countryFilter').disabled=!member().premium;}renderCountry();renderServices();loadAddonServices();render();}
+let searchDebounce;
+if(canRevealTitleResults())document.documentElement.classList.add('su-title-search-navigation');
+function searchLive(){++loadSerial;clearTimeout(searchDebounce);searchDebounce=setTimeout(()=>loadTitles(true),350)}
+$('serviceSearch').oninput=renderServices;$('kindFilter').onchange=renderServices;$('clearServices').onclick=()=>{selected.clear();store();renderServices();render()};$('close').onclick=closeMediaDialog;$('modal').onclick=e=>{if(e.target===$('modal'))$('close').click()};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('close').click()});$('search').oninput=e=>{++titleSearchIntent;term=e.target.value.trim().toLowerCase();if(!member()?.enabled)searchLive()};document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{if(b.dataset.filter==='saved'&&member()?.enabled&&!member().premium){member().show();return;}filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));render()});async function syncMembership(){await window.membershipReady;if(member()?.enabled){saved.clear();for(const key of Object.keys(savedTitles))delete savedTitles[key];if(member().premium){try{for(const t of await member().watchlist(activeRating)){saved.add(t.id);savedTitles[t.id]=t;}}catch{}}else country='US';$('countryFilter').disabled=!member().premium;}renderCountry();renderServices();loadAddonServices();render();}
 window.addEventListener('membershipchange',async()=>{await syncMembership();await loadTitles();});
 window.membershipReady.then(async()=>{await syncMembership();await loadTitles();});
 window.addEventListener('su-languagechange',()=>{if(!$('modal').classList.contains('hidden'))$('close').click();if(!$('search').value.trim()&&!$('genreFilter').value&&!activeRating)loadTitles();else showWatchlistMessage(window.StreamUnifyI18n.t('Search again to refresh title information in your selected language.'));});
 // Prefill a title guide referral without consuming a search until submission.
 const guideQuery=new URLSearchParams(location.search).get('q');if(guideQuery)$('search').value=guideQuery.slice(0,120);
-$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(searchDebounce);loadTitles(true);}});
+$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitTitleSearch();}});
 
 
 $('suManageServices').onclick=()=>{$('suServicePanel').open=true;$('suServicePanel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});$('serviceSearch').focus({preventScroll:true});};
@@ -510,6 +556,6 @@ setInterval(()=>{const root=$('suSpotlight');if(!spotlightPaused&&!document.hidd
  document.querySelectorAll('[data-su-page]').forEach(b=>b.onclick=()=>{const page=b.dataset.suPage;toggleMenu(false);if(page==='home'){info.classList.add('hidden');setFilter('all');window.scrollTo({top:0,behavior:'smooth'});}else if(page==='watchlist'){info.classList.add('hidden');setFilter('saved');}else showInfo(...pages[page]);});
 })();
 </script>
-<script id="su-search-button-script">document.getElementById('suSearchButton').onclick=()=>{clearTimeout(searchDebounce);loadTitles(true);};</script>
+<script id="su-search-button-script">document.getElementById('suSearchButton').onclick=submitTitleSearch;</script>
 <script src="availability-client.js"></script>
 </body></html>
