@@ -18,7 +18,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           New-Item -ItemType Directory agent-output | Out-Null
-          & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /out:agent-output/StreamUnifyXboxAgent.exe /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll xbox/deployment-agent/Agent.cs
+          & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /out:agent-output\StreamUnifyXboxAgent.exe /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll xbox\deployment-agent\Agent.cs
           if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
           $test = Start-Process agent-output/StreamUnifyXboxAgent.exe -ArgumentList '--self-test' -Wait -PassThru
           if ($test.ExitCode -ne 0) { throw 'Agent self-tests failed' }
@@ -28,3 +28,4 @@ jobs:
         with:
           name: StreamUnify-Xbox-deployment-agent
           path: agent-output/*
+
