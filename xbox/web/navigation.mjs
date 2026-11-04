@@ -27,7 +27,7 @@ export function installNavigation({back,selectOptions,root=document}){
  const focusables=()=>visibleControls(scope());
  let marked;root.addEventListener('focusin',()=>{marked?.removeAttribute('data-xbox-focus');marked=deepActive(root);marked?.setAttribute('data-xbox-focus','');});
  const focus=target=>{if(!target)return;target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',inline:'nearest'});};
- function move(direction){const items=focusables(),active=deepActive(root);focus(!items.includes(active)?items[0]:nextTarget(active.getBoundingClientRect(),items.filter(el=>el!==active).map(element=>({element,rect:element.getBoundingClientRect()})),direction));}
+ function move(direction){const items=focusables(),active=deepActive(root),within=scope().contains(active)&&active!==root.body&&active?.getClientRects().length;focus(within?nextTarget(active.getBoundingClientRect(),items.filter(el=>el!==active).map(element=>({element,rect:element.getBoundingClientRect()})),direction):items[0]);}
  function command(key){
   if(key==='back'){back();return;}
   if(key==='select'){const active=deepActive(root);if(active?.tagName==='SELECT'&&selectOptions){selectOptions(active);return;}active?.click();if(['INPUT','TEXTAREA'].includes(active?.tagName)&&!['checkbox','radio','range'].includes(active.type)&&window.chrome?.webview)window.chrome.webview.postMessage(JSON.stringify({type:'keyboard'}));return;}

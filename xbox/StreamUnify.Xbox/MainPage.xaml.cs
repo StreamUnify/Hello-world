@@ -26,8 +26,8 @@ namespace StreamUnify.Xbox
             controller.Tick += Poll;
             var keyboard = InputPane.GetForCurrentView();
             keyboard.Showing += (s, e) => keyboardVisible = true;
-            keyboard.Hiding += (s, e) => { keyboardVisible = false; previous = GamepadButtons.A; repeatAt = DateTime.UtcNow.AddMilliseconds(400); };
-            SystemNavigationManager.GetForCurrentView().BackRequested += (s, e) => { e.Handled = true; if (!keyboardVisible) Back(); };
+            keyboard.Hiding += (s, e) => { keyboardVisible = false; previous = (Gamepad.Gamepads.Count > 0 ? Gamepad.Gamepads[0].GetCurrentReading().Buttons : GamepadButtons.None) | GamepadButtons.A; repeatAt = DateTime.UtcNow.AddMilliseconds(400); };
+            SystemNavigationManager.GetForCurrentView().BackRequested += (s, e) => { e.Handled = true; if (keyboardVisible) InputPane.GetForCurrentView().TryHide(); else Back(); };
             Application.Current.Suspending += (s, e) => controller.Stop();
             Application.Current.Resuming += async (s, e) => { previous = GamepadButtons.None; controller.Start(); if (ready) await Browser.ExecuteScriptAsync("window.streamUnifyResume?.()"); };
         }
@@ -76,7 +76,7 @@ namespace StreamUnify.Xbox
             if (Gamepad.Gamepads.Count == 0) { previous = GamepadButtons.None; lastDirection = null; return; }
             var reading = Gamepad.Gamepads[0].GetCurrentReading();
             var buttons = reading.Buttons;
-            if (keyboardVisible) { previous = buttons; return; }
+            if (keyboardVisible) { if (buttons.HasFlag(GamepadButtons.B) && !previous.HasFlag(GamepadButtons.B)) InputPane.GetForCurrentView().TryHide(); previous = buttons; return; }
             var now = DateTime.UtcNow;
             var direction = buttons.HasFlag(GamepadButtons.DPadUp) || reading.LeftThumbstickY > .6 ? "up" :
                 buttons.HasFlag(GamepadButtons.DPadDown) || reading.LeftThumbstickY < -.6 ? "down" :

@@ -40,3 +40,5 @@ if(picker){const style=document.createElement('style');style.textContent=':host{
 $('search')?.focus({preventScroll:true});
 
 const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.0.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
+
+const hints=document.createElement('div');hints.className='xbox-controller-hints';hints.textContent='D-pad / left stick: Move   •   A: Select   •   B: Back   •   A on a text field: On-screen keyboard';document.body.append(hints);
