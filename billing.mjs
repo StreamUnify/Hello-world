@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import Stripe from 'stripe';
 import {createClient} from '@supabase/supabase-js';
 import {MembershipError} from './membership-policy.mjs';
@@ -45,7 +46,7 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
       const matching=open.data.find(session=>session.metadata?.streamunify_interval===interval);
       if(matching)return {url:matching.url};
       for(const session of open.data)await stripe.checkout.sessions.expire(session.id);
-      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,metadata:{streamunify_interval:interval},line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled',integration_identifier:'streamunify_membership_abcdefgh'},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+interval+'-'+(open.data.map(s=>s.id).sort().join('_')||'new')+'-'+Math.floor(Date.now()/1800000)});
+      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,metadata:{streamunify_interval:interval},line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled',integration_identifier:'streamunify_membership_abcdefgh'},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+interval+'-'+createHash('sha256').update(open.data.map(s=>s.id).sort().join('_')).digest('hex').slice(0,20)+'-'+Math.floor(Date.now()/1800000)});
       return {url:session.url};
       });
     },
