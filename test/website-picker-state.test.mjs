@@ -24,7 +24,8 @@ globalThis.window={addEventListener(){},membershipReady:Promise.resolve(),Stream
 await import('../website-pick-together-ui.mjs');
 const p=new Class();p.render=()=>{};p.focusHeading=()=>{};
 assert.ok(p.form().includes('at least one selected genre from each of you'));
-assert.ok(p.form().includes('Moods and favorite movies help rank'));
+assert.ok(p.form().includes('Add a mood or favorite movie'));assert.ok(p.form().includes('Horror'));assert.ok(p.form().includes('mood tonight <span class="muted">(optional)'));assert.ok(p.settings.people.every(person=>person.mood===''));
+const moodButton={dataset:{mood:'Fun',person:'0'},parentElement:{querySelectorAll:()=>[]}};p.shadowRoot={getElementById:()=>null};p.click({target:{closest:()=>moodButton}});assert.equal(p.settings.people[0].mood,'Fun');p.click({target:{closest:()=>moodButton}});assert.equal(p.settings.people[0].mood,'');
 assert.ok(!p.form().includes('tradeoff'));
 
 const seeded=new Class();seeded.render=()=>{};

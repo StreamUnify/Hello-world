@@ -27,7 +27,7 @@ test('packaging preserves homepage source and existing navigation and only adds 
  const root=readFileSync(new URL('../index.html',import.meta.url),'utf8'),mobile=pickTogetherHtml(root);
  assert.doesNotMatch(root,/suPickTogether|pick-together-ui/);
  assert.equal(mobile.match(/id="suWebPickTogether"/g).length,1);
- assert.ok(mobile.includes(root.slice(root.indexOf('<main id="top">'),root.indexOf('</main>')+7)));
+ assert.ok(mobile.indexOf('id="suWebPickTogether"')>mobile.indexOf('id="search"'));assert.ok(mobile.indexOf('id="suWebPickTogether"')<mobile.indexOf('id="recentSearches"'));assert.ok(mobile.includes('Pick a Movie. Together'));assert.ok(!mobile.slice(mobile.indexOf('<header'),mobile.indexOf('</header>')).includes('id="suWebPickTogether"'));
  for(const id of ['suSurprise','suFree','suMine','suWatchlist','suMenuOpen'])assert.ok(mobile.includes('id="'+id+'"'));
  assert.throws(()=>pickTogetherHtml('missing'),/anchor/);
  assert.ok(mobile.indexOf('id="suWebTogether"')>mobile.indexOf('</main>'));

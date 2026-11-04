@@ -180,3 +180,13 @@ test('unavailable mutual title never falls back to an available one-sided sugges
  }});
  const data=await catalog.pickTogether(prefs,'US');assert.deepEqual(data.results,[]);assert.equal(data.matchStatus,'no_shared_matches');assert.equal(data.availability,'ok');
 });
+
+test('Horror is a real catalog genre and blank moods do not block recommendations',async()=>{
+ const preferences=validatePickPreferences({...prefs,runtime:999,people:[{genres:['Horror'],favorite:''},{genres:['Horror'],mood:'',favorite:''}]});
+ assert.ok(preferences.people.every(p=>p.mood===''));
+ assert.ok(Number.isFinite(pickScore([27],preferences)));
+ const {catalog,urls}=fixture({discoveryGenres:[27],detailGenres:[{id:27,name:'Horror'}]});
+ const data=await catalog.pickTogether(preferences,'US');
+ assert.equal(data.results.length,1);
+ assert.ok(urls.some(u=>u.pathname.endsWith('/discover/movie')&&u.searchParams.get('with_genres')==='27'));
+});
