@@ -3,18 +3,18 @@ import assert from 'node:assert/strict';
 import {createCatalog} from '../catalog.mjs';
 import {validatePickPreferences,matchedPickProviders,runPickTogether,pickScore} from '../pick-together-service.mjs';
 const prefs={people:[{genres:['Comedy'],mood:'Fun',favorite:''},{genres:['Mystery'],mood:'Surprising',favorite:''}],services:['netflix'],extras:false,runtime:150};
-function fixture({runtime=100,country='US',favoriteResults=[],failProviders=false}={}){
+function fixture({runtime=100,country='US',favoriteResults=[],failProviders=false,detailGenres=[{id:35,name:'Comedy'},{id:9648,name:'Mystery'}],discoveryGenres=[35,9648]}={}){
  const urls=[];
  const fetcher=async url=>{
   const u=new URL(url);urls.push(u);const p=u.pathname;
   let body;
   if(p.endsWith('/watch/providers/movie'))body={results:[{provider_id:8,provider_name:'Netflix'},{provider_id:9,provider_name:'Amazon Prime Video'}]};
   else if(p.endsWith('/search/movie'))body={results:favoriteResults};
-  else if(p.endsWith('/discover/movie'))body={results:[{id:901,title:'Source Film',genre_ids:[35,9648],popularity:10}]};
+  else if(p.endsWith('/discover/movie'))body={results:[{id:901,title:'Source Film',genre_ids:discoveryGenres,popularity:10}]};
   else if(p.endsWith('/watch/providers')){
    if(failProviders)throw Error('source down');
    body={results:{[country]:{link:'https://www.themoviedb.org/movie/901/watch',flatrate:[{provider_id:8,provider_name:'Netflix'}]}}};
-  }else if(p.endsWith('/movie/901'))body={id:901,title:'Source Film',overview:'Real source metadata',runtime,genres:[{id:35,name:'Comedy'},{id:9648,name:'Mystery'}]};
+  }else if(p.endsWith('/movie/901'))body={id:901,title:'Source Film',overview:'Real source metadata',runtime,genres:detailGenres};
   else throw Error('Unexpected request '+p);
   return {ok:true,json:async()=>body};
  };
@@ -88,7 +88,7 @@ test('Watchmode rate limit preserves verified TMDB offers and reports partial co
   if(path.endsWith('/watch/providers/movie'))data={results:[{provider_id:8,provider_name:'Netflix'}]};
   else if(path.endsWith('/discover/movie'))data={results:[{id:77,title:'Real result',genre_ids:[35]}]};
   else if(path.endsWith('/watch/providers'))data={results:{US:{flatrate:[{provider_name:'Netflix',provider_id:8}]}}};
-  else if(path.endsWith('/movie/77'))data={id:77,title:'Real result',overview:'Metadata',runtime:90,genres:[{id:35,name:'Comedy'}]};
+  else if(path.endsWith('/movie/77'))data={id:77,title:'Real result',overview:'Metadata',runtime:90,genres:[{id:35,name:'Comedy'},{id:9648,name:'Mystery'}]};
   else throw Error('unexpected path');
   return {ok:true,json:async()=>data};
  };
@@ -114,7 +114,7 @@ test('provider directory failure falls back honestly and still requires regional
   const u=new URL(url);urls.push(u);const p=u.pathname;let data;
   if(p.endsWith('/watch/providers/movie'))throw Error('directory unavailable');
   if(p.endsWith('/discover/movie'))data={results:[{id:99,title:'Verified title',genre_ids:[35]}]};
-  else if(p.endsWith('/movie/99'))data={id:99,title:'Verified title',overview:'Metadata',runtime:90};
+  else if(p.endsWith('/movie/99'))data={id:99,title:'Verified title',overview:'Metadata',runtime:90,genres:[{id:35,name:'Comedy'},{id:9648,name:'Mystery'}]};
   else if(p.endsWith('/watch/providers'))data={results:{US:{flatrate:[{provider_name:'Netflix',provider_id:8}]}}};
   else throw Error('Unexpected request');
   return {ok:true,json:async()=>data};
@@ -133,4 +133,50 @@ test('regional directory never grants a base service its add-on IDs without extr
   }});
   await catalog.pickTogether({...prefs,services,extras},'US');assert.ok(discovers.every(u=>u.searchParams.get('with_watch_providers')===expected));
  }
+});
+
+test('each person must have a detail-confirmed selected genre match',async()=>{
+ const people=[{genres:['Comedy','Mystery'],mood:'Fun',favorite:''},{genres:['Adventure'],mood:'Fun',favorite:''}];
+ const {catalog}=fixture({discoveryGenres:[12],detailGenres:[{id:12,name:'Adventure'}]});
+ const data=await catalog.pickTogether({...prefs,people},'US');
+ assert.deepEqual(data.results,[]);assert.equal(data.matchStatus,'no_shared_matches');assert.ok(data.notices.some(n=>n.includes('Other matches may exist')));
+});
+test('disjoint selected genres discover exact AND pairs, then return mutual detail hits',async()=>{
+ const people=[{genres:['Comedy','Mystery'],mood:'Fun',favorite:''},{genres:['Adventure'],mood:'Cozy',favorite:''}];
+ const {catalog,urls}=fixture({discoveryGenres:[35,12],detailGenres:[{id:35,name:'Comedy'},{id:12,name:'Adventure'}]});
+ const data=await catalog.pickTogether({...prefs,people},'US');
+ assert.equal(data.results.length,1);assert.equal(data.matchStatus,'matched');assert.deepEqual(data.results[0].genreIds,[35,12]);
+ assert.deepEqual(urls.filter(u=>u.pathname.endsWith('/discover/movie')).map(u=>u.searchParams.get('with_genres')).sort(),['12,35','12,9648']);
+ assert.match(data.results[0].matchExplanation,/Person 1: Comedy; Person 2: Adventure/);
+});
+test('conflicting or unknown detail genres never inherit mutual discovery genres',async()=>{
+ for(const detailGenres of [[{id:35,name:'Comedy'}],[],[{name:'Mystery'}]]){
+  const {catalog}=fixture({detailGenres,discoveryGenres:[35,9648]});const data=await catalog.pickTogether(prefs,'US');assert.equal(data.results.length,0);
+ }
+});
+test('favorites and moods cannot rescue a one-sided selected-genre mismatch',async()=>{
+ const {catalog,urls}=fixture({discoveryGenres:[35,9648],detailGenres:[{id:35,name:'Comedy'}],favoriteResults:[{id:7,title:'Favorite',genre_ids:[35]}]});
+ const people=[prefs.people[0],{...prefs.people[1],mood:'Fun',favorite:'Favorite'}];
+ const data=await catalog.pickTogether({...prefs,people},'US');assert.equal(data.results.length,0);
+ assert.equal(data.favoriteMatches[0].status,'matched');assert.ok(urls.filter(u=>u.pathname.endsWith('/discover/movie')).every(u=>u.searchParams.get('with_genres')==='35,9648'));
+});
+test('genre intersection discovery is deduplicated, bounded and scope is explicit',async()=>{
+ const all=['Comedy','Mystery','Adventure','Romance','Sci-fi','Drama','Action','Animation'];
+ const {catalog,urls}=fixture();const data=await catalog.pickTogether({...prefs,people:prefs.people.map(p=>({...p,genres:all}))},'US');
+ const queries=urls.filter(u=>u.pathname.endsWith('/discover/movie')).map(u=>u.searchParams.get('with_genres'));
+ assert.equal(queries.length,8);assert.equal(new Set(queries).size,8);assert.ok(data.notices.some(n=>n.includes('8 of 36')&&n.includes('entire catalog')));
+});
+test('unavailable mutual title never falls back to an available one-sided suggestion',async()=>{
+ const catalog=createCatalog({env:{TMDB_API_KEY:'secret'},fetcher:async url=>{
+  const p=new URL(url).pathname;let data;
+  if(p.endsWith('/watch/providers/movie'))data={results:[{provider_id:8,provider_name:'Netflix'}]};
+  else if(p.endsWith('/discover/movie'))data={results:[{id:1,title:'One-sided',genre_ids:[35]},{id:2,title:'Mutual',genre_ids:[35,9648]}]};
+  else if(p.endsWith('/movie/1'))data={id:1,title:'One-sided',overview:'Source',runtime:90,genres:[{id:35,name:'Comedy'}]};
+  else if(p.endsWith('/movie/2'))data={id:2,title:'Mutual',overview:'Source',runtime:90,genres:[{id:35,name:'Comedy'},{id:9648,name:'Mystery'}]};
+  else if(p.endsWith('/movie/1/watch/providers'))data={results:{US:{flatrate:[{provider_name:'Netflix',provider_id:8}]}}};
+  else if(p.endsWith('/movie/2/watch/providers'))data={results:{DE:{flatrate:[{provider_name:'Netflix',provider_id:8}]}}};
+  else throw Error('Unexpected request');
+  return {ok:true,json:async()=>data};
+ }});
+ const data=await catalog.pickTogether(prefs,'US');assert.deepEqual(data.results,[]);assert.equal(data.matchStatus,'no_shared_matches');assert.equal(data.availability,'ok');
 });

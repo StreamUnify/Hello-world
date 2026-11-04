@@ -23,6 +23,10 @@ globalThis.document={getElementById(){return null;},querySelector(){return null;
 globalThis.window={addEventListener(){},membershipReady:Promise.resolve(),StreamUnifyI18n:{locale:'en-US'}};
 await import('../website-pick-together-ui.mjs');
 const p=new Class();p.render=()=>{};p.focusHeading=()=>{};
+assert.ok(p.form().includes('at least one selected genre from each of you'));
+assert.ok(p.form().includes('Moods and favorite movies help rank'));
+assert.ok(!p.form().includes('tradeoff'));
+
 const seeded=new Class();seeded.render=()=>{};
 document.querySelectorAll=()=>[{dataset:{service:'netflix'},checked:true,closest:()=>({querySelector:()=>({textContent:'Netflix'})})}];
 seeded.seedServices();assert.deepEqual(seeded.serviceOptions,[{id:'netflix',name:'Netflix'}]);assert.deepEqual(seeded.settings.services,['netflix']);
@@ -30,7 +34,9 @@ const fallback=new Class();fallback.render=()=>{};document.querySelectorAll=()=>
 let request;
 globalThis.fetch=async(url,options)=>{request={url,options};return {ok:true,json:async()=>({results:[{name:'<Real title>',runtime:null,providers:[{name:'Netflix',type:'Subscription'}]}],country:'US',availability:'partial',notices:['Favorite not recognized']})};};
 await p.search();assert.equal(p.picks.length,1);assert.equal(p.loading,false);assert.equal(p.notices.length,2);assert.ok(request.url.startsWith('/api/pick-together?'));const params=new URL(request.url,'https://example.com').searchParams;assert.deepEqual(JSON.parse(params.get('preferences')),p.settings);assert.equal(params.get('language'),'en-US');assert.ok(p.results().includes('&lt;Real title&gt;'));assert.ok(p.results().includes('Runtime unavailable'));assert.ok(p.results().includes('Subscription required'));
-let resolve;globalThis.fetch=()=>new Promise(r=>resolve=r);const pending=p.search();await new Promise(r=>setTimeout(r,0));p.cancelRequest();assert.equal(p.loading,false);resolve({ok:true,json:async()=>({results:[{name:'Stale title'}]})});await pending;assert.equal(p.picks.length,0);assert.equal(p.resultMode,false);
-globalThis.fetch=async()=>({ok:false,json:async()=>({error:'Source unavailable'})});await p.search();assert.equal(p.error,'Source unavailable');assert.equal(p.loading,false);
-window.StreamUnifyMembership={enabled:true,search:async(url,id)=>{assert.ok(url.startsWith('/api/pick-together?'));assert.ok(id);return {results:[],availability:'ok'};}};await p.search();assert.equal(p.error,'');assert.ok(p.results().includes('No matches with these settings'));
+assert.ok(p.results().includes('Each result matches at least one selected genre from each person.'));
+assert.ok(p.results().includes('TOP SHARED GENRE MATCH'));
+let resolve;globalThis.fetch=()=>new Promise(r=>resolve=r);const pending=p.search();await new Promise(r=>setTimeout(r,0));assert.ok(p.results().includes('Finding your shared matches…'));assert.ok(!p.results().includes('Each result matches'));assert.ok(!p.results().includes('No shared matches found'));p.cancelRequest();assert.equal(p.loading,false);resolve({ok:true,json:async()=>({results:[{name:'Stale title'}]})});await pending;assert.equal(p.picks.length,0);assert.equal(p.resultMode,false);
+globalThis.fetch=async()=>({ok:false,json:async()=>({error:'Source unavailable'})});await p.search();assert.equal(p.error,'Source unavailable');assert.equal(p.loading,false);assert.ok(p.results().includes('We couldn’t finish your search'));assert.ok(!p.results().includes('No shared matches found'));
+window.StreamUnifyMembership={enabled:true,search:async(url,id)=>{assert.ok(url.startsWith('/api/pick-together?'));assert.ok(id);return {results:[],availability:'ok'};}};await p.search();assert.equal(p.error,'');assert.ok(p.results().includes('No shared matches found among the movies checked'));
 });
