@@ -1,0 +1,67 @@
+name: Xbox app validation
+on:
+  pull_request:
+    paths: ['xbox/**', 'scripts/*xbox*.mjs', 'index.html', 'membership-client-src.js', 'website-pick-together*', 'website-branding.mjs', 'test/xbox.test.mjs', 'package*.json', '.github/workflows/xbox.yml']
+  push:
+    branches: [upgrade/xbox-marketplace, upgrade/xbox-current-experience]
+  workflow_dispatch:
+jobs:
+  xbox:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: microsoft/setup-msbuild@v2
+      - run: npm ci
+      - run: npm run build:xbox
+      - run: node --test test/xbox.test.mjs
+      - name: Compile x64 development package
+        run: msbuild xbox/StreamUnify.Xbox/StreamUnify.Xbox.csproj /restore /m /p:Configuration=Debug /p:Platform=x64 /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never /p:UwpAppxPackageBuildMode=SideloadOnly
+      - name: Sign development package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cert = New-SelfSignedCertificate -Type Custom -KeyUsage DigitalSignature -CertStoreLocation 'Cert:\CurrentUser\My' -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}') -Subject 'CN=StreamUnifyDevelopment' -FriendlyName 'StreamUnify Xbox development' -HashAlgorithm SHA256 -KeyLength 2048
+          try {
+            $signTool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+            if (!$signTool) { throw 'Windows SDK SignTool was not found' }
+            $packages = @(Get-ChildItem xbox/StreamUnify.Xbox/AppPackages -Recurse -Filter *.msix)
+            if ($packages.Count -ne 1) { throw "Expected one app package, found $($packages.Count)" }
+            foreach ($package in $packages) {
+              & $signTool.FullName sign /fd SHA256 /sha1 $cert.Thumbprint /s My $package.FullName
+              if ($LASTEXITCODE -ne 0) { throw 'Package signing failed' }
+              $signature = Get-AuthenticodeSignature $package.FullName
+              if (!$signature.SignerCertificate -or $signature.SignerCertificate.Thumbprint -ne $cert.Thumbprint) { throw 'Package signature verification failed' }
+              Export-Certificate -Cert $cert -FilePath (Join-Path $package.DirectoryName 'StreamUnifyDevelopment.cer') | Out-Null
+            }
+          } finally {
+            Remove-Item "Cert:\CurrentUser\My\$($cert.Thumbprint)" -ErrorAction SilentlyContinue
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StreamUnify-Xbox-development-signed
+          path: xbox/StreamUnify.Xbox/AppPackages/**
+          if-no-files-found: error
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build:xbox
+      - run: node scripts/test-xbox-ui.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: StreamUnify-Xbox-TV-previews
+          path: xbox-ui-output/

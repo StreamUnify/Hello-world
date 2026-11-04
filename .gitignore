@@ -13,3 +13,13 @@ ios/App/Pods/
 *service-account*.json
 
 feature-preview/
+
+xbox/StreamUnify.Xbox/Web/
+xbox/StreamUnify.Xbox/bin/
+xbox/StreamUnify.Xbox/obj/
+xbox/StreamUnify.Xbox/AppPackages/
+*.pfx
+*.cer
+
+xbox-ui-output/
+__pycache__/

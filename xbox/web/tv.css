@@ -1,0 +1,32 @@
+/* TV spacing and focus; content and product features come from the shared UI. */
+:root{font-size:20px;scroll-padding:80px;color-scheme:dark}
+body{font-size:20px;padding:28px 40px}
+main{max-width:1600px;padding:24px 24px 80px}
+.su-header{position:relative;padding:20px 24px;flex-wrap:wrap}
+.su-brand{flex-basis:250px}.su-brand img{max-width:250px}
+.su-action,.su-discover .su-action{font-size:19px;min-height:52px;padding:12px 18px}
+.hero{padding:24px 0!important}.hero h1{font-size:54px!important;letter-spacing:-2px}
+.hero>p{font-size:21px}.hero .su-actor-search-hint{font-size:18px}
+button,input,select,summary,a.link{font-size:20px;min-height:52px}
+input,select{padding:14px}.su-genre-filter label{font-size:20px}
+.su-genre-filter select{max-width:300px}
+.su-search-wrap{width:min(1000px,100%)!important}.search{font-size:23px!important}
+.su-together-title{font-size:24px}.su-together-label{font-size:15px}
+.su-recent-searches summary,.su-recent-searches li button{font-size:19px}
+.su-recent-heading,.su-recent-searches summary span,.hero #recentSearchNote{font-size:17px}
+:focus-visible,[data-xbox-focus]{outline:4px solid #9edcff!important;outline-offset:5px!important;box-shadow:0 0 24px #5c91ff70!important}
+.card{min-width:0}.card h3{font-size:25px}.card .sub,.card .muted{font-size:18px;line-height:1.5}
+.card .actions button,.su-title-details{font-size:18px}.provider,.provider-access,.price-label{font-size:17px}
+.modal{width:min(1050px,90vw);max-height:85vh;padding:32px;font-size:21px}.modalback{padding:60px}
+.membership-dialog,.su-alert-dialog{width:min(850px,90vw);max-width:850px;padding:32px;font-size:22px}
+.membership-dialog input{font-size:23px;min-height:54px}.membership-dialog button{font-size:21px}
+.su-drawer{width:520px;font-size:22px;padding:36px}.su-drawer button{font-size:21px}
+.su-detail-facts dt,.su-detail-cast,.order-note{font-size:19px}
+#suServicePanel summary,.service-name strong{font-size:21px}.service-meta,.signup-note{font-size:17px}
+.service{min-height:64px}.service input{width:26px;height:26px;min-height:26px;flex:none}
+.su-plans,.su-apps-coming,.su-social-bar,.su-social-follow{display:none!important}
+.su-search-guide{font-size:20px}.su-search-guide p{font-size:19px}footer{font-size:17px}
+.xbox-status{position:fixed;z-index:2000;bottom:35px;left:50%;transform:translateX(-50%);max-width:1000px;padding:18px 25px;border:1px solid #9edcff;border-radius:14px;background:#101a30;font-size:22px;pointer-events:none}
+.xbox-select{background:#101a30;color:#edf3ff;border:1px solid #9edcff;border-radius:18px;max-height:80vh;width:650px;padding:25px}.xbox-select button{display:block;width:100%;text-align:left;margin:8px 0;padding:14px}.xbox-select::backdrop{background:#000b}
+@media(max-width:1100px){body{padding:20px}.su-header{gap:16px}.hero h1{font-size:44px!important}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}

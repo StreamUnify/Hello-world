@@ -1,0 +1,9 @@
+<Page x:Class="StreamUnify.Xbox.MainPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:Microsoft.UI.Xaml.Controls" Background="#080D1B">
+  <Grid>
+    <controls:WebView2 x:Name="Browser" />
+    <StackPanel x:Name="Failure" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="700" Spacing="20">
+      <TextBlock Text="StreamUnify couldn't start. Check for Xbox system updates, then try again." TextWrapping="Wrap" FontSize="28" Foreground="White" />
+      <Button Content="Try again" Click="Retry_Click" FontSize="24" />
+    </StackPanel>
+  </Grid>
+</Page>
