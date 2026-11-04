@@ -23,6 +23,8 @@ test('Xbox package contains its own interface and restricts host capabilities',a
  const prepared=spawnSync(process.execPath,['scripts/prepare-xbox.mjs'],{encoding:'utf8'});assert.equal(prepared.status,0,prepared.stderr);
  const read=p=>readFile(new URL('../'+p,import.meta.url),'utf8');
  const shell=await read('xbox/StreamUnify.Xbox/MainPage.xaml.cs');
+ assert.match(await read('xbox/StreamUnify.Xbox/App.xaml.cs'),/ApplicationRequiresPointerMode.WhenRequested/);
+ assert.match(await read('xbox/StreamUnify.Xbox/MainPage.xaml'),/RequiresPointer="Never"/);
  assert.match(shell,/NavigationStarting/);assert.match(shell,/NewWindowRequested/);assert.match(shell,/CoreWebView2PermissionState.Deny/);
  const manifest=await read('xbox/StreamUnify.Xbox/Package.appxmanifest');
  assert.match(manifest,/internetClient/);assert.doesNotMatch(manifest,/broadFileSystemAccess|runFullTrust/);

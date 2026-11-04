@@ -5,7 +5,7 @@ namespace StreamUnify.Xbox
 {
     sealed partial class App : Application
     {
-        public App() { InitializeComponent(); }
+        public App() { InitializeComponent(); RequiresPointerMode = ApplicationRequiresPointerMode.WhenRequested; }
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             var frame = Window.Current.Content as Frame;
