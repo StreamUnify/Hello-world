@@ -26,7 +26,7 @@ export function installNavigation({back,selectOptions,root=document}){
  };
  const focusables=()=>visibleControls(scope());
  let marked;root.addEventListener('focusin',()=>{marked?.removeAttribute('data-xbox-focus');marked=deepActive(root);marked?.setAttribute('data-xbox-focus','');});
- const focus=target=>{if(!target)return;target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',inline:'nearest'});};
+ const focus=target=>{if(!target)return;target.focus({preventScroll:true});marked?.removeAttribute('data-xbox-focus');marked=target;target.setAttribute('data-xbox-focus','');target.scrollIntoView({block:'nearest',inline:'nearest'});};
  function move(direction){const items=focusables(),active=deepActive(root),within=scope().contains(active)&&active!==root.body&&active?.getClientRects().length;focus(within?nextTarget(active.getBoundingClientRect(),items.filter(el=>el!==active).map(element=>({element,rect:element.getBoundingClientRect()})),direction):items[0]);}
  function command(key){
   if(key==='back'){back();return;}

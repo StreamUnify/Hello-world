@@ -32,3 +32,5 @@ input,select{padding:14px}.su-genre-filter label{font-size:20px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
 .xbox-controller-hints{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:12px 35px;text-align:center;font-size:18px;color:#d0ddf5;background:#080d17f5;border-top:1px solid #344767;pointer-events:none}body{padding-bottom:90px}.xbox-status{bottom:70px}
+
+button,input,select,summary,a[href]{scroll-margin-block:85px}
