@@ -10,7 +10,7 @@ if(api.protocol!=='https:'||api.username||api.password||api.search||api.hash||ap
 const output=path.join(root,'xbox/StreamUnify.Xbox/Web');
 await rm(output,{recursive:true,force:true});await mkdir(output,{recursive:true});
 await writeFile(path.join(output,'index.html'),xboxHtml(await readFile(path.join(root,'index.html'),'utf8')));
-await writeFile(path.join(output,'app-config.js'),'window.STREAMUNIFY_PLATFORM = "xbox"; window.STREAMUNIFY_XBOX_BUILD = '+JSON.stringify({version:'0.2.0.0',commit:process.env.GITHUB_SHA||'local'})+'; window.STREAMUNIFY_API_BASE = '+JSON.stringify(api.origin)+';\n');
+await writeFile(path.join(output,'app-config.js'),'window.STREAMUNIFY_PLATFORM = "xbox"; window.STREAMUNIFY_XBOX_BUILD = '+JSON.stringify({version:'0.2.1.0',commit:process.env.GITHUB_SHA||'local'})+'; window.STREAMUNIFY_API_BASE = '+JSON.stringify(api.origin)+';\n');
 for(const file of ['streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg','i18n-client.js','availability-client.js','website-pick-together.css'])await copyFile(path.join(root,file),path.join(output,file));
 await copyFile(path.join(root,'xbox/web/tv.css'),path.join(output,'xbox-tv.css'));
 const shared={bundle:true,minify:true,target:'chrome110'};

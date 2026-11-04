@@ -1,6 +1,6 @@
 # StreamUnify Xbox — current shared interface
 
-Xbox preview **0.2.0.0** packages the current shared StreamUnify homepage, search, actor and fuzzy search, genre/rating filters, Pick Together, recent account searches, title details, Watch in Order, availability alerts, selected services, and Premium watchlists. The app uses the production API and account entitlements.
+Xbox preview **0.2.1.0** packages the current shared StreamUnify homepage, search, actor and fuzzy search, genre/rating filters, Pick Together, recent account searches, title details, Watch in Order, availability alerts, selected services, and Premium watchlists. The app uses the production API and account entitlements.
 
 `npm ci && npm run build:xbox` creates the packaged `Web/` assets from root `index.html`, current membership/provider modules, and current Pick Together modules. Shared product code is not copied into a separate Xbox fork. TV CSS, controller navigation (including shadow DOM and dialogs), select-option panels, and Xbox auth adaptation live in `xbox/web`. The header shows the app version; `app-config.js` records the CI commit SHA. Every future **master** update includes website, iOS, Android, and Xbox; see `AGENTS.md`.
 
@@ -22,3 +22,5 @@ Upload the signed MSIX through Xbox Device Portal. The existing x64 dependencies
 ## Validation
 
 Run `npm test` and `npm run build:xbox`. Verify at 1080p and 720p with a controller: homepage, all search filters, actor pagination, Pick Together selection/results/back, account sign-in/out, recent searches, watchlist sync, alerts, details/order, unavailable network, suspend/resume and keyboard dismissal. Browser checks supplement physical Xbox One testing; they do not replace it.
+
+Launch and tile artwork use the existing blue play logo from `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`, matching the website favicon.

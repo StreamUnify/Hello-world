@@ -21,6 +21,13 @@ function selectOptions(select){
  for(const option of select.options){if(option.disabled)continue;const b=document.createElement('button');b.textContent=option.text;b.setAttribute('aria-pressed',String(option.selected));b.onclick=()=>{select.value=option.value;dialog.close();select.dispatchEvent(new Event('change',{bubbles:true}));};dialog.append(b);}
  dialog.addEventListener('close',()=>{dialog.remove();select.focus();});document.body.append(dialog);dialog.showModal();dialog.querySelector('[aria-pressed="true"]')?.focus();
 }
+window.streamUnifyConfirm=text=>new Promise(resolve=>{
+ const dialog=document.createElement('dialog');dialog.className='xbox-select';dialog.setAttribute('aria-label','Confirm account deletion');
+ const message=document.createElement('p');message.textContent=text;dialog.append(message);
+ let accepted=false;
+ for(const [label,value] of [['Cancel',false],['Delete account',true]]){const button=document.createElement('button');button.textContent=label;button.type='button';button.onclick=()=>{accepted=value;dialog.close();};dialog.append(button);}
+ dialog.addEventListener('close',()=>{dialog.remove();resolve(accepted);});document.body.append(dialog);dialog.showModal();dialog.querySelector('button').focus();
+});
 installNavigation({back,selectOptions});
 // Keep all provider information, but do not claim unsupported provider app launches.
 // Legal documents use the shell's two explicitly allowed destinations.
@@ -39,6 +46,8 @@ const picker=$('suWebTogether');
 if(picker){const style=document.createElement('style');style.textContent=':host{font-size:22px}button,input{font-size:21px!important;min-height:54px}button:focus-visible,input:focus-visible,a:focus-visible,[data-xbox-focus]{outline:4px solid #9edcff!important;outline-offset:5px!important}button,input,a[href]{scroll-margin-block:85px}.wrap{max-width:1450px!important;padding:35px!important}.muted,.unknown,.cost,small{font-size:18px!important}.dialog{max-width:900px!important;width:80vw!important}';const attach=()=>{if(picker.shadowRoot&&!picker.shadowRoot.querySelector('[data-xbox-tv]')){const copy=style.cloneNode(true);copy.dataset.xboxTv='true';picker.shadowRoot.append(copy);}};customElements.whenDefined('su-web-pick-together').then(()=>{attach();new MutationObserver(attach).observe(picker.shadowRoot,{childList:true});});}
 $('search')?.focus({preventScroll:true});
 
-const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.0.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
+const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.1.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
 
-const hints=document.createElement('div');hints.className='xbox-controller-hints';hints.textContent='D-pad / left stick: Move   •   A: Select   •   B: Back   •   A on a text field: On-screen keyboard';document.body.append(hints);
+const hints=document.createElement('div');hints.className='xbox-controller-hints';hints.textContent='D-pad / left stick: Move   •   Right stick: Scroll   •   A: Select / Type   •   B: Back';document.body.append(hints);
+
+const providerCaption=document.querySelector('.su-provider-strip + .su-provider-caption');if(providerCaption)providerCaption.textContent='Streaming provider apps open separately on Xbox.';
