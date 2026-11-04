@@ -1,3 +1,4 @@
+import {accountFetch} from './account-network.mjs';
 import {nativePlanText} from './native-price-display.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {createRecentSearches} from './recent-searches-client.mjs';
@@ -17,7 +18,7 @@ document.querySelector('.su-discover')?.append(button);
 const signupButton=document.createElement('button');signupButton.type='button';signupButton.className='su-action';signupButton.textContent='Sign up';signupButton.hidden=true;
 document.querySelector('.su-discover')?.append(signupButton);
 const dialog=document.createElement('dialog');dialog.className='membership-dialog';
-dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose" class="close" aria-label="Close account">×</button><h2 id="accountHeading">StreamUnify membership</h2><p id="accountStatus" role="status" aria-live="polite"></p><div id="accountFields"><section id="signupIntro" aria-label="Membership options"><p>Free membership: 10 searches per month across our 10 selected US providers.</p><p id="signupPricing"><strong>Premium: $2.99/month or $30/year</strong><br>Save $5.88 (16%) with annual billing versus $35.88 over 12 monthly payments. Unlimited searches, all supported providers, and your synced watchlist.</p><p>Paid plans renew until canceled; provider subscriptions are separate.</p><p id="signupWallets" hidden></p></section><label id="emailLabel">Email address<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label id="passwordLabel">Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label><p id="passwordHint" hidden>Use at least 12 characters.</p><label id="confirmLabel" hidden>Confirm password<input id="accountConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128"></label><section id="verificationInstructions" hidden><p>We’ve sent a verification link to <strong id="verificationEmail"></strong>.</p><div class="su-verification-note">Open the email from StreamUnify and select the verification link. You’ll then create your password.<br><br><strong>Can’t find it?</strong> Check your spam or junk folder. Delivery may take a few minutes. Open the link on the same device and browser where you requested it.</div><button type="button" id="accountResend">Resend verification email</button><button type="button" id="accountChangeEmail">Use a different email</button></section><button type="submit" id="accountSubmit" class="primary">Sign in</button><button type="button" id="accountSignup">Create a free account</button><button type="button" id="accountSignin" hidden>Already have an account? Sign in</button><button type="button" id="accountReset">Forgot password?</button></div><div id="accountPlans"><p>Free: 10 searches per month across the 10 selected US providers. Premium: unlimited searches, all supported providers, and your synced watchlist.</p><p id="membershipPriceNote"><strong>$2.99/month or $30/year</strong> — save $5.88 (16%) annually versus $35.88 over 12 monthly payments. Subscriptions renew until cancelled. Streaming service subscriptions are separate.</p><p id="accountWallets" hidden></p><button type="button" data-plan="monthly">Choose monthly</button><button type="button" data-plan="annual">Choose annual</button><button type="button" id="accountContinue">Continue with Free</button><button type="button" id="accountPortal">Manage subscription</button><button type="button" id="accountImport">Import this device’s saved titles</button><button type="button" id="accountLogout">Sign out</button></div><p><a href="https://www.streamunify.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://www.streamunify.com/terms" target="_blank" rel="noopener noreferrer">Membership terms</a></p><p id="accountMessage" role="status" aria-live="polite"></p></form>`;
+dialog.innerHTML=`<form id="accountForm"><button type="button" id="accountClose" class="close" aria-label="Close account">×</button><h2 id="accountHeading">StreamUnify membership</h2><p id="accountStatus" role="status" aria-live="polite"></p><div id="accountFields"><section id="signupIntro" aria-label="Membership options"><p>Free membership: 10 searches per month across our 10 selected US providers.</p><p id="signupPricing"><strong>Premium: $2.99/month or $30/year</strong><br>Save $5.88 (16%) with annual billing versus $35.88 over 12 monthly payments. Unlimited searches, all supported providers, and your synced watchlist.</p><p>Paid plans renew until canceled; provider subscriptions are separate.</p><p id="signupWallets" hidden></p></section><label id="emailLabel">Email address<input id="accountEmail" type="email" autocomplete="email" required maxlength="254"></label><label id="passwordLabel">Password<input id="accountPassword" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label><p id="passwordHint" hidden>Use at least 12 characters.</p><label id="confirmLabel" hidden>Confirm password<input id="accountConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128"></label><section id="verificationInstructions" hidden><p>We’ve sent a verification link to <strong id="verificationEmail"></strong>.</p><div class="su-verification-note">Open the email from StreamUnify and select the verification link. You’ll then create your password.<br><br><strong>Can’t find it?</strong> Check your spam or junk folder. Delivery may take a few minutes. Return here after verifying your email to finish creating your password. If an older link fails, request a fresh one below.</div><button type="button" id="accountResend">Resend verification email</button><button type="button" id="accountChangeEmail">Use a different email</button></section><button type="submit" id="accountSubmit" class="primary">Sign in</button><button type="button" id="accountSignup">Create a free account</button><button type="button" id="accountSignin" hidden>Already have an account? Sign in</button><button type="button" id="accountReset">Forgot password?</button></div><div id="accountPlans"><p>Free: 10 searches per month across the 10 selected US providers. Premium: unlimited searches, all supported providers, and your synced watchlist.</p><p id="membershipPriceNote"><strong>$2.99/month or $30/year</strong> — save $5.88 (16%) annually versus $35.88 over 12 monthly payments. Subscriptions renew until cancelled. Streaming service subscriptions are separate.</p><p id="accountWallets" hidden></p><button type="button" data-plan="monthly">Choose monthly</button><button type="button" data-plan="annual">Choose annual</button><button type="button" id="accountContinue">Continue with Free</button><button type="button" id="accountPortal">Manage subscription</button><button type="button" id="accountImport">Import this device’s saved titles</button><button type="button" id="accountLogout">Sign out</button></div><p><a href="https://www.streamunify.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a> · <a href="https://www.streamunify.com/terms" target="_blank" rel="noopener noreferrer">Membership terms</a></p><p id="accountMessage" role="status" aria-live="polite"></p></form>`;
 document.body.append(dialog);
 const restoreButton=document.createElement('button');restoreButton.type='button';restoreButton.textContent='Restore purchases';restoreButton.id='accountRestore';document.getElementById('accountPlans').append(restoreButton);
 const deleteButton=document.createElement('button');deleteButton.type='button';deleteButton.textContent='Delete account';deleteButton.id='accountDelete';document.getElementById('accountPlans').append(deleteButton);
@@ -25,6 +26,8 @@ let storePrices={},storePricesState='loading';
 const $=id=>document.getElementById(id);
 const message=text=>{$('accountMessage').textContent=text;};
 let authView='signin',recovery=false,resendAt=0;
+let selectedPlan;try{selectedPlan=sessionStorage.getItem('su_selected_plan');}catch{}
+if(!['monthly','annual'].includes(selectedPlan))selectedPlan=null;
 const show=()=>{if(!dialog.open)dialog.showModal();};
 // Homepage plans only open the existing account flow. They never initiate checkout.
 function drawHomepagePlans(){
@@ -41,6 +44,8 @@ function drawHomepagePlans(){
     el.disabled=!available||busy;
     el.onclick=()=>{
       if(!config?.enabled||!client||busy)return;
+      selectedPlan=['monthly','annual'].includes(el.dataset.suMembership)?el.dataset.suMembership:null;
+      try{if(selectedPlan)sessionStorage.setItem('su_selected_plan',selectedPlan);else sessionStorage.removeItem('su_selected_plan');}catch{}
       if(!user&&!['checkemail','password'].includes(authView))setAuthView('signup');
       show();
       if(!user&&!['checkemail','password'].includes(authView))$('accountEmail').focus();
@@ -55,7 +60,7 @@ function setAuthView(view){
   authView=view;$('accountPassword').value='';$('accountConfirm').value='';message('');draw();
 }
 signupButton.onclick=()=>{if(!user)setAuthView('signup');show();if(!user)$('accountEmail').focus();};
-button.onclick=()=>{if(!user&&authView!=='checkemail')setAuthView('signin');show();};
+button.onclick=()=>{if(!user&&authView!=='checkemail')setAuthView('signin');show();if(user)refresh().catch(e=>message(e.message));};
 $('accountClose').onclick=()=>dialog.close();
 $('accountSignup').onclick=()=>setAuthView('signup');
 $('accountSignin').onclick=()=>setAuthView('signin');
@@ -68,7 +73,7 @@ function draw(){
   button.textContent=user?(status?.plan==='premium'?'Premium':'My account'):'Sign in';
   $('accountHeading').textContent=setup?(recovery?'Reset your password':'Email verified'):waiting?'Check your email':signup?'Create your account':user?(authView==='welcome'?'You’re all set':'Your membership'):'Sign in';
   $('accountFields').hidden=!!user&&!setup;$('accountPlans').hidden=!user||setup;
-  $('signupIntro').hidden=setup||waiting;
+  $('signupIntro').hidden=setup||waiting||(!signup&&authView==='signin');
   $('emailLabel').hidden=setup||waiting;$('accountEmail').required=!setup&&!waiting&&!user;
   $('passwordLabel').hidden=signup||waiting;$('accountPassword').required=setup||(!user&&!signup&&!waiting);
   $('passwordLabel').firstChild.textContent=setup?(recovery?'New password':'Create password'):'Password';
@@ -83,7 +88,7 @@ function draw(){
   $('accountWallets').hidden=!billingAvailable;
   $('accountWallets').textContent=native()?(store==='apple'?'Subscribe through the App Store using your saved Apple Account payment method.':'Subscribe through Google Play using your saved payment method.'):'Pay securely with Apple Pay or a card. Apple Pay appears at checkout on supported devices with a saved payment method.';
   $('signupWallets').hidden=native()||!billingAvailable;$('signupWallets').textContent='Apple Pay and cards accepted at secure checkout. Wallet availability depends on your device and saved payment methods.';
-  dialog.querySelectorAll('[data-plan]').forEach(b=>{b.hidden=status?.plan==='premium'||(native()?!config?.stores?.[store]||!storePrices[b.dataset.plan]:!config?.billingEnabled);b.textContent=native()?`${storePrices[b.dataset.plan]?.priceString||''} / ${b.dataset.plan==='monthly'?'month':'year'}`:`Choose ${b.dataset.plan}`;});
+  dialog.querySelectorAll('[data-plan]').forEach(b=>{b.hidden=status?.plan==='premium'||(native()?!config?.stores?.[store]||!storePrices[b.dataset.plan]:!config?.billingEnabled);b.textContent=native()?`${storePrices[b.dataset.plan]?.priceString||''} / ${b.dataset.plan==='monthly'?'month':'year'}`:`Choose ${b.dataset.plan}${selectedPlan===b.dataset.plan?' (selected)':''}`;});
   $('accountPortal').hidden=!billingAvailable;
   restoreButton.hidden=!native()||!config?.stores?.[store];
   $('accountContinue').hidden=status?.plan==='premium';
@@ -91,13 +96,13 @@ function draw(){
 }
 async function api(path,options={}){
   const {data:{session}}=await client.auth.getSession();
-  const response=await fetch(apiBase+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers,...(session?{Authorization:'Bearer '+session.access_token}:{})}});
+  const response=await accountFetch(apiBase+path,{...options,headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers,...(session?{Authorization:'Bearer '+session.access_token}:{})}});
   const data=await response.json();if(!response.ok){if(data.membership)status=data.membership;draw();if([401,403,429].includes(response.status)){show();message(data.error);}throw Error(data.error||'Request failed');}return data;
 }
 async function refresh(){
-  const {data:{session}}=await client.auth.getSession();user=session?.user;if(needsPasswordSetup(user)&&authView!=='password'){authView='password';show();}status=user?await api('/api/account'):null;draw();window.dispatchEvent(new Event('membershipchange'));
+  const {data:{session}}=await client.auth.getSession();user=session?.user;if(needsPasswordSetup(user)&&authView!=='password'){authView='password';show();}draw();status=user?await api('/api/account'):null;draw();window.dispatchEvent(new Event('membershipchange'));
 }
-async function action(fn){if(busy)return;busy=true;dialog.querySelectorAll('button').forEach(b=>b.disabled=true);message('Please wait…');try{await fn();}catch(e){message(e.message||'Please try again');}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+async function action(fn){if(busy)return;busy=true;dialog.querySelectorAll('button:not(#accountClose)').forEach(b=>b.disabled=true);message('Please wait…');try{await fn();}catch(e){message(e.message||'Please try again');}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);drawHomepagePlans();}}
 const signupRedirect=()=>native()?nativeRedirect:location.origin+'/';
 async function requestSignup(){
   if(!$('accountEmail').reportValidity())return;
@@ -126,13 +131,13 @@ deleteButton.onclick=()=>action(async()=>{if(!window.confirm('Delete your Stream
 $('accountImport').onclick=()=>action(async()=>{let saved={};try{saved=JSON.parse(localStorage.getItem('su_saved_titles')||'{}');}catch{}for(const item of Object.values(saved))await api('/api/watchlist',{method:'POST',body:JSON.stringify(item)});message('Saved titles imported. The original device copy is preserved.');window.dispatchEvent(new Event('membershipchange'));});
 window.StreamUnifyMembership={get enabled(){return !!config?.enabled;},get premium(){return status?.plan==='premium';},get status(){return status;},show,api,async search(url,searchId){const searchOwner=user?.id;const data=await api(url,{headers:searchId?{'X-Search-Id':searchId}:{}});if(data.membership){status=data.membership;draw();}if(searchId&&searchOwner===user?.id)recentSearches.reload();return data;},async watchlist(rating=''){return (await api('/api/watchlist'+(rating?'?rating='+encodeURIComponent(rating):''))).items.map(row=>row.snapshot);},async save(item,remove){await api('/api/watchlist'+(remove?'?id='+encodeURIComponent(item.id):''),{method:remove?'DELETE':'POST',...(remove?{}:{body:JSON.stringify(item)})});}};
 window.membershipReady=(async()=>{
-  config=await fetch(apiBase+'/api/account/config').then(r=>{if(!r.ok)throw Error('Account configuration unavailable');return r.json();});
+  config=await accountFetch(apiBase+'/api/account/config').then(r=>{if(!r.ok)throw Error('Account configuration unavailable');return r.json();});
   drawHomepagePlans();
   if(!config.enabled)return;
   await prepareNativeStorage();
   if(native())$('signupPricing').textContent='Premium includes unlimited searches, all supported providers, and your synced watchlist. Store pricing is shown after sign-in.';
   if(native())$('membershipPriceNote').textContent='Your store displays the subscription price and currency before purchase. Subscriptions renew until canceled in the original store. Streaming service subscriptions are separate.';
-  client=createClient(config.supabaseUrl,config.publishableKey,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:!native(),...(native()?{storage:createNativeSessionStorage()}: {})}});
+  client=createClient(config.supabaseUrl,config.publishableKey,{global:{fetch:accountFetch},auth:{flowType:native()?'pkce':'implicit',persistSession:true,autoRefreshToken:true,detectSessionInUrl:!native(),...(native()?{storage:createNativeSessionStorage()}: {})}});
   button.hidden=false;signupButton.hidden=false;
   client.auth.onAuthStateChange((event)=>{
     if(event==='PASSWORD_RECOVERY')setTimeout(()=>{recovery=true;setAuthView('password');show();refresh().catch(e=>message(e.message));},0);
@@ -141,5 +146,10 @@ window.membershipReady=(async()=>{
   await configureNativeAuth(client,text=>{if(!user)setAuthView('signup');show();message(text);});
   if(native()){try{storePrices=await nativeProducts(config.stores);storePricesState='ready';}catch{storePricesState='unavailable';message('Store pricing is temporarily unavailable.');}finally{drawHomepagePlans();}await listenNativePurchases(()=>user,api,refresh,message);}
   try{await refresh();}catch(e){message(e.message);}
-  if(!native()&&new URLSearchParams(location.search).has('error')){if(!user)setAuthView('signup');show();message('This email link has expired or could not be verified. Enter your email and request a new link. Open it on this device and browser.');history.replaceState(null,'',location.pathname);}
+  if(!native()&&new URLSearchParams(location.search).has('billing')){
+    const result=new URLSearchParams(location.search).get('billing');show();
+    message(result==='success'?(status?.plan==='premium'?'Payment confirmed. Premium is active.':'You returned from checkout. Premium is awaiting server confirmation. Open My account again shortly to refresh; do not submit another payment yet.'):'Checkout was cancelled. You have not completed a new purchase. Choose a plan when you’re ready.');
+    const clean=new URL(location.href);clean.searchParams.delete('billing');history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+  }
+  if(!native()&&(new URLSearchParams(location.search).has('error')||new URLSearchParams(location.hash.slice(1)).has('error'))){if(!user)setAuthView('signup');show();message('This email link has expired or could not be verified. Enter your email and request a new link. Use the newest email only; older links may have expired or already been used.');history.replaceState(null,'',location.pathname);}
 })().catch(()=>{config={enabled:true};drawHomepagePlans();button.hidden=false;button.textContent='Account unavailable';button.onclick=()=>{show();message('Account service is temporarily unavailable. Please try again shortly.');};});
