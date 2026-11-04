@@ -42,8 +42,10 @@ export function createBilling({env=process.env,stripeClient,dbClient}={}){
       const subscriptions=await stripe.subscriptions.list({customer:customerId,status:'all',limit:100});
       if(subscriptions.data.some(s=>['active','trialing','past_due','unpaid','incomplete','paused'].includes(s.status)))throw new MembershipError(409,'subscription_exists','Manage your existing subscription instead');
       const open=await stripe.checkout.sessions.list({customer:customerId,status:'open',limit:10});
-      if(open.data.length)return {url:open.data[0].url};
-      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled',integration_identifier:'streamunify_membership_abcdefgh'},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+Math.floor(Date.now()/1800000)});
+      const matching=open.data.find(session=>session.metadata?.streamunify_interval===interval);
+      if(matching)return {url:matching.url};
+      for(const session of open.data)await stripe.checkout.sessions.expire(session.id);
+      const session=await stripe.checkout.sessions.create({mode:'subscription',customer:customerId,metadata:{streamunify_interval:interval},line_items:[{price:prices[interval],quantity:1}],client_reference_id:actor.id,subscription_data:{metadata:{streamunify_user_id:actor.id}},success_url:origin+'/?billing=success',cancel_url:origin+'/?billing=cancelled',integration_identifier:'streamunify_membership_abcdefgh'},{idempotencyKey:'streamunify-checkout-'+actor.id+'-'+interval+'-'+(open.data.map(s=>s.id).sort().join('_')||'new')+'-'+Math.floor(Date.now()/1800000)});
       return {url:session.url};
       });
     },
