@@ -19,5 +19,5 @@ test('website backend companion files are exact and provider costs are honest',(
  assert.equal(safeUrl('javascript:alert(1)'), '');assert.equal(safeUrl('https://user:secret@example.org'), '');
  assert.equal(providerLabel({type:'Subscription',addon:{id:'addon:amazon:starz'},extraCost:true}),'Separate add-on subscription required');
  assert.equal(providerLabel({type:'Rent'}),'Rent · extra cost');assert.equal(providerLabel({type:'Ad-supported'}),'Free with ads');
- const one=initialSettings(),two=initialSettings();one.services=[];assert.notDeepEqual(one.services,two.services);
+ const one=initialSettings(),two=initialSettings();one.services.push('netflix');assert.notDeepEqual(one.services,two.services);
 });
