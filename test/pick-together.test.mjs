@@ -26,11 +26,11 @@ test('unknown favorites do not change ranking; recognized favorites contribute a
 test('packaging preserves homepage source and existing navigation and only adds separate screen',()=>{
  const root=readFileSync(new URL('../index.html',import.meta.url),'utf8'),mobile=pickTogetherHtml(root);
  assert.doesNotMatch(root,/suPickTogether|pick-together-ui/);
- assert.equal(mobile.match(/id="suPickTogether"/g).length,1);
+ assert.equal(mobile.match(/id="suWebPickTogether"/g).length,1);
  assert.ok(mobile.includes(root.slice(root.indexOf('<main id="top">'),root.indexOf('</main>')+7)));
  for(const id of ['suSurprise','suFree','suMine','suWatchlist','suMenuOpen'])assert.ok(mobile.includes('id="'+id+'"'));
  assert.throws(()=>pickTogetherHtml('missing'),/anchor/);
- assert.ok(mobile.indexOf('id="suTogether"')>mobile.indexOf('</main>'));
+ assert.ok(mobile.indexOf('id="suWebTogether"')>mobile.indexOf('</main>'));
  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
  assert.match(pkg.scripts['sync:ios'],/prepare-platforms.mjs --ios/);
  assert.doesNotMatch(pkg.scripts['sync:android'],/--ios/);

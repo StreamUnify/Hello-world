@@ -48,7 +48,7 @@ export function websitePickerHtml(html) {
   if(html.includes('id="suWebPickTogether"'))return html;
   if(html.split(anchor).length!==2)throw Error('Website picker navigation anchor changed');
   return html.replace(anchor,anchor+'<button type="button" class="su-action" id="suWebPickTogether" aria-controls="suWebTogether" aria-pressed="false">Pick Together</button>')
-    .replace('</head>','<style>#suWebPickTogether[aria-pressed="true"]{background:#2d3b57;border-color:#546380;color:#e5ecff}main[hidden],su-web-pick-together[hidden]{display:none!important}</style></head>')
+    .replace('</head>','<style>#suWebPickTogether{font-size:15px;font-weight:700;padding:12px 18px;background:#202d48;border:1px solid #647cbd;border-radius:10px;color:#f0f4ff;min-height:46px}@media(max-width:600px){#suWebPickTogether{font-size:14px;padding:10px 12px}}#suWebPickTogether[aria-pressed="true"]{background:#2d3b57;border-color:#546380;color:#e5ecff}main[hidden],su-web-pick-together[hidden]{display:none!important}</style></head>')
     .replace('</main>','</main><su-web-pick-together id="suWebTogether" hidden></su-web-pick-together>')
     .replace('</body>','<script type="module" src="website-pick-together-ui.mjs"></script></body>');
 }
