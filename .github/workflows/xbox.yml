@@ -18,6 +18,11 @@ jobs:
       - run: npm ci
       - run: npm run build:xbox
       - run: node --test test/xbox.test.mjs
+      - name: Test native provider routing
+        shell: pwsh
+        run: |
+          Add-Type -Path xbox/StreamUnify.Xbox/ProviderLauncher.cs,xbox/tests/ProviderLauncherTests.cs
+          [ProviderLauncherTests]::Run()
       - name: Compile x64 development package
         run: msbuild xbox/StreamUnify.Xbox/StreamUnify.Xbox.csproj /restore /m /p:Configuration=Debug /p:Platform=x64 /p:AppxPackageSigningEnabled=false /p:GenerateAppxPackageOnBuild=true /p:AppxBundle=Never /p:UwpAppxPackageBuildMode=SideloadOnly
       - name: Sign development package

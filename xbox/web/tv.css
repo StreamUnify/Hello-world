@@ -45,3 +45,5 @@ button,input,select,summary,a[href]{scroll-margin-block:85px}
 .xbox-keyboard button{font-size:23px;min-height:54px;margin:0;padding:9px 6px;border:1px solid #526d9b;border-radius:9px;background:#1b2b49;color:#fff;scroll-margin-block:15px}
 .xbox-keyboard button[aria-pressed="true"]{background:#3e528c}.xbox-keyboard button.primary{background:linear-gradient(115deg,#356bec,#7453e5);font-weight:700}
 #search[readonly]{cursor:pointer}
+
+.xbox-provider-note{font-size:18px;color:#adbbd5;max-width:70ch}

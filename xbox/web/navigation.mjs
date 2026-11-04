@@ -23,7 +23,7 @@ export function installNavigation({back,selectOptions,editText,root=document}){
  const scope=()=>{
   const picker=root.getElementById('suWebTogether');
   const dialogs=[...root.querySelectorAll('dialog[open]'),...(picker?.shadowRoot?.querySelectorAll('dialog[open]')||[])];
-  return dialogs.at(-1)||(!root.getElementById('modal')?.classList.contains('hidden')?root.getElementById('modal'):null)||root.querySelector('.su-drawer.open')||(picker&&!picker.hidden?picker.shadowRoot:root);
+  return root.querySelector('dialog[data-xbox-overlay][open]')||dialogs.at(-1)||(!root.getElementById('modal')?.classList.contains('hidden')?root.getElementById('modal'):null)||root.querySelector('.su-drawer.open')||(picker&&!picker.hidden?picker.shadowRoot:root);
  };
  const focusables=()=>visibleControls(scope());
  let pendingText=null;

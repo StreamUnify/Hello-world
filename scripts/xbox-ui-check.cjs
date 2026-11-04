@@ -29,7 +29,7 @@ return route.fulfill({status:200,contentType:'application/json',headers:{'Access
 });
 await page.route('https://xbox-preview.supabase.co/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({access_token:'eyJhbGciOiJIUzI1NiJ9.'+Buffer.from(JSON.stringify({sub:'11111111-1111-4111-8111-111111111111',exp:Math.floor(Date.now()/1000)+3600,iat:Math.floor(Date.now()/1000),role:'authenticated'})).toString('base64url')+'.test',refresh_token:'preview-refresh-token',token_type:'bearer',expires_in:3600,user:{id:'11111111-1111-4111-8111-111111111111',email:'xbox-preview@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{}}})}));
 await page.goto('http://127.0.0.1:'+server.address().port+'/index.html',{waitUntil:'domcontentloaded'});console.log('Page loaded');
-await page.waitForFunction(()=>typeof window.streamUnifyCommand==='function');await page.getByText('Xbox preview 0.2.2.0').waitFor();console.log('Controls loaded');
+await page.waitForFunction(()=>typeof window.streamUnifyCommand==='function');await page.getByText('Xbox preview 0.2.3.0').waitFor();console.log('Controls loaded');
 await page.getByRole('button',{name:'Details for Rambo',exact:true}).waitFor();console.log('Catalog loaded');
 assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'No horizontal overflow');
 await page.screenshot({path:'xbox-ui-output/streamunify-xbox-home.png',fullPage:false});
@@ -164,12 +164,51 @@ await picker.locator('[data-person="0"][data-genre="Action"]').click();await pic
 await picker.getByRole('button',{name:'Find our movie',exact:true}).focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
 await picker.getByRole('button',{name:'Choose this movie',exact:true}).waitFor();
 await picker.getByRole('button',{name:'Choose this movie',exact:true}).focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
-await picker.locator('dialog[open]').waitFor();await page.evaluate(()=>window.streamUnifyCommand('back'));await picker.locator('dialog').waitFor({state:'hidden'});
+await picker.locator('dialog[open]').waitFor();// Provider links inside shadow DOM use the same native bridge and overlay.
+const togetherLink=picker.locator('dialog a[href^="https://netflix.com"]').first();
+await togetherLink.focus();await command('select');
+await page.getByRole('dialog',{name:'Open streaming app'}).waitFor();
+await command('down');assert(await page.evaluate(()=>document.activeElement.closest('[data-xbox-provider]')!==null),'Provider overlay takes controller focus above shadow dialog');
+await command('back');await page.getByRole('dialog',{name:'Open streaming app'}).waitFor({state:'hidden'});
+assert(await togetherLink.evaluate(el=>el.getRootNode().activeElement===el),'Cancel restores shadow link focus');
+await page.evaluate(()=>window.streamUnifyCommand('back'));await picker.locator('dialog').waitFor({state:'hidden'});
 await page.evaluate(()=>window.streamUnifyCommand('back'));await page.locator('main:not([hidden])').waitFor();
 await page.getByRole('button',{name:'Details for Rambo',exact:true}).click();
 await page.locator('#modal:not(.hidden)').waitFor();
 await page.evaluate(()=>window.streamUnifyCommand('down'));
 await page.waitForFunction(()=>document.getElementById('modal').contains(document.activeElement));
+// Exercise native replies, repeated A, B cancellation, and missing-host behavior.
+const providerLink=page.locator('#modalLinks a[href^="https://netflix.com"]').first();
+const providerDialog=page.getByRole('dialog',{name:'Open streaming app'});
+const providerMessages=()=>page.evaluate(()=>window.xboxKeyboardMessages.filter(m=>m.type==='providerLaunch'));
+const openProvider=async()=>{await providerLink.focus();await command('select');await providerDialog.waitFor();return (await providerMessages()).at(-1);};
+let request=await openProvider();let count=(await providerMessages()).length;
+await providerLink.evaluate(el=>el.click());assert.equal((await providerMessages()).length,count,'Repeated click sends no second launch');
+await page.evaluate(id=>window.streamUnifyProviderResult({requestId:id+'-old',status:'launched'}),request.requestId);
+assert(await providerDialog.isVisible(),'Stale replies ignored');
+await page.evaluate(id=>window.streamUnifyProviderResult({requestId:id,status:'unavailable'}),request.requestId);
+assert((await providerDialog.innerText()).includes('search for “Rambo”'),'Fallback preserves the selected title');
+await page.setViewportSize({width:1280,height:720});
+let box=await providerDialog.boundingBox();assert(box.x>=0&&box.y>=0&&box.x+box.width<=1280&&box.y+box.height<=720,'Provider panel fits 720p');
+await page.screenshot({path:'xbox-ui-output/streamunify-xbox-provider-720.png'});
+await command('back');assert(await providerLink.evaluate(el=>el===document.activeElement),'Back restores provider link focus');
+for(const status of ['ambiguous','failed','cancelled','busy']){
+ request=await openProvider();await page.evaluate(result=>window.streamUnifyProviderResult(result),{requestId:request.requestId,status});
+ await providerDialog.getByRole('button',{name:'Back',exact:true}).waitFor();await command('select');await providerDialog.waitFor({state:'hidden'});
+}
+request=await openProvider();await command('back');
+assert((await page.evaluate(()=>window.xboxKeyboardMessages)).some(m=>m.type==='providerCancel'&&m.requestId===request.requestId),'B cancels native discovery');
+await page.evaluate(id=>window.streamUnifyProviderResult({requestId:id,status:'failed'}),request.requestId);assert.equal(await providerDialog.count(),0,'Late reply cannot reopen dismissed dialog');
+request=await openProvider();await page.evaluate(id=>window.streamUnifyProviderResult({requestId:id,status:'launched'}),request.requestId);await providerDialog.waitFor({state:'hidden'});
+assert((await page.locator('#xboxNotice').innerText()).includes('Opening Netflix'));
+request=await openProvider();await providerDialog.getByRole('button',{name:'Back',exact:true}).waitFor({timeout:15000});
+assert((await page.evaluate(()=>window.xboxKeyboardMessages)).some(m=>m.type==='providerCancel'&&m.requestId===request.requestId),'Timeout cancels native operation');await command('select');
+await page.evaluate(()=>{window.savedXboxHost=window.chrome.webview;delete window.chrome.webview;});
+await providerLink.click();await providerDialog.getByRole('button',{name:'Back',exact:true}).waitFor();await command('select');await page.evaluate(()=>window.chrome.webview=window.savedXboxHost);
+const beforeBlocked=(await providerMessages()).length;
+await page.locator('#modalTitle a').click();assert.equal((await providerMessages()).length,beforeBlocked,'TMDB is never handed to native app launcher');
+assert(page.url().startsWith('http://127.0.0.1:'),'Provider failures never navigate away');
+await page.setViewportSize({width:1920,height:1080});
 await page.evaluate(()=>window.streamUnifyCommand('back'));await page.locator('#modal').waitFor({state:'hidden'});
 await page.setViewportSize({width:1280,height:720});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'720p no horizontal overflow');
 await page.screenshot({path:'xbox-ui-output/streamunify-xbox-720p.png',fullPage:false});

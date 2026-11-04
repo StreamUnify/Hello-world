@@ -1,4 +1,6 @@
 import {installNavigation} from './navigation.mjs';
+import {installProviderLaunch} from './provider-launch.mjs';
+import {providerForUrl} from './provider-policy.mjs';
 import {installSearchKeyboard} from './search-keyboard.mjs';
 const $=id=>document.getElementById(id);
 let toastTimer;
@@ -6,7 +8,7 @@ function notice(text){let toast=$('xboxNotice');if(!toast){toast=document.create
 function back(){
  const picker=$('suWebTogether'),shadow=picker?.shadowRoot;
  const dialogs=[...document.querySelectorAll('dialog[open]'),...(shadow?.querySelectorAll('dialog[open]')||[])];
- const dialog=dialogs.at(-1);
+ const dialog=document.querySelector('dialog[data-xbox-overlay][open]')||dialogs.at(-1);
  if(dialog){if(shadow?.contains(dialog)){picker.dismiss();}else{dialog.dispatchEvent(new Event('cancel',{cancelable:true}));if(dialog.open)dialog.close();}return;}
  if(!$('modal').classList.contains('hidden')){$('close').click();return;}
  if($('suDrawer')?.classList.contains('open')){document.querySelector('#suDrawer .su-close')?.click();return;}
@@ -30,7 +32,8 @@ window.streamUnifyConfirm=text=>new Promise(resolve=>{
  dialog.addEventListener('close',()=>{dialog.remove();resolve(accepted);});document.body.append(dialog);dialog.showModal();dialog.querySelector('button').focus();
 });
 installNavigation({back,selectOptions,editText:installSearchKeyboard($('search'),$('suSearchButton'))});
-// Keep all provider information, but do not claim unsupported provider app launches.
+const launchProvider=installProviderLaunch({notice});
+// Provider clicks use native installed-app discovery; no guessed protocols.
 // Legal documents use the shell's two explicitly allowed destinations.
 document.addEventListener('click',event=>{
  const link=event.composedPath().find(el=>el?.tagName==='A'&&el.getAttribute('href'));
@@ -39,7 +42,8 @@ document.addEventListener('click',event=>{
  if(url.origin===location.origin){if(url.pathname===location.pathname||url.pathname==='/')return;event.preventDefault();event.stopImmediatePropagation();notice('Open this information on streamunify.com. For help: support@streamunify.com.');return;}
  event.preventDefault();event.stopImmediatePropagation();
  if(['https://www.streamunify.com/privacy','https://www.streamunify.com/terms'].includes(url.href)&&window.chrome?.webview){window.chrome.webview.postMessage(JSON.stringify({type:'legal',url:url.href}));return;}
- notice('Open the provider’s Xbox app and search for this title. Direct provider launching is not available in this preview.');
+ if(launchProvider(link))return;
+ notice('This link does not have an Xbox app route. Open the provider’s app from Xbox Home and search for the title.');
 },true);
 window.streamUnifyResume=()=>window.dispatchEvent(new Event('membershipchange'));
 // Shadow DOM has its own stylesheet, so TV focus and sizing must be applied there.
@@ -47,8 +51,10 @@ const picker=$('suWebTogether');
 if(picker){const style=document.createElement('style');style.textContent=':host{font-size:22px}button,input{font-size:21px!important;min-height:54px}button:focus-visible,input:focus-visible,a:focus-visible,[data-xbox-focus]{outline:4px solid #9edcff!important;outline-offset:5px!important}button,input,a[href]{scroll-margin-block:85px}.wrap{max-width:1450px!important;padding:35px!important}.muted,.unknown,.cost,small{font-size:18px!important}.dialog{max-width:900px!important;width:80vw!important}';const attach=()=>{if(picker.shadowRoot&&!picker.shadowRoot.querySelector('[data-xbox-tv]')){const copy=style.cloneNode(true);copy.dataset.xboxTv='true';picker.shadowRoot.append(copy);}};customElements.whenDefined('su-web-pick-together').then(()=>{attach();new MutationObserver(attach).observe(picker.shadowRoot,{childList:true});});}
 $('search')?.focus({preventScroll:true});
 
-const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.2.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
+const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.3.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
 
 const hints=document.createElement('div');hints.className='xbox-controller-hints';hints.textContent='D-pad / left stick: Move   •   Right stick: Scroll   •   A: Select / Type   •   B: Back';document.body.append(hints);
 
-const providerCaption=document.querySelector('.su-provider-strip + .su-provider-caption');if(providerCaption)providerCaption.textContent='Streaming provider apps open separately on Xbox.';
+for(const link of document.querySelectorAll('.su-provider-strip a')){const provider=providerForUrl(link.href);if(provider){link.href=provider.home;link.setAttribute('aria-label','Open '+provider.name+' app');link.title='Open '+provider.name+' app';}}
+document.querySelector('.su-provider-strip')?.setAttribute('aria-label','Open a streaming app');
+const providerCaption=document.querySelector('.su-provider-strip + .su-provider-caption');if(providerCaption)providerCaption.textContent='Choose a provider to check for a compatible Xbox app.';

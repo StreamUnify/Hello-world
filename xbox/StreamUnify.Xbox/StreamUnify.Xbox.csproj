@@ -19,6 +19,7 @@
     <Page Include="MainPage.xaml"><Generator>MSBuild:Compile</Generator></Page>
     <Compile Include="App.xaml.cs"><DependentUpon>App.xaml</DependentUpon></Compile>
     <Compile Include="MainPage.xaml.cs"><DependentUpon>MainPage.xaml</DependentUpon></Compile>
+    <Compile Include="ProviderLauncher.cs" />
     <AppxManifest Include="Package.appxmanifest" />
     <Content Include="Assets\*.png" /><Content Include="Web\**\*" />
     <Content Include="Properties\Default.rd.xml" />

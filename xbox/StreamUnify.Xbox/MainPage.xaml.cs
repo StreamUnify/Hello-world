@@ -1,5 +1,9 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Data.Json;
 using Windows.Gaming.Input;
@@ -15,6 +19,9 @@ namespace StreamUnify.Xbox
     {
         const string Origin = "https://streamunify-xbox.example";
         readonly DispatcherTimer controller = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        ProviderLauncher providerLauncher;
+        CancellationTokenSource providerCancellation;
+        string providerRequest;
         GamepadButtons previous;
         string lastDirection;
         DateTime repeatAt, backAt, scrollAt;
@@ -28,7 +35,7 @@ namespace StreamUnify.Xbox
             keyboard.Showing += (s, e) => keyboardVisible = true;
             keyboard.Hiding += (s, e) => { keyboardVisible = false; previous = (Gamepad.Gamepads.Count > 0 ? Gamepad.Gamepads[0].GetCurrentReading().Buttons : GamepadButtons.None) | GamepadButtons.A; repeatAt = DateTime.UtcNow.AddMilliseconds(400); };
             SystemNavigationManager.GetForCurrentView().BackRequested += (s, e) => { e.Handled = true; if (keyboardVisible) InputPane.GetForCurrentView().TryHide(); else if (editingText) FinishTextEntry(false); else Back(); };
-            Application.Current.Suspending += (s, e) => controller.Stop();
+            Application.Current.Suspending += (s, e) => { controller.Stop(); providerCancellation?.Cancel(); };
             Application.Current.Resuming += async (s, e) => { previous = GamepadButtons.None; controller.Start(); if (ready) await Browser.ExecuteScriptAsync("window.streamUnifyResume?.()"); };
         }
         async System.Threading.Tasks.Task Start()
@@ -36,6 +43,8 @@ namespace StreamUnify.Xbox
             try
             {
                 if (ready) return;
+                var hosts = JsonArray.Parse(await Windows.Storage.FileIO.ReadTextAsync(await Package.Current.InstalledLocation.GetFileAsync(@"Web\xbox-provider-hosts.json")));
+                providerLauncher = new ProviderLauncher(hosts.Select(value => value.GetString()));
                 await Browser.EnsureCoreWebView2Async();
                 var core = Browser.CoreWebView2;
                 core.SetVirtualHostNameToFolderMapping("streamunify-xbox.example", Path.Combine(Package.Current.InstalledLocation.Path, "Web"), CoreWebView2HostResourceAccessKind.DenyCors);
@@ -51,6 +60,8 @@ namespace StreamUnify.Xbox
                     {
                         var message = JsonObject.Parse(e.TryGetWebMessageAsString());
                         if (message.GetNamedString("type") == "keyboard") { BeginTextEntry(message); return; }
+                        if (message.GetNamedString("type") == "providerCancel") { if (message.GetNamedString("requestId", "") == providerRequest) providerCancellation?.Cancel(); return; }
+                        if (message.GetNamedString("type") == "providerLaunch") { await OpenProvider(message); return; }
                         if (message.GetNamedString("type") != "legal") return;
                         var url = message.GetNamedString("url");
                         if (url == "https://www.streamunify.com/privacy" || url == "https://www.streamunify.com/terms") await Launcher.LaunchUriAsync(new Uri(url));
@@ -62,6 +73,39 @@ namespace StreamUnify.Xbox
                 ready = true; Failure.Visibility = Visibility.Collapsed; controller.Start();
             }
             catch { Failure.Visibility = Visibility.Visible; }
+        }
+        sealed class InstalledProviderApps : IProviderApps
+        {
+            public async Task<IReadOnlyList<string>> FindAsync(Uri uri, CancellationToken token)
+            {
+                var apps = await Launcher.FindAppUriHandlersAsync(uri).AsTask(token);
+                return apps.Select(app => app.PackageFamilyName).ToArray();
+            }
+            public async Task<bool> SupportsAsync(Uri uri, string family, CancellationToken token)
+            {
+                return await Launcher.QueryAppUriSupportAsync(uri, family).AsTask(token) == LaunchQuerySupportStatus.Available;
+            }
+            public async Task<bool> LaunchAsync(Uri uri, string family, CancellationToken token)
+            {
+                token.ThrowIfCancellationRequested();
+                return await Launcher.LaunchUriAsync(uri, new LauncherOptions { TargetApplicationPackageFamilyName = family }).AsTask(token);
+            }
+        }
+        async Task OpenProvider(JsonObject message)
+        {
+            var id = message.GetNamedString("requestId", "");
+            if (id.Length == 0 || id.Length > 32 || id.Any(c => c < '0' || c > '9')) return;
+            string status = "busy";
+            if (providerCancellation == null && !editingText)
+            {
+                var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                providerCancellation = cancellation; providerRequest = id;
+                try { status = await providerLauncher.OpenAsync(message.GetNamedString("url", ""), new InstalledProviderApps(), cancellation.Token); }
+                finally { providerCancellation = null; providerRequest = null; cancellation.Dispose(); }
+            }
+            var result = new JsonObject { ["requestId"] = JsonValue.CreateStringValue(id), ["status"] = JsonValue.CreateStringValue(status) };
+            try { await Browser.ExecuteScriptAsync("window.streamUnifyProviderResult?.(" + result.Stringify() + ")"); }
+            catch { /* Suspension can interrupt the reply. Never log account URLs. */ }
         }
         void BeginTextEntry(JsonObject message)
         {
