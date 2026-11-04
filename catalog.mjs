@@ -1,3 +1,4 @@
+import {PICK_GENRES,PICK_MOODS,pickScore,matchedPickProviders} from './pick-together-service.mjs';
 import {addonService,addonIdentity,watchmodeOffer,sourceAddon} from './provider-entitlements-src.mjs';
 import {titleWords,compactTitle,titleScore,titleThreshold,createTitleIndex} from './title-index.mjs';
 import {storyForMovie,releaseOrder,chronologicalOrder} from './movie-order.mjs';
@@ -264,6 +265,76 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
   return {
     configured,
     filterByRating,
+    async pickTogether(prefs,country,{language='en-US',rating='',restrict=items=>items}={}) {
+      language=catalogLanguage(language);
+      if(!configured.tmdb)throw Error('unavailable');
+      const notices=['Mood matching is a genre-based heuristic, not a factual mood label.'],favorites=[[],[]],favoriteMatches=[];
+      const sources={tmdb:'ok',watchmode:configured.watchmode?'idle':'not_configured'};
+      await Promise.all(prefs.people.map(async(p,i)=>{
+        if(!p.favorite)return;
+        try {
+          const data=await tmdb('search/movie',{query:p.favorite,include_adult:'false',language});
+          if(!Array.isArray(data.results))throw Error('unavailable');
+          const exact=data.results.filter(x=>!x.adult&&Number.isSafeInteger(x.id)&&(titleWords(x.title)===titleWords(p.favorite)||titleWords(x.original_title)===titleWords(p.favorite)));
+          if(exact.length===1){favorites[i]=exact[0].genre_ids||[];favoriteMatches.push({person:i+1,query:p.favorite,status:'matched',title:exact[0].title,id:exact[0].id,year:(exact[0].release_date||'').slice(0,4)});}
+          else {const status=exact.length?'ambiguous':'unmatched';favoriteMatches.push({person:i+1,query:p.favorite,status});notices.push(`Person ${i+1}'s favorite was ${status}; it was not used for matching.`);}
+        } catch {favoriteMatches.push({person:i+1,query:p.favorite,status:'unavailable'});notices.push(`Person ${i+1}'s favorite could not be checked; it was not used for matching.`);}
+      }));
+      let providerIds=[],providerDirectoryPartial=false;
+      try {
+        const directory=await tmdb('watch/providers/movie',{watch_region:country,language:'en-US'});
+        if(!Array.isArray(directory.results))throw Error('unavailable');
+        providerIds=[...new Set(directory.results.filter(p=>Number.isSafeInteger(p.provider_id)&&p.provider_id>0&&matchedPickProviders([{name:p.provider_name,type:'Subscription'}],prefs).length).map(p=>p.provider_id))];
+        if(providerIds.length>100){providerIds=providerIds.slice(0,100);providerDirectoryPartial=true;notices.push('Provider discovery was limited to 100 matching regional provider routes.');}
+        if(!providerIds.length){providerDirectoryPartial=true;notices.push('The regional provider directory did not identify your selected services. Broader discovery is being checked against actual regional offers.');}
+        sources.tmdbProviderDirectory='ok';
+      }catch{
+        providerDirectoryPartial=true;sources.tmdbProviderDirectory='unavailable';
+        notices.push('The regional provider directory could not be loaded. Broader discovery is being checked against actual regional offers.');
+      }
+      // A title must match at least one selected genre from EACH person.
+      // TMDB comma-separated genres are AND; never broaden with favorite/mood genres.
+      const genreGroups=prefs.people.map(p=>p.genres.map(g=>PICK_GENRES[g]));
+      const allPairs=[...new Set(genreGroups[0].flatMap(a=>genreGroups[1].map(b=>[...new Set([a,b])].sort((x,y)=>x-y).join(','))))];
+      const genreQueries=allPairs.sort((a,b)=>a.split(',').length-b.split(',').length).slice(0,8);
+      const batches=await Promise.all(genreQueries.map(async genres=>{
+        const data=await tmdb('discover/movie',{with_genres:genres,include_adult:'false',language,sort_by:'popularity.desc',watch_region:country,...providerIds.length?{with_watch_providers:providerIds.join('|'),with_watch_monetization_types:prefs.extras?'flatrate|free|ads|rent|buy':'flatrate|free|ads'}:{},...prefs.runtime!==999?{'with_runtime.lte':prefs.runtime}:{},...rating&&rating!=='NR'&&!rating.startsWith('TV-')?{certification_country:'US',certification:rating}:{}});
+        if(!Array.isArray(data.results))throw Error('unavailable');
+        return data.results.filter(x=>!x.adult&&Number.isSafeInteger(x.id)&&x.id>0).slice(0,15);
+      }));
+      // Interleave each intersection so the first pair cannot consume the whole shortlist.
+      const unique=new Map();
+      for(let i=0;i<15&&unique.size<30;i++)for(const batch of batches){const item=batch[i];if(item&&!unique.has(item.id))unique.set(item.id,item);if(unique.size===30)break;}
+      const candidates=[...unique.values()].slice(0,12);
+      notices.push(`This bounded search checked the first page of ${genreQueries.length} of ${allPairs.length} selected genre combinations and up to 12 title details; it does not cover the entire catalog.`);
+      let partial=providerDirectoryPartial, usableAvailabilityChecks=0, watchmodeFailed=false;
+      const checked=await Promise.all(candidates.map(async x=>{
+        try {
+          const detail=await this.details('movie',x.id,country,language);if(detail.availability!=='ok')partial=true;
+          if(Object.values(detail.availabilitySources||{}).includes('ok'))usableAvailabilityChecks++;
+          if(detail.availabilitySources?.watchmode==='unavailable')watchmodeFailed=true;
+          const title=detail.title;
+          if(prefs.runtime!==999&&(!Number.isFinite(title.runtime)||title.runtime<=0||title.runtime>prefs.runtime))return null;
+          if(!Array.isArray(title.genreIds)||!genreGroups.every(group=>group.some(id=>title.genreIds.includes(id))))return null;
+          return title;
+        }catch{partial=true;return null;}
+      }));
+      if(candidates.length&&!usableAvailabilityChecks)throw Error('unavailable');
+      let titles=checked.filter(Boolean);
+      if(rating)titles=await filterByRating(titles,rating);
+      titles=restrict(titles);
+      const results=titles.flatMap(title=>{
+        const matchedProviders=matchedPickProviders(title.providers,prefs);if(!matchedProviders.length)return [];
+        const shared=prefs.people.map(p=>p.genres.filter(g=>title.genreIds.includes(PICK_GENRES[g])));
+        const matchExplanation=shared.map((genres,i)=>`Person ${i+1}: ${genres.join(', ')}`).join('; ')+'. Mood and resolved favorites contribute genre-based weighting.';
+        return [{...title,providers:matchedProviders,matchedProviders,matchExplanation,matchScore:pickScore(title.genreIds,prefs,favorites)}];
+      }).sort((a,b)=>b.matchScore-a.matchScore).slice(0,6);
+      if(partial)notices.push('Some title details or availability sources could not be checked. Only source-reported offers are shown.');
+      if(prefs.runtime!==999)notices.push('Titles with unknown runtimes are excluded from your time limit.');
+      if(!results.length)notices.push('No shared matches were found in this bounded search that satisfy both people’s selected genres, services, and runtime. Other matches may exist outside the titles checked; try another genre combination, service, or runtime.');
+      if(configured.watchmode)sources.watchmode=watchmodeFailed?'unavailable':candidates.length?'ok':'idle';
+      return {results,country,language,availability:partial?'partial':'ok',matchStatus:results.length?'matched':'no_shared_matches',notices,sources,favoriteMatches};
+    },
     async providerAddons(country){
       const services=new Map(),sources={tmdb:configured.tmdb?'pending':'not_configured',watchmode:configured.watchmode?'pending':'not_configured'};
       await Promise.all([
@@ -300,6 +371,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
       const certification=media==='movie'?(data.release_dates?.results||[]).find(x=>x.iso_3166_1===country)?.release_dates?.find(x=>x.certification)?.certification:(data.content_ratings?.results||[]).find(x=>x.iso_3166_1===country)?.rating;
       return {title:{...title,runtime:media==='movie'?data.runtime||null:data.episode_run_time?.[0]||null,
         genres:(data.genres||[]).map(x=>x.name).filter(Boolean),
+        genreIds:[...new Set((data.genres||[]).map(x=>x.id).filter(id=>Number.isSafeInteger(id)&&id>0))],
         communityRating:data.vote_count>0&&Number.isFinite(data.vote_average)?data.vote_average:null,voteCount:data.vote_count||0,
         certification:certification||'',certificationCountry:country,
         cast:(data.credits?.cast||[]).filter(x=>!x.adult&&x.name).slice(0,12).map(x=>({id:Number.isSafeInteger(x.id)&&x.id>0?x.id:null,name:x.name,character:x.character||''})),
@@ -307,7 +379,7 @@ export function createCatalog({env = process.env, fetcher = fetch, now = Date.no
         creatorProfiles:(media==='movie'?(data.credits?.crew||[]).filter(x=>x.job==='Director'):(data.created_by||[])).filter(x=>x.name).map(x=>({id:Number.isSafeInteger(x.id)&&x.id>0?x.id:null,name:x.name})),
         status:data.status||'',seasonCount:media==='tv'?data.number_of_seasons:null,episodeCount:media==='tv'?data.number_of_episodes:null,
         seasons:media==='tv'?(data.seasons||[]).filter(x=>x.season_number>0).slice(0,50).map(x=>({name:x.name,episodes:x.episode_count,date:x.air_date||''})):[]},
-        availability:Object.keys(status).length?'partial':'ok',language};
+        availability:Object.keys(status).length?'partial':'ok',language,availabilitySources:{tmdb:status.tmdbAvailability?'unavailable':'ok',watchmode:configured.watchmode?(status.watchmode?'unavailable':'ok'):'not_configured'}};
     },
     async movieOrder(id,country,language='en-US') {
       language=catalogLanguage(language);

@@ -15,7 +15,7 @@ function setup({platform='web',reduce=false}={}){
  const finish=()=>{const next=timers.values().next().value;if(next)next();};
  return {ctx,run,finish,calls,nodes,document,listeners,timers};
 }
-for(const platform of ['web','ios','android'])test(`${platform}: explicit submission blurs keyboard and reveals settled results below safe-area header`,()=>{
+for(const platform of ['web','ios'])test(`${platform}: explicit submission blurs keyboard and reveals settled results below safe-area header`,()=>{
  const h=setup({platform});h.run('submitTitleSearch()');assert.equal(h.calls[0],'blur');assert.equal(h.calls[1][2].revealResults,true);
  h.run("revealTitleResults(1,1,'Alien')");assert.equal(h.calls.some(x=>x[0]==='scroll'),false);
  h.listeners.get('resize')();h.finish();
@@ -24,6 +24,7 @@ for(const platform of ['web','ios','android'])test(`${platform}: explicit submis
  assert.equal(h.calls.find(x=>x[0]==='scroll')[1].behavior,'smooth');
  assert.equal(h.nodes.heading.tabIndex,-1);assert.equal(h.listeners.size,0);assert.equal(h.timers.size,0);
 });
+test('native Android preserves submission without blur or reveal',()=>{const h=setup({platform:'android'});h.run('submitTitleSearch()');assert.equal(h.calls.length,1);assert.equal(h.calls[0][2].revealResults,false);h.run("revealTitleResults(1,1,'Alien')");h.finish();assert.equal(h.calls.length,1);});
 test('reduced motion uses instant scrolling',()=>{const h=setup({reduce:true});h.run("submitTitleSearch();revealTitleResults(1,1,'Alien')");h.finish();assert.equal(h.calls.find(x=>x[0]==='scroll')[1].behavior,'auto');});
 for(const change of ['++titleSearchIntent','++loadSerial',"$('search').value='Aliens'","document.activeElement={}","document.querySelector=()=>({open:true})"]){test(`cancels delayed reveal when intent or focus changes: ${change}`,()=>{const h=setup();h.run("submitTitleSearch();revealTitleResults(1,1,'Alien');"+change);h.finish();assert.equal(h.calls.some(x=>x[0]==='scroll'),false);});}
 test('empty submission does not reveal trending results',()=>{const h=setup();h.nodes.search.value=' ';h.run('submitTitleSearch()');assert.equal(h.calls[0][2].revealResults,false);});
@@ -51,3 +52,9 @@ test('completed explicit searches reveal success, empty, and error states once; 
  await new Promise(setImmediate);await run('loadTitles(true,{revealResults:true,intent:3})');assert.equal(answers.length,0);run('++loadSerial');resolve({results:[]});await pending;assert.equal(reveals.length,3);assert.equal(run('searchBusy'),false);
 });
 
+test('small-screen input floor is gated away from native Android and pinch zoom remains enabled',()=>{
+ assert.match(html,/if\(canRevealTitleResults\(\)\)document.documentElement.classList.add\('su-title-search-navigation'\)/);
+ assert.match(html,/@media\(max-width:750px\)\{html.su-title-search-navigation .hero .search\{font-size:max\(16px,1rem\);\}/);
+ assert.match(html,/name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/);
+ assert.doesNotMatch(html,/user-scalable=no|maximum-scale=1/);
+});

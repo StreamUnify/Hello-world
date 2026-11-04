@@ -8,7 +8,7 @@ const fn=source.slice(source.indexOf('function drawHomepagePlans(){'),source.ind
 function setup(overrides={}){
   const references=[{hidden:true}],web=[{hidden:false}],monthly={dataset:{suStorePrice:'monthly'}},annual={dataset:{suStorePrice:'annual'}},buttons=[{dataset:{suMembership:'monthly'}}],note={};
   const calls=[];
-  const ctx={nativePlanText,nativePlatform:()=> 'ios',storePricesState:'ready',native:()=>false,config:{enabled:true,stores:{apple:true}},client:{},busy:false,user:null,authView:'signin',storePrices:{},document:{querySelectorAll:s=>({'[data-su-web-pricing]':web,'[data-su-web-reference]':references,'[data-su-store-price]':[monthly,annual],'[data-su-membership]':buttons}[s]||[])},$:id=>id==='suPlansStatus'?note:{focus:()=>calls.push('focus')},setAuthView:v=>{ctx.authView=v;calls.push(v);},show:()=>calls.push('show'),...overrides};
+  const ctx={selectedPlan:null,sessionStorage:{setItem(){},removeItem(){}},nativePlanText,nativePlatform:()=> 'ios',storePricesState:'ready',native:()=>false,config:{enabled:true,stores:{apple:true}},client:{},busy:false,user:null,authView:'signin',storePrices:{},document:{querySelectorAll:s=>({'[data-su-web-pricing]':web,'[data-su-web-reference]':references,'[data-su-store-price]':[monthly,annual],'[data-su-membership]':buttons}[s]||[])},$:id=>id==='suPlansStatus'?note:{focus:()=>calls.push('focus')},setAuthView:v=>{ctx.authView=v;calls.push(v);},show:()=>calls.push('show'),...overrides};
   vm.createContext(ctx);vm.runInContext(fn+'\ndrawHomepagePlans();',ctx);
   return {ctx,references,web,monthly,annual,buttons,note,calls,draw:()=>vm.runInContext('drawHomepagePlans()',ctx)};
 }
@@ -37,3 +37,5 @@ test('unavailable account service and busy actions cannot enter card flow',()=>{
 test('disabled native store retains website reference while explicitly stating no store quote',()=>{
  const t=setup({native:()=>true,config:{enabled:true,stores:{apple:false}}});assert.equal(t.web[0].hidden,false);assert.equal(t.references[0].hidden,false);assert.match(t.monthly.textContent,/App Store: In-app purchases are not enabled/);assert.doesNotMatch(t.monthly.textContent,/\$2.99/);
 });
+
+test('homepage remembers annual checkout intent without initiating payment',()=>{const t=setup();t.buttons[0].dataset.suMembership='annual';t.buttons[0].onclick();assert.equal(t.ctx.selectedPlan,'annual');});
