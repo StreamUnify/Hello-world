@@ -13,6 +13,13 @@
   const remember = value => { try { localStorage.setItem(preferenceKey, value); } catch {} };
   const blocked = () => navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
   function gtag() { window.dataLayer = window.dataLayer || []; window.dataLayer.push(arguments); }
+  // Fixed event names only. Never send email addresses, account IDs, or error text.
+  window.addEventListener('su-signup-stage',event=>{
+    if(!loaded||blocked()||readPreference()!=='granted')return;
+    const names={email_requested:'signup_email_requested',email_request_failed:'signup_email_request_failed',email_request_accepted:'signup_email_request_accepted',completed:'sign_up'};
+    const name=names[event.detail?.stage];
+    if(name)gtag('event',name,{method:'email',page_location:location.origin+location.pathname,page_referrer:''});
+  });
 
   function enable() {
     if (loaded || blocked()) return;
