@@ -1,4 +1,5 @@
 import {installNavigation} from './navigation.mjs';
+import {installSearchKeyboard} from './search-keyboard.mjs';
 const $=id=>document.getElementById(id);
 let toastTimer;
 function notice(text){let toast=$('xboxNotice');if(!toast){toast=document.createElement('div');toast.id='xboxNotice';toast.className='xbox-status';toast.setAttribute('role','status');document.body.append(toast);}toast.hidden=false;toast.textContent=text;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.hidden=true,6500);}
@@ -28,7 +29,7 @@ window.streamUnifyConfirm=text=>new Promise(resolve=>{
  for(const [label,value] of [['Cancel',false],['Delete account',true]]){const button=document.createElement('button');button.textContent=label;button.type='button';button.onclick=()=>{accepted=value;dialog.close();};dialog.append(button);}
  dialog.addEventListener('close',()=>{dialog.remove();resolve(accepted);});document.body.append(dialog);dialog.showModal();dialog.querySelector('button').focus();
 });
-installNavigation({back,selectOptions});
+installNavigation({back,selectOptions,editText:installSearchKeyboard($('search'),$('suSearchButton'))});
 // Keep all provider information, but do not claim unsupported provider app launches.
 // Legal documents use the shell's two explicitly allowed destinations.
 document.addEventListener('click',event=>{
@@ -46,7 +47,7 @@ const picker=$('suWebTogether');
 if(picker){const style=document.createElement('style');style.textContent=':host{font-size:22px}button,input{font-size:21px!important;min-height:54px}button:focus-visible,input:focus-visible,a:focus-visible,[data-xbox-focus]{outline:4px solid #9edcff!important;outline-offset:5px!important}button,input,a[href]{scroll-margin-block:85px}.wrap{max-width:1450px!important;padding:35px!important}.muted,.unknown,.cost,small{font-size:18px!important}.dialog{max-width:900px!important;width:80vw!important}';const attach=()=>{if(picker.shadowRoot&&!picker.shadowRoot.querySelector('[data-xbox-tv]')){const copy=style.cloneNode(true);copy.dataset.xboxTv='true';picker.shadowRoot.append(copy);}};customElements.whenDefined('su-web-pick-together').then(()=>{attach();new MutationObserver(attach).observe(picker.shadowRoot,{childList:true});});}
 $('search')?.focus({preventScroll:true});
 
-const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.1.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
+const version=document.createElement('span');version.textContent='Xbox preview '+(window.STREAMUNIFY_XBOX_BUILD?.version||'0.2.2.0');version.style.cssText='font-size:16px;color:#adbbd5';document.querySelector('.su-header').append(version);
 
 const hints=document.createElement('div');hints.className='xbox-controller-hints';hints.textContent='D-pad / left stick: Move   •   Right stick: Scroll   •   A: Select / Type   •   B: Back';document.body.append(hints);
 

@@ -1,10 +1,18 @@
-# Xbox conversion review — preview 0.2.1.0
+# Xbox conversion review — preview 0.2.2.0
+
+## Title keyboard correction
+
+The user confirmed the other 0.2.1.0 changes looked good but reported that title entry still failed on the console keyboard. Title/actor search now uses an in-app controller keyboard. Its field is read-only to avoid invoking the Windows editor; letter buttons edit a draft, and Search calls the existing explicit title submission handler. Other native account and Pick Together editors are unchanged.
+
+Browser checks exercise every letter/digit button with D-pad/A commands at 1080p and 720p, uppercase, symbols, spaces, backspace, clear, cursor movement, cancellation/focus restoration, and a complete controller-only `rambo` search. They verify one request on submission and none while editing/cancelling. Physical keyboard typing plus Enter also submits. The title path sends no native keyboard request. Layout screenshots fit both TV sizes.
+
+The agent successfully installed 0.2.1.0 and Device Portal confirmed launch. Preview 0.2.2.0 must pass Windows compilation/signing before its deployment command is issued. Actual Xbox title typing remains pending confirmation after that installation; simulated tests are not console input certification.
 
 ## Verified in the development environment
 
 - Shared automated suite: 203 passing tests, including backend search, account/network behavior, entitlements, movie ordering, and Pick Together.
 - Browser: 24-title catalog traversal down to the last row and back to the header at 1920×1080 and 1280×720; right-stick scroll command; collapsed service sections and closed navigation drawer excluded from focus.
-- Native-text bridge simulation: A requests text entry, accepted text returns to search and Pick Together, cancellation preserves the original query. This is not a physical system-keyboard test.
+- Native-text bridge simulation for account and Pick Together fields: A requests text entry and accepted text returns to the original field. Title entry now uses the in-app keyboard described above. This is not a physical system-keyboard test.
 - Search UI submission: title, uppercase title, misspelling suggestion, actor, multiple-actor query, actor pagination, empty results, and catalog error display. The browser API responses are mocked; backend matching is covered separately by the shared suite.
 - Country and service-type filters; service checkbox selection; focus restoration after rerendering; genre and content-rating filters.
 - Mock-account sign-in, Premium recognition, hidden purchase/restore controls, account-deletion cancellation with no delete request.
@@ -18,17 +26,17 @@
 1. Focus could target controls inside closed details sections, silently failing and trapping movement around movie cards. These controls and aria-hidden/inert sections are excluded.
 2. Focus disappeared when service/results/details elements were replaced. Equivalent replacement controls now regain focus.
 3. Right-stick scrolling was absent. It now scrolls the nearest scrollable panel or the page independently of focus.
-4. Requesting a WebView keyboard did not provide reliable native Xbox text editing. A native TextBox/PasswordBox editor now hands text back to the original field, without logging text or passwords.
+4. Requesting a WebView keyboard did not provide reliable native Xbox text editing. A native TextBox/PasswordBox editor hands account and Pick Together text back to the original field without logging it. The title path is superseded by the in-app keyboard in 0.2.2.0.
 5. Async details refresh could replace an in-progress Watch in Order section. The Xbox packaging adaptation preserves that section.
 6. Account deletion depended on a browser confirmation dialog. Xbox now uses a controller-navigable confirmation dialog with Cancel focused by default.
 7. Launch/tile assets still used placeholder letters. They now use the existing mobile blue play logo.
 
 ## Outstanding console validation and boundaries
 
-Windows compilation/signing must pass for this exact revision. On physical Xbox, verify native keyboard entry (search, email, password, Pick Together), A/B behavior, D-pad and both sticks, suspend/resume, long-session memory, offline/reconnect, and the updated launch logo. Browser tests cannot certify these.
+Windows compilation/signing must pass for this exact revision. On physical Xbox, verify title keyboard entry, native email/password/Pick Together entry, A/B behavior, D-pad and both sticks, suspend/resume, long-session memory, offline/reconnect, and the updated launch logo. Browser tests cannot certify these.
 
 Real email delivery, external verification/password-reset completion, and production sign-in were not exercised with real credentials during this review. No real account deletion, purchase, or user data mutation was performed.
 
 Provider apps still open separately on Xbox. The development app does not yet implement provider deep links or Microsoft Store purchases. It recognizes existing memberships. Marketplace certification, store identity, production signing, listings, and hardware acceptance remain separate release work.
 
-No deployment command is enabled. Version 0.2.0.0 remains on the user's Xbox until an explicitly authorized reviewed update is installed. The new Windows deployment agent has passed Windows compilation and its own validation/DPAPI self-tests; local setup and an actual console upload have not yet been verified.
+The user installed the Windows deployment agent, and its commanded 0.2.1.0 update was confirmed installed and Running in Device Portal. A new command is issued only after the exact revised build passes its automated checks. Console screenshot capture was blocked by the connected browser, so no visual hardware verification is claimed from that capture.

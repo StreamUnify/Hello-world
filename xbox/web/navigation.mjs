@@ -19,7 +19,7 @@ export function visibleControls(root){
   result.push(el);
  }return result;
 }
-export function installNavigation({back,selectOptions,root=document}){
+export function installNavigation({back,selectOptions,editText,root=document}){
  const scope=()=>{
   const picker=root.getElementById('suWebTogether');
   const dialogs=[...root.querySelectorAll('dialog[open]'),...(picker?.shadowRoot?.querySelectorAll('dialog[open]')||[])];
@@ -66,7 +66,7 @@ export function installNavigation({back,selectOptions,root=document}){
   if(key==='scrollup'||key==='scrolldown'){scroll(key==='scrollup'?'up':'down');return;}
 
   if(key==='back'){back();return;}
-  if(key==='select'){const active=deepActive(root);if(active?.tagName==='SELECT'&&selectOptions){selectOptions(active);return;}if(['INPUT','TEXTAREA'].includes(active?.tagName)&&!['checkbox','radio','range','button','submit'].includes(active.type)&&window.chrome?.webview){pendingText=active;window.chrome.webview.postMessage(JSON.stringify({type:'keyboard',value:active.value,inputType:active.type||'text',label:active.labels?.[0]?.textContent||active.getAttribute('aria-label')||active.placeholder||'Enter text',maxLength:active.maxLength>0?Math.min(active.maxLength,4096):4096}));return;}active?.click();return;}
+  if(key==='select'){const active=deepActive(root);if(editText?.(active))return;if(active?.tagName==='SELECT'&&selectOptions){selectOptions(active);return;}if(['INPUT','TEXTAREA'].includes(active?.tagName)&&!['checkbox','radio','range','button','submit'].includes(active.type)&&window.chrome?.webview){pendingText=active;window.chrome.webview.postMessage(JSON.stringify({type:'keyboard',value:active.value,inputType:active.type||'text',label:active.labels?.[0]?.textContent||active.getAttribute('aria-label')||active.placeholder||'Enter text',maxLength:active.maxLength>0?Math.min(active.maxLength,4096):4096}));return;}active?.click();return;}
   move(key);
  }
  root.addEventListener('keydown',event=>{

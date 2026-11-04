@@ -29,7 +29,7 @@ return route.fulfill({status:200,contentType:'application/json',headers:{'Access
 });
 await page.route('https://xbox-preview.supabase.co/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({access_token:'eyJhbGciOiJIUzI1NiJ9.'+Buffer.from(JSON.stringify({sub:'11111111-1111-4111-8111-111111111111',exp:Math.floor(Date.now()/1000)+3600,iat:Math.floor(Date.now()/1000),role:'authenticated'})).toString('base64url')+'.test',refresh_token:'preview-refresh-token',token_type:'bearer',expires_in:3600,user:{id:'11111111-1111-4111-8111-111111111111',email:'xbox-preview@example.com',email_confirmed_at:new Date().toISOString(),app_metadata:{provider:'email'},user_metadata:{}}})}));
 await page.goto('http://127.0.0.1:'+server.address().port+'/index.html',{waitUntil:'domcontentloaded'});console.log('Page loaded');
-await page.waitForFunction(()=>typeof window.streamUnifyCommand==='function');await page.getByText('Xbox preview 0.2.1.0').waitFor();console.log('Controls loaded');
+await page.waitForFunction(()=>typeof window.streamUnifyCommand==='function');await page.getByText('Xbox preview 0.2.2.0').waitFor();console.log('Controls loaded');
 await page.getByRole('button',{name:'Details for Rambo',exact:true}).waitFor();console.log('Catalog loaded');
 assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'No horizontal overflow');
 await page.screenshot({path:'xbox-ui-output/streamunify-xbox-home.png',fullPage:false});
@@ -52,15 +52,56 @@ for(const viewport of [{width:1920,height:1080},{width:1280,height:720}]){
  assert((await page.evaluate(()=>scrollY))>before,'Right-stick scrolling moves beyond the selected movie');
 }
 await page.setViewportSize({width:1920,height:1080});
-// Native keyboard result uses values, never executable text, and dispatches input.
-await page.locator('#search').focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
-assert.equal((await page.evaluate(()=>window.xboxKeyboardMessages.at(-1))).type,'keyboard');
-await page.evaluate(()=>window.streamUnifyTextResult({accepted:true,text:'Rambo'}));
-assert.equal(await page.locator('#search').inputValue(),'Rambo');
-await page.evaluate(()=>window.streamUnifyCommand('select'));
-await page.evaluate(()=>window.streamUnifyTextResult({accepted:false,text:'discarded'}));
-assert.equal(await page.locator('#search').inputValue(),'Rambo','Cancel retains the original query');
-await page.locator('#search').fill('');
+// Exercise the actual on-screen key buttons and controller commands, not a
+// fabricated successful Windows keyboard callback.
+const keyboard=page.getByRole('dialog',{name:'Search titles or actors',exact:true});
+const command=key=>page.evaluate(key=>window.streamUnifyCommand(key),key);
+const pressKey=async name=>{await keyboard.getByRole('button',{name,exact:true}).focus();await command('select');};
+const draft=()=>keyboard.getByRole('textbox',{name:'Title or actor'}).getAttribute('aria-valuetext');
+const openKeyboard=async()=>{await page.locator('#search').focus();await command('select');await keyboard.waitFor();};
+const searchText=async query=>{await openKeyboard();await pressKey('Clear');if(query){await page.keyboard.type(query);await page.keyboard.press('Enter');}else await pressKey('Search');await keyboard.waitFor({state:'hidden'});};
+const initialSearches=requests.filter(u=>u.startsWith('/api/search?')).length;
+for(const viewport of [{width:1920,height:1080},{width:1280,height:720}]){
+ await page.setViewportSize(viewport);await openKeyboard();await pressKey('Clear');
+ await keyboard.getByRole('button',{name:'q',exact:true}).focus();await command('up');
+ let expected='';
+ for(let row=0;row<4;row++){
+  for(let col=0;col<10;col++){
+   const character=await page.evaluate(()=>document.activeElement.dataset.character);
+   assert(character,'D-pad stays on a character key');expected+=character;
+   await command('select');assert.equal(await draft(),expected,'Every letter/digit button inserts exactly once');
+   if(col<9)await command(row%2?'left':'right');
+  }
+  if(row<3)await command('down');
+ }
+ await pressKey('Space');assert.equal(await draft(),expected+' ');
+ await pressKey('Backspace');assert.equal(await draft(),expected);
+ await pressKey('Clear');await pressKey('Uppercase');await pressKey('R');await pressKey('Uppercase');
+ for(const letter of ['a','m','b','o'])await pressKey(letter);
+ await pressKey('Space');await pressKey('2');await pressKey('Cursor left');await pressKey('x');
+ assert.equal(await draft(),'Rambo x2');await pressKey('Backspace');await pressKey('Cursor right');await pressKey('Backspace');await pressKey('Backspace');assert.equal(await draft(),'Rambo');
+ await pressKey('Symbols');await pressKey('&');await pressKey('Letters');await pressKey('Backspace');
+ assert.equal(await draft(),'Rambo');
+ const bounds=await keyboard.boundingBox();assert(bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=viewport.width&&bounds.y+bounds.height<=viewport.height,'Keyboard fits TV viewport');
+ await page.screenshot({path:'xbox-ui-output/streamunify-xbox-keyboard-'+viewport.height+'.png'});
+ await command('back');await keyboard.waitFor({state:'hidden'});assert.equal(await page.locator('#search').inputValue(),'','B cancels without changing the title');
+ assert(await page.locator('#search').evaluate(el=>el===document.activeElement),'Cancel restores title field focus');
+}
+assert.equal(requests.filter(u=>u.startsWith('/api/search?')).length,initialSearches,'Selecting and cancelling keys never consumes a search');
+assert.equal((await page.evaluate(()=>window.xboxKeyboardMessages)).length,0,'Title entry never asks Windows to display its keyboard');
+await page.setViewportSize({width:1920,height:1080});
+// Enter a complete title and reach Search using only the same commands sent
+// by the native gamepad poller, with no fill(), injected text, or focus jumps.
+await openKeyboard();
+for(const [direction,count] of [['right',3],['select',1],['down',1],['left',3],['select',1],['down',1],['right',6],['select',1],['left',2],['select',1],['up',2],['right',4],['select',1]])for(let i=0;i<count;i++)await command(direction);
+assert.equal(await draft(),'rambo');
+for(let i=0;i<4;i++)await command('down');
+assert.equal(await page.evaluate(()=>document.activeElement.textContent),'Search','D-pad reaches the submit button');
+await command('select');await keyboard.waitFor({state:'hidden'});await page.waitForFunction(()=>!document.getElementById('genreFilter').disabled);
+assert.equal(await page.locator('#search').inputValue(),'rambo');
+assert.equal(requests.filter(u=>u.startsWith('/api/search?')&&new URL(u,'http://test').searchParams.get('q')==='rambo').length,1,'Keyboard Search submits exactly once');
+await openKeyboard();await pressKey('Clear');await pressKey('Cancel');assert.equal(await page.locator('#search').inputValue(),'rambo','Cancel preserves an existing query');
+await searchText('');
 await page.getByRole('button',{name:'Sign in',exact:true}).click();
 await page.locator('#accountEmail').focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
 assert((await page.evaluate(()=>window.xboxKeyboardMessages)).some(m=>m.type==='keyboard'),'A requests native keyboard');
@@ -97,14 +138,14 @@ await page.evaluate(()=>window.streamUnifyCommand('back'));
 await page.locator('#suMenuOpen').click();await page.evaluate(()=>window.streamUnifyCommand('down'));assert(await page.evaluate(()=>document.getElementById('suDrawer').contains(document.activeElement)));await page.evaluate(()=>window.streamUnifyCommand('back'));
 await page.getByRole('button',{name:'Premium',exact:true}).click();await page.locator('#accountDelete').click();await page.getByRole('dialog',{name:'Confirm account deletion'}).waitFor();await page.evaluate(()=>window.streamUnifyCommand('back'));assert(!requests.includes('/api/account/delete'),'Cancel never deletes an account');await page.evaluate(()=>window.streamUnifyCommand('back'));
 for(const query of ['Rambo','RAMBO','Tom Hanks','Tom Hanks, Meg Ryan','No matching title']){
- await page.locator('#search').fill(query);await page.locator('#suSearchButton').focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
+ await searchText(query);
  await page.waitForFunction(()=>!document.getElementById('genreFilter').disabled);
  assert(requests.some(u=>u.includes('/api/search?')&&new URL(u,'http://test').searchParams.get('q')===query),'Explicit search submits '+query);
  if(query==='Tom Hanks'){await page.locator('#loadActorMovies').click();await page.waitForFunction(()=>document.getElementById('loadActorMovies').hidden);assert(requests.some(u=>u.includes('page=2')));}
  if(query==='No matching title')await page.locator('#results .empty').waitFor();
 }
-searchFailure=true;await page.locator('#search').fill('Failure test');await page.locator('#suSearchButton').click();await page.locator('#count').filter({hasText:'Search unavailable'}).waitFor();searchFailure=false;
-await page.locator('#search').fill('rambi');await page.locator('#suSearchButton').click();
+searchFailure=true;await searchText('Failure test');await page.locator('#count').filter({hasText:'Search unavailable'}).waitFor();searchFailure=false;
+await searchText('rambi');
 await page.locator('#searchSuggestion').filter({hasText:'Rambo'}).waitFor();
 await page.locator('#genreFilter').focus();await page.evaluate(()=>window.streamUnifyCommand('select'));
 await page.locator('.xbox-select[open]').waitFor();
