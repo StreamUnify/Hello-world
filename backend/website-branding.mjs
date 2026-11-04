@@ -1,7 +1,7 @@
 // Injected by the HTTP server only. The shared native HTML stays unchanged.
 export function websiteHtml(html) {
   // Legal documents use an implicit head; their title still anchors metadata.
-  return String(html).replace('</head>', websiteBannerStyle + '</head>').replace('<title>', '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48"><link rel="icon" type="image/png" sizes="32x32" href="/favicon.png"><title>');
+  return websitePickerHtml(String(html)).replace('</head>', websiteBannerStyle + '</head>').replace('<title>', '<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48"><link rel="icon" type="image/png" sizes="32x32" href="/favicon.png"><title>');
 }
 export function websiteIcon(path) {
   if(path==='/favicon.ico')return {file:'favicon.ico',type:'image/x-icon'};
@@ -40,3 +40,15 @@ const websiteBannerStyle = `<style id="su-website-banner-fit">
   .hero .su-original-artwork {width: calc(100% + 32px); max-width: none; margin: 10px -16px 14px;}
 }
 </style>`;
+
+// Website-only entry point. Native source and app packaging are untouched.
+export function websitePickerHtml(html) {
+  const anchor='<nav class="su-discover" aria-label="Quick discovery">';
+  if(!html.includes('<main id="top">'))return html;
+  if(html.includes('id="suWebPickTogether"'))return html;
+  if(html.split(anchor).length!==2)throw Error('Website picker navigation anchor changed');
+  return html.replace(anchor,anchor+'<button type="button" class="su-action" id="suWebPickTogether" aria-controls="suWebTogether" aria-pressed="false">Pick Together</button>')
+    .replace('</head>','<style>#suWebPickTogether[aria-pressed="true"]{background:#2d3b57;border-color:#546380;color:#e5ecff}main[hidden],su-web-pick-together[hidden]{display:none!important}</style></head>')
+    .replace('</main>','</main><su-web-pick-together id="suWebTogether" hidden></su-web-pick-together>')
+    .replace('</body>','<script type="module" src="website-pick-together-ui.mjs"></script></body>');
+}
