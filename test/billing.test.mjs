@@ -58,3 +58,9 @@ test('changing checkout plans expires a mismatched session and keys creation by 
  assert.equal(calls[1].params.metadata.streamunify_interval,'annual');
  assert.match(calls[1].opts.idempotencyKey,/-annual-/);
 });
+
+test('checkout idempotency key stays under Stripe limit with ten old sessions',async()=>{
+ const {billing,calls}=fixture({open:Array.from({length:10},(_,i)=>({id:'cs_'+String(i).repeat(60),metadata:{streamunify_interval:'monthly'}}))});
+ await billing.checkout(actor,'annual');
+ assert.ok(calls.at(-1).opts.idempotencyKey.length<=255);
+});
