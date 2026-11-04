@@ -1,0 +1,16 @@
+// Isolated preview of the real account client. No production Auth or email calls.
+import {build} from 'esbuild';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+const out=new URL('../feature-preview/',import.meta.url);await mkdir(out,{recursive:true});
+const mock=`export function createClient(){
+ const listeners=[];const session=()=>window.previewUser?{user:window.previewUser,access_token:'preview-only'}:null;
+ window.previewVerify=()=>{window.previewUser={id:'preview-only',email_confirmed_at:new Date().toISOString(),user_metadata:{signup_password_pending:true}};listeners.forEach(fn=>fn('SIGNED_IN'));};
+ return {auth:{async getSession(){return {data:{session:session()}};},async getUser(){return {data:{user:window.previewUser}};},onAuthStateChange(fn){listeners.push(fn);},async signInWithOtp(){if(window.previewFail)return {error:{code:'email_send_failed'}};return {error:null};},async updateUser(value){window.previewUser={...window.previewUser,user_metadata:value.data};return {data:{user:window.previewUser}};},async signOut(){window.previewUser=null;return {error:null};}}};
+}`;
+await build({entryPoints:['membership-client-src.js'],bundle:true,format:'iife',outfile:new URL('membership-client.js',out).pathname,plugins:[{name:'isolated-auth',setup(b){b.onResolve({filter:/^@supabase\/supabase-js$/},()=>({path:'auth',namespace:'preview'}));b.onLoad({filter:/.*/,namespace:'preview'},()=>({contents:mock,loader:'js'}));}}]});
+const source=await readFile(new URL('../index.html',import.meta.url),'utf8');
+const styles=[...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');
+await writeFile(new URL('index.html',out),`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>StreamUnify sign-up preview</title><style>${styles}</style></head><body><header><strong>StreamUnify · Sign-up preview</strong><div class="su-discover"></div></header><main><h1>Sign-up reliability preview</h1><p>Simulation only. No emails are sent and no real accounts are created. Use a sample email address.</p><p>Try sending a link, refreshing, and reopening Account to check the preserved waiting screen and resend countdown.</p><label><input type="checkbox" onchange="window.previewFail=this.checked">Simulate an email-service failure</label></main><script>
+window.fetch=async input=>{const path=String(input);if(path.endsWith('/api/account/config'))return new Response(JSON.stringify({enabled:true,supabaseUrl:'https://preview.invalid',publishableKey:'preview-only',billingEnabled:false}));if(path.endsWith('/api/account'))return new Response(JSON.stringify({plan:'free',remaining:10}));return new Response(JSON.stringify({items:[]}));};
+</script><script src="/membership-client.js"></script><script>window.membershipReady.then(()=>{const dialog=document.querySelector('dialog');const verify=document.createElement('button');verify.type='button';verify.textContent='Preview: simulate opening verification email';verify.onclick=()=>window.previewVerify();dialog.append(verify);window.StreamUnifyMembership.show();document.getElementById('accountSignup').click();});</script></body></html>`);
+console.log('Built isolated signup preview with simulated Auth.');
