@@ -19,6 +19,9 @@ const mobileStyle=`<style id="su-mobile-safe-areas">
 main{padding-bottom:max(80px,env(safe-area-inset-bottom));padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));}
 </style>`;
 for(const dir of ['www','backend'])await mkdir(path.join(root,dir),{recursive:true});
+for(const name of ['pick-together-model.mjs','pick-together-ui.mjs','pick-together.css']){
+ for(const dir of ['www','backend'])await copyFile(path.join(root,name),path.join(root,dir,name));
+}
 await writeFile(path.join(root,'www/index.html'),nativeHtml.replace('<head>','<head>'+mobileCsp).replace('</head>',mobileStyle+'</head>'));
 await writeFile(path.join(root,'www/app-config.js'),'window.STREAMUNIFY_API_BASE = '+JSON.stringify(apiBase.origin)+';\n');
 for(const name of ['streamunify-header.png','streamunify-seamless-artwork.png','streamunify-logo.jpg']){

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
+    "pretest": "npm run prepare:platforms",
     "test": "node --test",
     "build": "esbuild membership-client-src.js --bundle --minify --format=iife --outfile=membership-client.js && esbuild provider-entitlements-src.mjs --bundle --minify --format=iife --global-name=StreamUnifyEntitlements --outfile=provider-entitlements.js",
     "ios": "npx cap open ios",
