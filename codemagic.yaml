@@ -89,29 +89,7 @@ workflows:
         bundle_identifier: com.streamunify.app
     scripts:
     - name: Verify authorized existing TestFlight recipients
-      script: "python3 - <<'PYTHON'\nimport json, os, time, urllib.request, urllib.parse, hashlib\nfrom pathlib import\
-        \ Path\nimport jwt\nkey = os.environ[\"APP_STORE_CONNECT_PRIVATE_KEY\"]\nif key.startswith(\"@file:\"):\n\
-        \    key = Path(os.path.expandvars(key[6:])).expanduser().read_text()\ndef api(path, payload=None):\n    now\
-        \ = int(time.time())\n    token = jwt.encode({\"iss\": os.environ[\"APP_STORE_CONNECT_ISSUER_ID\"], \"iat\"\
-        : now,\n                        \"exp\": now + 300, \"aud\": \"appstoreconnect-v1\"}, key,\n             \
-        \          algorithm=\"ES256\", headers={\"kid\": os.environ[\"APP_STORE_CONNECT_KEY_IDENTIFIER\"], \"typ\"\
-        : \"JWT\"})\n    url = path if path.startswith(\"https://\") else \"https://api.appstoreconnect.apple.com/v1/\"\
-        \ + path\n    if not url.startswith(\"https://api.appstoreconnect.apple.com/\"):\n        raise SystemExit(\"\
-        Unexpected API origin\")\n    body = json.dumps(payload).encode() if payload is not None else None\n    req\
-        \ = urllib.request.Request(url, data=body, headers={\"Authorization\": \"Bearer \" + token, \"Content-Type\"\
-        : \"application/json\"})\n    with urllib.request.urlopen(req, timeout=60) as response:\n        result =\
-        \ response.read()\n    return json.loads(result) if result else {}\ndef all_items(path):\n    result=[]\n\
-        \    while path:\n        data=api(path)\n        result.extend(data[\"data\"])\n        path=data.get(\"\
-        links\",{}).get(\"next\")\n    return result\nexpected = {'42956bd0-9f18-434c-b2e7-ea3417467f2a': 'aa92365c37b108c164d9bfce81f0f7a1604b8c484a76d417fe793206dc90f217',\
-        \ '5d1d238d-95f0-4c94-9f0b-5b153f8508ee': 'd7ac7d7f51c7f03d2c4c2571932ddf4e3bcf97fbc6c661ecae46728da6cf5dcb'}\n\
-        groups = all_items(\"apps/6825959035/betaGroups?limit=200\")\nassert set(expected).issubset({g[\"id\"] for\
-        \ g in groups}), \"Expected tester group missing\"\nfor group in groups:\n    gid = group[\"id\"]\n    if\
-        \ gid not in expected:\n        assert not group[\"attributes\"].get(\"hasAccessToAllBuilds\"), \"Unexpected\
-        \ automatic group\"\n        continue\n    members = all_items(\"betaGroups/\" + gid + \"/betaTesters?limit=200\"\
-        )\n    emails = sorted(m[\"attributes\"][\"email\"].strip().lower() for m in members)\n    digest = hashlib.sha256(\"\
-        \\n\".join(emails).encode()).hexdigest()\n    assert digest == expected[gid], \"Tester membership changed;\
-        \ upload blocked\"\n    print(\"Verified existing tester group:\", len(members), \"authorized recipients\"\
-        )\nprint(\"PASS: existing internal owner and five external testers verified; no settings changed\")\nPYTHON\n"
+      script: "python3 - <<'PYTHON'\nimport json, os, time, urllib.request, urllib.parse, hashlib\nfrom pathlib import Path\nimport jwt\nkey = os.environ[\"APP_STORE_CONNECT_PRIVATE_KEY\"]\nif key.startswith(\"@file:\"):\n    key = Path(os.path.expandvars(key[6:])).expanduser().read_text()\ndef api(path, payload=None):\n    now = int(time.time())\n    token = jwt.encode({\"iss\": os.environ[\"APP_STORE_CONNECT_ISSUER_ID\"], \"iat\": now,\n                        \"exp\": now + 300, \"aud\": \"appstoreconnect-v1\"}, key,\n                       algorithm=\"ES256\", headers={\"kid\": os.environ[\"APP_STORE_CONNECT_KEY_IDENTIFIER\"], \"typ\": \"JWT\"})\n    url = path if path.startswith(\"https://\") else \"https://api.appstoreconnect.apple.com/v1/\" + path\n    if not url.startswith(\"https://api.appstoreconnect.apple.com/\"):\n        raise SystemExit(\"Unexpected API origin\")\n    body = json.dumps(payload).encode() if payload is not None else None\n    req = urllib.request.Request(url, data=body, headers={\"Authorization\": \"Bearer \" + token, \"Content-Type\": \"application/json\"})\n    with urllib.request.urlopen(req, timeout=60) as response:\n        result = response.read()\n    return json.loads(result) if result else {}\ndef all_items(path):\n    result=[]\n    while path:\n        data=api(path)\n        result.extend(data[\"data\"])\n        path=data.get(\"links\",{}).get(\"next\")\n    return result\nexpected = {'42956bd0-9f18-434c-b2e7-ea3417467f2a': 'aa92365c37b108c164d9bfce81f0f7a1604b8c484a76d417fe793206dc90f217', '5d1d238d-95f0-4c94-9f0b-5b153f8508ee': 'd7ac7d7f51c7f03d2c4c2571932ddf4e3bcf97fbc6c661ecae46728da6cf5dcb'}\nfrom scripts.testflight_recipients import verify_recipient_hashes\ngroups = all_items(\"apps/6825959035/betaGroups?limit=200\")\nassert set(expected).issubset({g[\"id\"] for g in groups}), \"Expected tester group missing\"\nfor group in groups:\n    gid = group[\"id\"]\n    if gid not in expected:\n        assert not group[\"attributes\"].get(\"hasAccessToAllBuilds\"), \"Unexpected automatic group\"\n        continue\n    members = all_items(\"betaGroups/\" + gid + \"/betaTesters?limit=200\")\n    emails = sorted(m[\"attributes\"][\"email\"].strip().lower() for m in members)\n    hashes = [hashlib.sha256(email.encode()).hexdigest() for email in emails]\n    verify_recipient_hashes(gid, hashes)\n    print(\"Verified existing tester group:\", len(members), \"authorized recipients\")\nprint(\"PASS: owner-authorized tester identities verified; no Apple settings changed\")\nPYTHON\n"
     - name: Install dependencies
       script: npm ci
     - name: Validate catalog and platform assets
@@ -168,6 +146,13 @@ workflows:
 
   streamunify-android-play:
     name: StreamUnify Android Play Release
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: release/android-google-play
+          include: true
+          source: true
+      cancel_previous_builds: true
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
