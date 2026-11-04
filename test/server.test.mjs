@@ -26,6 +26,9 @@ test('HTTP routes preserve public access while disabled and require accounts whe
       const missing=await fetch(base+'/unknown-page');assert.equal(missing.status,404);assert.equal(missing.headers.get('x-robots-tag'),'noindex');
       const config=await configResponse.json();assert.equal(config.enabled,enabled);assert.equal(config.billingEnabled,false);
       assert.equal((await fetch(base+'/membership-client.js')).status,200);
+      for(const file of ['pick-together-ui.mjs','pick-together-model.mjs','pick-together.css']){const response=await fetch(base+'/'+file);assert.equal(response.status,200);assert.match(response.headers.get('content-type'),file.endsWith('.css')?/text\/css/:/javascript/);assert.equal(response.headers.get('x-content-type-options'),'nosniff');assert.equal(response.headers.get('cache-control'),'no-store');}
+      assert.equal((await fetch(base+'/pick-together-secret.mjs')).status,404);
+      const homepage=await (await fetch(base+'/')).text();assert.match(homepage,/>Pick Together · Preview<\/button>/);
       const addonAsset=await fetch(base+'/provider-entitlements.js');assert.equal(addonAsset.status,200);assert.match(addonAsset.headers.get('content-type'),/javascript/);
       const addonRegistry=await fetch(base+'/api/provider-addons?country=US');assert.equal(addonRegistry.status,503);assert.equal(addonRegistry.headers.get('cache-control'),'no-store');assert.deepEqual((await addonRegistry.json()).services,[]);
       assert.equal((await fetch(base+'/api/provider-addons?country=INVALID')).status,400);

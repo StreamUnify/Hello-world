@@ -23,15 +23,25 @@ test('unknown favorites do not change ranking; recognized favorites contribute a
  s.people[0].favorite='  game night  ';assert.ok(rankPicks(s)[0].score>before[0].score);
  s.services.length=0;s.people[0].genres.length=0;assert.equal(other.services.length,3);assert.equal(other.people[0].genres.length,2);
 });
-test('packaging preserves homepage source and existing navigation and only adds separate screen',()=>{
- const root=readFileSync(new URL('../index.html',import.meta.url),'utf8'),mobile=pickTogetherHtml(root);
- assert.doesNotMatch(root,/suPickTogether|pick-together-ui/);
- assert.equal(mobile.match(/id="suPickTogether"/g).length,1);
- assert.ok(mobile.includes(root.slice(root.indexOf('<main id="top">'),root.indexOf('</main>')+7)));
- for(const id of ['suSurprise','suFree','suMine','suWatchlist','suMenuOpen'])assert.ok(mobile.includes('id="'+id+'"'));
+test('shared source exposes one labeled preview and preserves existing discovery navigation',()=>{
+ const root=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.equal(root.match(/id="suPickTogether"/g).length,1);
+ assert.match(root,/>Pick Together · Preview<\/button>/);
+ assert.equal(root.match(/id="suTogether"/g).length,1);
+ assert.match(root,/<script type="module" src="pick-together-ui.mjs"><\/script>/);
+ for(const id of ['suSurprise','suFree','suMine','suWatchlist','suMenuOpen'])assert.ok(root.includes('id="'+id+'"'));
  assert.throws(()=>pickTogetherHtml('missing'),/anchor/);
- assert.ok(mobile.indexOf('id="suTogether"')>mobile.indexOf('</main>'));
+ assert.throws(()=>pickTogetherHtml(root),/already packaged/);
+ assert.ok(root.indexOf('id="suTogether"')>root.indexOf('</main>'));
  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
- assert.match(pkg.scripts['sync:ios'],/prepare-platforms.mjs --ios/);
- assert.doesNotMatch(pkg.scripts['sync:android'],/--ios/);
+ for(const platform of ['ios','android'])assert.match(pkg.scripts['sync:'+platform],/npm run prepare:platforms && cap sync/);
+});
+test('preview notices precede inputs and results, and selecting never claims live availability',()=>{
+ const ui=readFileSync(new URL('../pick-together-ui.mjs',import.meta.url),'utf8');
+ assert.ok(ui.indexOf('Preview · Sample data only.')<ui.indexOf('id="pickerForm"'));
+ assert.match(ui,/not live availability, pricing or playback/);
+ assert.match(ui,/ILLUSTRATIVE RESULTS/);
+ assert.match(ui,/Service labels, inclusion and extra-cost options below are examples, not current availability or prices/);
+ assert.match(ui,/Nothing has been rented, purchased or played/);
+ assert.doesNotMatch(ui,/fetch\(|localStorage|sessionStorage/);
 });
