@@ -146,13 +146,8 @@ workflows:
 
   streamunify-android-play:
     name: StreamUnify Android Play Release
-    triggering:
-      events: [push]
-      branch_patterns:
-        - pattern: release/temporary-free-launch
-          include: true
-          source: true
-      cancel_previous_builds: false
+    # Start manually only when this release needs a new signed artifact.
+    # No Play upload or store submission is performed by this workflow.
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
@@ -191,13 +186,9 @@ workflows:
 
   streamunify-ios-store-candidate:
     name: StreamUnify iOS Store Candidate
-    triggering:
-      events: [push]
-      branch_patterns:
-        - pattern: release/temporary-free-launch
-          include: true
-          source: true
-      cancel_previous_builds: false
+    # Manual, build-only candidate. Keep on hold until explicitly requested.
+    # App Store Connect is used for signing and a read-only build-number lookup.
+    # Uploading, tester assignment and store submission are separate actions.
     max_build_duration: 60
     instance_type: mac_mini_m2
     integrations:
@@ -237,8 +228,6 @@ workflows:
           set -eu
           mkdir -p build/ios
           xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
-      - name: Upload build for App Store Connect processing only
-        script: app-store-connect publish --path "build/ios/ipa/*.ipa"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
