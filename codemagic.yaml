@@ -143,3 +143,95 @@ workflows:
     artifacts:
     - build/ios/ipa/*.ipa
     - /tmp/xcodebuild_logs/*.log
+
+  streamunify-android-play:
+    name: StreamUnify Android Play Release
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: release/temporary-free-launch
+          include: true
+          source: true
+      cancel_previous_builds: false
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 22
+      java: 21
+      android_signing:
+        - streamunify-upload
+    scripts:
+      - name: Verify release signing configuration
+        script: |
+          set -eu
+          : "${CM_KEYSTORE_PATH:?Upload the streamunify-upload keystore in Codemagic first}"
+          : "${CM_KEYSTORE_PASSWORD:?Keystore password is required}"
+          : "${CM_KEY_ALIAS:?Key alias is required}"
+          : "${CM_KEY_PASSWORD:?Key password is required}"
+          : "${PROJECT_BUILD_NUMBER:?A unique build number is required}"
+          test "$PROJECT_BUILD_NUMBER" -gt 134
+      - name: Install dependencies
+        script: npm ci
+      - name: Validate catalog and platform assets
+        script: npm test
+      - name: Sync Capacitor Android
+        script: npm run sync:android
+      - name: Build signed Android App Bundle
+        script: |
+          set -eu
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+      - name: Verify App Bundle signature
+        script: |
+          set -eu
+          jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+
+  streamunify-ios-store-candidate:
+    name: StreamUnify iOS Store Candidate
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: release/temporary-free-launch
+          include: true
+          source: true
+      cancel_previous_builds: false
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: StreamUnify
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.streamunify.app
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Validate catalog and platform assets
+        script: npm test
+      - name: Sync Capacitor iOS
+        script: npm run sync:ios
+      - name: Apply App Store signing profile
+        script: xcode-project use-profiles
+      - name: Set unique iOS build number
+        script: |
+          set -eu
+          : "${PROJECT_BUILD_NUMBER:?A unique build number is required}"
+          test "$PROJECT_BUILD_NUMBER" -gt 133
+          cd ios/App
+          agvtool new-version -all "$PROJECT_BUILD_NUMBER"
+      - name: Build signed App Store candidate
+        script: |
+          set -eu
+          mkdir -p build/ios
+          xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+      - name: Upload build for App Store Connect processing only
+        script: app-store-connect publish --path "build/ios/ipa/*.ipa"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
