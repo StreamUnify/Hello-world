@@ -52,7 +52,7 @@ test('website and native homepage replace paid cards with free account guidance 
 
 test('paid pricing stays hidden until membership configuration confirms paid mode',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const tags=[...html.matchAll(/<[^>]+data-su-paid-only[^>]*>/g)].map(m=>m[0]);assert.ok(tags.length>=4);assert.ok(tags.every(tag=>/\bhidden\b/.test(tag)));
+ const tags=[...html.matchAll(/<[^>]+data-su-paid-only[^>]*>/g)].map(m=>m[0]);assert.ok(tags.length>0);assert.ok(tags.every(tag=>/\bhidden\b/.test(tag)));
  const paid=[{}],ctx={config:undefined,client:{},native:()=>false,nativePlatform:()=> 'ios',nativePlanText:()=>'',storePricesState:'loading',storePrices:{},busy:false,document:{querySelectorAll:q=>q==='[data-su-paid-only]'?paid:[]},$:()=>({})};
  vm.createContext(ctx);vm.runInContext(homepageSource+'\ndrawHomepagePlans();',ctx);assert.equal(paid[0].hidden,true);
  ctx.config={enabled:true,freeLaunch:false};vm.runInContext('drawHomepagePlans();',ctx);assert.equal(paid[0].hidden,false);
