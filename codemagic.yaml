@@ -222,9 +222,16 @@ workflows:
         script: |
           set -eu
           : "${PROJECT_BUILD_NUMBER:?A unique build number is required}"
-          test "$PROJECT_BUILD_NUMBER" -gt 133
+          latest=$(app-store-connect get-latest-testflight-build-number 6825959035)
+          case "$latest" in
+            ''|*[!0-9]*) echo "Could not verify the latest App Store Connect build number" >&2; exit 1 ;;
+          esac
+          build_number=$PROJECT_BUILD_NUMBER
+          if [ "$build_number" -le "$latest" ]; then
+            build_number=$((latest + 1))
+          fi
           cd ios/App
-          agvtool new-version -all "$PROJECT_BUILD_NUMBER"
+          agvtool new-version -all "$build_number"
       - name: Build signed App Store candidate
         script: |
           set -eu
