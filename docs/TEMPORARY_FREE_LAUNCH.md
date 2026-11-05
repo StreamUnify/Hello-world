@@ -1,5 +1,16 @@
 # Temporary free access
 
+## Coordinated master release
+
+Hold production activation until the website and the iOS/Android launch builds
+are ready for the coordinated release. The website update and the free-access
+flag are part of that app launch; do not activate them as a separate early
+website release. Store review, reviewer access, signed-device checks and content
+permissions must be verified before public release. Preview deployments remain
+isolated and do not activate production access.
+
+## Access policy
+
 While commercial API approval is pending, the website and every app can offer
 unlimited discovery, all supported providers, watchlists and availability alerts
 to verified signed-in users. This is a temporary access policy, not a paid
