@@ -32,5 +32,5 @@ test('password creation verifies the user with Auth and clears only the presenta
  let saved;const user={id:'fixture',email_confirmed_at:'2026-10-25',user_metadata:{signup_password_pending:true}};
  const client={auth:{async getUser(){return {data:{user},error:null};},async updateUser(value){saved=value;return {data:{user:{...user,user_metadata:{signup_password_pending:false}}},error:null};}}};
  assert.equal(needsPasswordSetup(user),true);assert.equal(needsPasswordSetup({...user,email_confirmed_at:null}),false);
- const result=await saveVerifiedPassword(client,'ten-chars!','ten-chars!');assert.equal(saved.password,'long-password-123');assert.equal(saved.data.signup_password_pending,false);assert.equal(needsPasswordSetup(result),false);
+ const result=await saveVerifiedPassword(client,'ten-chars!','ten-chars!');assert.equal(saved.password,'ten-chars!');assert.equal(saved.data.signup_password_pending,false);assert.equal(needsPasswordSetup(result),false);
 });
