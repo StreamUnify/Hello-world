@@ -20,7 +20,7 @@ export async function sendSignupEmail(client,email,redirectTo){
   if(error)throw error;
 }
 export async function saveVerifiedPassword(client,password,confirmation){
-  if(password.length<12)throw Error('Use at least 12 characters for your password.');
+  if(password.length<10)throw Error('Use at least 10 characters for your password.');
   if(password!==confirmation)throw Error('Your passwords don’t match. Please try again.');
   // Verify with Auth rather than trusting a URL parameter or cached UI state.
   const {data,error}=await client.auth.getUser();
