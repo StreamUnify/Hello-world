@@ -3,7 +3,7 @@ import {nativePlanText} from './native-price-display.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {createRecentSearches} from './recent-searches-client.mjs';
 import {needsPasswordSetup,sendSignupEmail,saveVerifiedPassword,readPendingSignup,savePendingSignup,signupErrorMessage} from './signup-flow.mjs';
-import {isNative,nativePlatform,nativeRedirect,createNativeSessionStorage,prepareNativeStorage,configureNativeAuth,nativeProducts,buyNative,restoreNative,listenNativePurchases,manageNative} from './native-client.mjs';
+import {isNative,nativePlatform,nativeRedirect,nativeSignupRedirect,createNativeSessionStorage,prepareNativeStorage,configureNativeAuth,nativeProducts,buyNative,restoreNative,listenNativePurchases,manageNative} from './native-client.mjs';
 const apiBase=(window.STREAMUNIFY_API_BASE||'').replace(/\/$/,'');
 let client,config,status,user,busy=false;
 const recentSearches=createRecentSearches({api,identity:()=>user?.id,runSearch:query=>{
@@ -123,7 +123,7 @@ async function refresh(){
   const {data:{session}}=await client.auth.getSession();user=session?.user;if(needsPasswordSetup(user)&&authView!=='password'){authView='password';show();}draw();status=user?await api('/api/account'):null;draw();window.dispatchEvent(new Event('membershipchange'));
 }
 async function action(fn){if(busy)return;busy=true;dialog.querySelectorAll('button:not(#accountClose)').forEach(b=>b.disabled=true);message('Please wait…');try{await fn();}catch(e){message(signupErrorMessage(e));}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);drawResend();drawHomepagePlans();}}
-const signupRedirect=()=>native()?nativeRedirect:location.origin+'/';
+const signupRedirect=()=>native()?nativeSignupRedirect():location.origin+'/';
 async function requestSignup(){
   if(!$('accountEmail').reportValidity())return;
   if(Date.now()<resendAt)throw Error('Please wait a minute before requesting another verification email.');
