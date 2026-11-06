@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {callbackCode,createNativeSessionStorage} from '../native-client.mjs';
+import {callbackAuth,callbackCode,createNativeSessionStorage} from '../native-client.mjs';
 test('native callback accepts only the exact registered auth destination',()=>{
   assert.equal(callbackCode('com.streamunify.app://auth/callback?code=fixture'),'fixture');
+  assert.deepEqual(callbackAuth('com.streamunify.app://auth/callback?token_hash=fixture-token&type=email'),{tokenHash:'fixture-token',type:'email'});
+  assert.deepEqual(callbackAuth('com.streamunify.app://auth/callback?token_hash=recovery-token&type=recovery'),{tokenHash:'recovery-token',type:'recovery'});
   for(const url of ['https://attacker.invalid/auth/callback?code=fixture','com.streamunify.app://attacker/callback?code=fixture','com.streamunify.app://auth/other?code=fixture','com.streamunify.app://user@auth/callback?code=fixture'])assert.equal(callbackCode(url),null);
 });
 test('native session adapter persists through secure storage without a localStorage fallback',async()=>{
