@@ -9,11 +9,12 @@ export function callbackAuth(value){
   try{
     const url=new URL(value);
     if(url.protocol!=='com.streamunify.app:'||url.hostname!=='auth'||url.pathname!=='/callback'||url.username||url.password)return null;
-    const error=url.searchParams.get('error_description')||url.searchParams.get('error');
+    const fragment=new URLSearchParams(url.hash.slice(1)),get=key=>url.searchParams.get(key)||fragment.get(key);
+    const error=get('error_description')||get('error');
     if(error)return {error};
-    const code=url.searchParams.get('code');
-    if(code)return {code,flowId:url.searchParams.get('sb_flow_id')||undefined};
-    const tokenHash=url.searchParams.get('token_hash'),type=url.searchParams.get('type');
+    const code=get('code');
+    if(code)return {code,flowId:get('sb_flow_id')||undefined};
+    const tokenHash=get('token_hash'),type=get('type');
     if(tokenHash&&['email','recovery'].includes(type))return {tokenHash,type};
     return null;
   }catch{return null;}
