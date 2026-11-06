@@ -186,7 +186,15 @@ workflows:
 
   streamunify-ios-store-candidate:
     name: StreamUnify iOS Store Candidate
-    # Manual, build-only candidate. Keep on hold until explicitly requested.
+    # Build-only correction candidate. This branch-only trigger never uploads.
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: release/native-email-verification-fix
+          include: true
+          source: true
+      cancel_previous_builds: true
     # App Store Connect is used for signing and a read-only build-number lookup.
     # Uploading, tester assignment and store submission are separate actions.
     max_build_duration: 60
