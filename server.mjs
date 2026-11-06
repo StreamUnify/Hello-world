@@ -9,7 +9,7 @@ import {seoResponse} from './seo-routes.mjs';
 import http from 'node:http';
 import {createCatalog,GENRES,catalogLanguage} from './catalog.mjs';
 import {CONTENT_RATINGS} from './content-ratings.mjs';
-const catalog=createCatalog();
+const catalog=createCatalog({env:{...process.env,WATCHMODE_API_KEY:undefined}});
 import {createMembership} from './membership.mjs';
 import {createAvailabilityAlerts} from './availability-alerts.mjs';
 import {restrictCatalog,MembershipError} from './membership-policy.mjs';
