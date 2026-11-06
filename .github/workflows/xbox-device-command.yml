@@ -1,0 +1,44 @@
+name: Publish approved Xbox device update
+on:
+  push:
+    branches: [xbox/device-commands]
+    paths: ['xbox/deployment-command.json']
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: xbox-device-command
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate approved build and publish device package
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $command = Get-Content xbox/deployment-command.json -Raw | ConvertFrom-Json
+          if ($command.enabled -ne $true) { Write-Output 'No deployment requested'; exit 0 }
+          if ("$($command.runId)" -notmatch '^\d+$' -or "$($command.commit)" -notmatch '^[a-f0-9]{40}$') { throw 'Invalid command' }
+          $run = gh api "repos/$env:GH_REPO/actions/runs/$($command.runId)" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect build' }
+          if ($run.conclusion -ne 'success' -or $run.head_sha -ne $command.commit -or $run.path -ne '.github/workflows/xbox.yml' -or $run.head_branch -notin @('main','upgrade/xbox-current-experience')) { throw 'Only a successful verified Xbox build is eligible' }
+          gh run download "$($command.runId)" --name StreamUnify-Xbox-development-signed --dir downloaded
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot download package' }
+          $packages = @(Get-ChildItem downloaded -Recurse -Filter *.msix)
+          if ($packages.Count -ne 1) { throw 'Expected one Xbox package' }
+          $package = $packages[0]
+          if ($package.Name -notmatch '^StreamUnify\.Xbox_([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)_x64_Debug\.msix$') { throw 'Unexpected package name' }
+          $version = $Matches[1]
+          New-Item -ItemType Directory release-files | Out-Null
+          Copy-Item $package.FullName release-files
+          Get-ChildItem downloaded -Recurse -Filter *.appx | Where-Object { $_.FullName -match '[\\/]Dependencies[\\/]x64[\\/]' } | ForEach-Object { Copy-Item $_.FullName release-files }
+          $files = @(Get-ChildItem release-files | ForEach-Object { @{name=$_.Name;sha256=(Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()} })
+          @{version=$version;package=$package.Name;files=$files;sourceCommit=$run.head_sha;sourceRun=$run.id} | ConvertTo-Json -Depth 5 | Set-Content release-files/deployment.json -Encoding utf8
+          $tag = "xbox-device-$env:GITHUB_RUN_ID"
+          gh release create $tag --prerelease --target "$($run.head_sha)" --title "Approved Xbox device update $version" --notes "Explicitly requested Xbox development deployment. Not a Microsoft Store release." release-files/*
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot publish approved update' }

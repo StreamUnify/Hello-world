@@ -16,7 +16,8 @@
     "prepare:platforms": "npm run build && node scripts/prepare-platforms.mjs",
     "sync:ios": "npm run build && node scripts/prepare-platforms.mjs --ios && cap sync ios",
     "sync:android": "npm run prepare:platforms && cap sync android",
-    "dev": "node server.mjs"
+    "dev": "node server.mjs",
+    "build:xbox": "node scripts/prepare-xbox.mjs"
   },
   "engines": {
     "node": ">=22"
