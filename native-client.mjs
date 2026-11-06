@@ -5,7 +5,7 @@ import {NativePurchases,PURCHASE_TYPE} from '@capgo/native-purchases';
 export const isNative=()=>Capacitor.isNativePlatform();
 export const nativePlatform=()=>Capacitor.getPlatform();
 export const nativeRedirect='com.streamunify.app://auth/callback';
-export const nativeSignupRedirect=()=>nativePlatform()==='ios'?'com.streamunify.app://auth/direct-callback':nativeRedirect;
+export const nativeSignupRedirect=()=>nativePlatform()==='ios'?'https://streamunify.com/auth/mobile-confirm':nativeRedirect;
 export function callbackAuth(value){
   try{
     const url=new URL(value);
