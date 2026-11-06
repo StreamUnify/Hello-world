@@ -12,7 +12,7 @@ export function createAvailabilityAlerts({env=process.env,catalog,membership,fet
  }
  const requireEnabled=()=>{if(!enabled)throw new MembershipError(503,'alerts_unavailable','Availability alerts are not available yet');};
  async function permittedPreferences(pref,actor){
-  const premium=actor?(await membership.status(actor)).plan==='premium':(await request('membership_entitlements?select=user_id&user_id=eq.'+pref.user_id+'&premium_until=gt.'+encodeURIComponent(new Date(now()).toISOString())+'&limit=1')).length>0;
+  const premium=actor?(await membership.status(actor)).plan==='premium':await membership.freeLaunchEnabled?.()===true||(await request('membership_entitlements?select=user_id&user_id=eq.'+pref.user_id+'&premium_until=gt.'+encodeURIComponent(new Date(now()).toISOString())+'&limit=1')).length>0;
   return premium?pref:{...pref,service_ids:pref.country==='US'?pref.service_ids.filter(id=>FREE_PROVIDERS.includes(id)):[]};
  }
  async function preferences(actor,input){

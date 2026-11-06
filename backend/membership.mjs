@@ -11,7 +11,7 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
   if(enabled&&!configured)throw Error('Membership requires SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY');
   async function request(path,token,{method='GET',body,headers={}}={}) {
     let res;
-    try {res=await fetcher(origin+path,{method,headers:{apikey:key,Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{}),...headers},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(8000)});}catch{throw new MembershipError(503,'account_unavailable','Account service is temporarily unavailable');}
+    try {res=await fetcher(origin+path,{method,headers:{apikey:key,...(token?{Authorization:'Bearer '+token}:{}),...(body?{'Content-Type':'application/json'}:{}),...headers},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(8000)});}catch{throw new MembershipError(503,'account_unavailable','Account service is temporarily unavailable');}
     const data=await res.json().catch(()=>null);
     if(!res.ok){if(res.status===401)throw new MembershipError(401,'sign_in_required','Please sign in');if(res.status===403||data?.code==='42501')throw new MembershipError(403,'access_denied','Access requires a verified account and appropriate membership');throw new MembershipError(503,'account_unavailable','Account service is temporarily unavailable');}
     return data;
@@ -29,6 +29,7 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
   return {
     enabled,configured,
     publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
+    async freeLaunchEnabled(){if(!enabled||!configured)return false;const active=await request('/rest/v1/rpc/free_launch_status',null,{method:'POST',body:{}});if(typeof active!=='boolean')throw new MembershipError(503,'account_unavailable','Free launch status is temporarily unavailable');return active;},
     authenticate,
     status:actor=>rpc(actor,'membership_status'),
     async listRecentSearches(actor){const rows=await request('/rest/v1/recent_searches?select=queries&user_id=eq.'+encodeURIComponent(actor.id),actor.token);return rows[0]?.queries||[];},
