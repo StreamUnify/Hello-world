@@ -5,10 +5,11 @@ import {NativePurchases,PURCHASE_TYPE} from '@capgo/native-purchases';
 export const isNative=()=>Capacitor.isNativePlatform();
 export const nativePlatform=()=>Capacitor.getPlatform();
 export const nativeRedirect='com.streamunify.app://auth/callback';
+export const nativeSignupRedirect=()=>nativePlatform()==='ios'?'com.streamunify.app://auth/direct-callback':nativeRedirect;
 export function callbackAuth(value){
   try{
     const url=new URL(value);
-    if(url.protocol!=='com.streamunify.app:'||url.hostname!=='auth'||url.pathname!=='/callback'||url.username||url.password)return null;
+    if(url.protocol!=='com.streamunify.app:'||url.hostname!=='auth'||!['/callback','/direct-callback'].includes(url.pathname)||url.username||url.password)return null;
     const fragment=new URLSearchParams(url.hash.slice(1)),get=key=>url.searchParams.get(key)||fragment.get(key);
     const error=get('error_description')||get('error');
     if(error)return {error};
