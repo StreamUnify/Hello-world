@@ -186,16 +186,7 @@ workflows:
 
   streamunify-ios-store-candidate:
     name: StreamUnify iOS Store Candidate
-    # Build-only correction candidate. This branch-only trigger never uploads.
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: release/native-email-verification-fix
-          include: true
-          source: true
-      cancel_previous_builds: true
-    # App Store Connect is used for signing and a read-only build-number lookup.
+    # Manual, build-only candidate. App Store Connect is used for signing and a read-only build-number lookup.
     # Uploading, tester assignment and store submission are separate actions.
     max_build_duration: 60
     instance_type: mac_mini_m2
@@ -236,10 +227,6 @@ workflows:
           set -eu
           mkdir -p build/ios
           xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
-      - name: Upload corrected candidate to App Store Connect
-        script: |
-          set -eu
-          app-store-connect publish --path "build/ios/ipa/*.ipa"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
