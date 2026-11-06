@@ -236,6 +236,10 @@ workflows:
           set -eu
           mkdir -p build/ios
           xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+      - name: Upload corrected candidate to App Store Connect
+        script: |
+          set -eu
+          app-store-connect publish --path "build/ios/ipa/*.ipa"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
