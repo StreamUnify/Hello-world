@@ -34,7 +34,7 @@ const port=Number(process.env.PORT||(portFlag>=0?process.argv[portFlag+1]:3000))
 const countries=new Set(['US','CA','GB','AU','NZ','IN','FR','DE','ES','IT','AT','BR','MX','AR','CO','KR','JP','SG','MY','PH','ID','AE','SA','ZA','NG']);
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex'});res.end(JSON.stringify(data))};
 const server=http.createServer(async(req,res)=>{try{if(!secure(req,res))return;if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Access-Control-Allow-Headers':'Authorization, Content-Type, X-Search-Id'});return res.end()}const u=new URL(req.url,'http://localhost');const language=catalogLanguage(u.searchParams.get('language'));if(u.pathname.startsWith('/api/'))res.setHeader('X-Robots-Tag','noindex');
-if(req.method==='GET'&&u.pathname==='/auth/mobile-confirm'){
+if(req.method==='GET'&&(u.pathname==='/auth/mobile-confirm'||(u.pathname==='/'&&(u.searchParams.has('code')||u.searchParams.has('error')||u.searchParams.has('error_code'))))){
   const code=u.searchParams.get('code')||'',flow=u.searchParams.get('sb_flow_id')||'';
   const error=u.searchParams.get('error')||'',errorCode=u.searchParams.get('error_code')||'',errorDescription=u.searchParams.get('error_description')||'';
   const validCode=/^[A-Za-z0-9._~-]{8,2048}$/.test(code),validFlow=!flow||/^[A-Za-z0-9._~-]{1,512}$/.test(flow);
