@@ -1,0 +1,31 @@
+name: Xbox deployment agent
+on:
+  push:
+    branches: [upgrade/xbox-current-experience]
+    paths: ['xbox/deployment-agent/**', '.github/workflows/xbox-agent.yml']
+  pull_request:
+    paths: ['xbox/deployment-agent/**', '.github/workflows/xbox-agent.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Windows installer and agent
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory agent-output | Out-Null
+          & "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /target:winexe /out:agent-output\StreamUnifyXboxAgent.exe /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Security.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll xbox\deployment-agent\Agent.cs
+          if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
+          $test = Start-Process agent-output/StreamUnifyXboxAgent.exe -ArgumentList '--self-test' -Wait -PassThru
+          if ($test.ExitCode -ne 0) { throw 'Agent self-tests failed' }
+          Copy-Item xbox/deployment-agent/README.md agent-output/README.md
+          Get-FileHash agent-output/StreamUnifyXboxAgent.exe -Algorithm SHA256 | Format-List | Out-File agent-output/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: StreamUnify-Xbox-deployment-agent
+          path: agent-output/*
+
