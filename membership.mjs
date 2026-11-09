@@ -46,7 +46,9 @@ export function createMembership({env=process.env,fetcher=fetch,sendDeletionEmai
         if(!response.ok)throw new MembershipError(503,'account_unavailable','Account deletion could not be completed');
         // SMTP is best effort after deletion. Never turn a mail outage into a
         // deletion failure or log the former member's address or SMTP details.
-        if(sendDeletionEmail)void Promise.resolve().then(()=>sendDeletionEmail(actor.email)).catch(()=>{
+        if(sendDeletionEmail)void Promise.resolve().then(()=>sendDeletionEmail(actor.email)).then(()=>{
+          console.info('Account deletion email: SMTP accepted confirmation');
+        }).catch(()=>{
           console.warn('Account deletion confirmation email failed');
         });
       })();

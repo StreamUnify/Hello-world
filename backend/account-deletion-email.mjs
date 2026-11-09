@@ -27,7 +27,7 @@ export function createAccountDeletionEmail({env=process.env,createTransport=node
     disableUrlAccess:true
   });
 
-  return async email=>{
+  const send=async email=>{
     if(typeof email!=='string'||!/^[^\s@,;<>"]+@[^\s@,;<>"]+$/.test(email))throw Error('Invalid account email');
     const result=await transport.sendMail({
       from:{name:'StreamUnify',address:supportEmail},
@@ -37,4 +37,17 @@ export function createAccountDeletionEmail({env=process.env,createTransport=node
     });
     if(!result.accepted?.length)throw Error('Account deletion email was not accepted');
   };
+  send.verify=()=>transport.verify();
+  return send;
+}
+
+export async function checkAccountDeletionEmail(send,log=console){
+  if(!send){log.warn('Account deletion email: SMTP credential is missing');return;}
+  try{
+    await send.verify();
+    log.info('Account deletion email: SMTP connection and authentication verified');
+  }catch(error){
+    const reason=error?.code==='EAUTH'?'authentication rejected':'connection or TLS check failed';
+    log.warn('Account deletion email: SMTP '+reason);
+  }
 }
