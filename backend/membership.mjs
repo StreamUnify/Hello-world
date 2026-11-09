@@ -1,8 +1,9 @@
 import {MEMBERSHIP_PRICES,FREE_PROVIDERS,MembershipError,cleanWatchlistItem} from './membership-policy.mjs';
+import {createAccountDeletionEmail} from './account-deletion-email.mjs';
 
-// No service-role or Stripe credentials are used here. Every database request
-// carries the user's verified access token and remains subject to database RLS.
-export function createMembership({env=process.env,fetcher=fetch}={}) {
+// Member data requests use the member's token and remain subject to database RLS.
+// The server-only Auth admin credential is used for account deletion.
+export function createMembership({env=process.env,fetcher=fetch,sendDeletionEmail=createAccountDeletionEmail({env})}={}) {
   const enabled=env.MEMBERSHIP_ENABLED==='true';
   let origin='';
   try {const u=new URL(env.SUPABASE_URL);if(u.protocol==='https:'&&!u.username&&!u.password&&u.pathname==='/')origin=u.origin;}catch{}
@@ -26,6 +27,7 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
   }
   const rpc=(actor,name)=>request('/rest/v1/rpc/'+name,actor.token,{method:'POST',body:{}});
   async function premium(actor){const status=await rpc(actor,'membership_status');if(status?.plan!=='premium')throw new MembershipError(403,'premium_required','Upgrade to Premium to use your watchlist');}
+  const pendingDeletions=new Map();
   return {
     enabled,configured,
     publicConfig:()=>({enabled:enabled&&configured,...(enabled&&configured?{supabaseUrl:origin,publishableKey:key,prices:MEMBERSHIP_PRICES,freeProviders:FREE_PROVIDERS}:{})}),
@@ -37,8 +39,18 @@ export function createMembership({env=process.env,fetcher=fetch}={}) {
     async deleteAccount(actor){
       if(!Number.isFinite(Date.parse(actor.signedInAt))||Date.now()-Date.parse(actor.signedInAt)>600000)throw new MembershipError(401,'reauthenticate','Sign out and sign in again before deleting your account');
       if(!env.SUPABASE_SECRET_KEY)throw new MembershipError(503,'account_unavailable','Account deletion is temporarily unavailable');
-      const response=await fetcher(origin+'/auth/v1/admin/users/'+encodeURIComponent(actor.id),{method:'DELETE',headers:{apikey:env.SUPABASE_SECRET_KEY,Authorization:'Bearer '+env.SUPABASE_SECRET_KEY},signal:AbortSignal.timeout(10000)});
-      if(!response.ok)throw new MembershipError(503,'account_unavailable','Account deletion could not be completed');
+      if(pendingDeletions.has(actor.id))return pendingDeletions.get(actor.id);
+      const deletion=(async()=>{
+        const response=await fetcher(origin+'/auth/v1/admin/users/'+encodeURIComponent(actor.id),{method:'DELETE',headers:{apikey:env.SUPABASE_SECRET_KEY,Authorization:'Bearer '+env.SUPABASE_SECRET_KEY},signal:AbortSignal.timeout(10000)});
+        if(!response.ok)throw new MembershipError(503,'account_unavailable','Account deletion could not be completed');
+        // SMTP is best effort after deletion. Never turn a mail outage into a
+        // deletion failure or log the former member's address or SMTP details.
+        if(sendDeletionEmail)void Promise.resolve().then(()=>sendDeletionEmail(actor.email)).catch(()=>{
+          console.warn('Account deletion confirmation email failed');
+        });
+      })();
+      pendingDeletions.set(actor.id,deletion);
+      try{await deletion;}finally{pendingDeletions.delete(actor.id);}
     },
     async consumeSearch(actor,requestId,query){if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId||''))throw new MembershipError(400,'invalid_search','Please submit a new search');const status=await request('/rest/v1/rpc/consume_search_once',actor.token,{method:'POST',body:{p_request_id:requestId,p_query:query}});if(!status?.allowed){const error=new MembershipError(429,'search_limit','Your 10 free searches are used. Upgrade or wait until your reset date.');error.membership=status;throw error;}return status;},
     async listWatchlist(actor){await premium(actor);const items=[];for(let offset=0;;offset+=500){const page=await request('/rest/v1/watchlist_items?select=title_id,snapshot,saved_at&order=saved_at.desc,title_id.asc&limit=500&offset='+offset,actor.token);items.push(...page);if(page.length<500)return items;}},

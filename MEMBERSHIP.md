@@ -77,6 +77,8 @@ Stripe's live account inspection returned charges_enabled=false, payouts_enabled
 
 The domain MX records point to mx1.privateemail.com and mx2.privateemail.com, confirming Namecheap Private Email. SMTP setup requires mail.privateemail.com, port 465 (SSL) or 587 (STARTTLS), username/sender support@streamunify.com, sender name StreamUnify, and the mailbox password entered directly into Supabase Production's SMTP settings. Never ask for that password in chat. Public signup/recovery email delivery must be tested before activation.
 
+Account deletion confirmations are sent by the StreamUnify backend using the same support mailbox over TLS. Set `ACCOUNT_DELETION_SMTP_PASSWORD` in the backend's secret environment settings to enable them. This is separate from Supabase's signup and password reset emails. The backend sends only after successful deletion, to the verified address returned by Auth. Deletion remains available during SMTP outages, and a failed send is logged without the recipient or message details. There is no delivery retry queue. Verify activation by deleting a disposable account in a test environment and checking its inbox.
+
 ## Production connection progress — 2026-10-23
 
 The owner-selected Supabase project now contains the membership and billing schema. Render has been updated to its URL and publishable key, with both launch flags still false. The previously connected Supabase MCP account does not have access to this project; schema installation and verification used the authorized Dashboard session. No existing projects were deleted.
