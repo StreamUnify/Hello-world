@@ -5,9 +5,22 @@ import {NativePurchases,PURCHASE_TYPE} from '@capgo/native-purchases';
 export const isNative=()=>Capacitor.isNativePlatform();
 export const nativePlatform=()=>Capacitor.getPlatform();
 export const nativeRedirect='com.streamunify.app://auth/callback';
-export function callbackCode(value){
-  try{const url=new URL(value);if(url.protocol!=='com.streamunify.app:'||url.hostname!=='auth'||url.pathname!=='/callback'||url.username||url.password)return null;return url.searchParams.get('code');}catch{return null;}
+export const nativeSignupRedirect=()=>nativePlatform()==='ios'?'https://streamunify.com/':nativeRedirect;
+export function callbackAuth(value){
+  try{
+    const url=new URL(value);
+    if(url.protocol!=='com.streamunify.app:'||url.hostname!=='auth'||!['/callback','/direct-callback'].includes(url.pathname)||url.username||url.password)return null;
+    const fragment=new URLSearchParams(url.hash.slice(1)),get=key=>url.searchParams.get(key)||fragment.get(key);
+    const error=get('error_description')||get('error');
+    if(error)return {error};
+    const code=get('code');
+    if(code)return {code,flowId:get('sb_flow_id')||undefined};
+    const tokenHash=get('token_hash'),type=get('type');
+    if(tokenHash&&['email','recovery'].includes(type))return {tokenHash,type};
+    return null;
+  }catch{return null;}
 }
+export const callbackCode=value=>callbackAuth(value)?.code||null;
 export function createNativeSessionStorage(storage=SecureStorage){
   return {getItem:key=>storage.getItem('streamunify.auth.'+key),setItem:(key,value)=>storage.setItem('streamunify.auth.'+key,value),removeItem:key=>storage.removeItem('streamunify.auth.'+key)};
 }
@@ -19,7 +32,15 @@ export async function prepareNativeStorage(){
 export async function configureNativeAuth(client,onError){
   if(!isNative())return;
   const seen=new Set();
-  const handle=async value=>{const code=callbackCode(value);if(!code||seen.has(code))return;seen.add(code);const {error}=await client.auth.exchangeCodeForSession(code,new URL(value).searchParams.get("sb_flow_id")?{flowId:new URL(value).searchParams.get("sb_flow_id")}:undefined);if(error)onError('This email link could not be verified. Open it on the device where you requested it, or request a new link.');};
+  const handle=async value=>{
+    const auth=callbackAuth(value);if(!auth)return;
+    if(auth.error){onError('This email link could not be verified. Request a new link and use the newest email.');return;}
+    const key=auth.code?'code:'+auth.code:'token:'+auth.type+':'+auth.tokenHash;if(seen.has(key))return;seen.add(key);
+    const result=auth.code
+      ?await client.auth.exchangeCodeForSession(auth.code,auth.flowId?{flowId:auth.flowId}:undefined)
+      :await client.auth.verifyOtp({token_hash:auth.tokenHash,type:auth.type});
+    if(result.error)onError('This email link could not be verified. Open it on the device where you requested it, or request a new link.');
+  };
   await App.addListener('appUrlOpen',({url})=>handle(url).catch(()=>onError('Email verification failed. Please request a new link.')));
   await App.addListener('appStateChange',({isActive})=>{if(isActive)client.auth.startAutoRefresh();else client.auth.stopAutoRefresh();});
   const launch=await App.getLaunchUrl();if(launch?.url)await handle(launch.url);

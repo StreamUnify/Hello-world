@@ -9,7 +9,10 @@ test('signed webhook processing is available while customer accounts are disable
   assert.equal(await route(req,{setHeader(){}},new URL('https://example.com/api/billing/webhook'),(_res,status,data)=>{response={status,data};}),true);
   assert.equal(received,true);assert.equal(response.status,200);
 });
-test('HTTP routes preserve public access while disabled and require accounts when enabled',async()=>{
+test('HTTP routes preserve public access while disabled and require accounts when enabled',async(t)=>{
+  const realFetch=globalThis.fetch;
+  globalThis.fetch=(input,options)=>String(input)==='https://example.supabase.co/rest/v1/rpc/free_launch_status'?Promise.resolve(Response.json(false)):realFetch(input,options);
+  t.after(()=>{globalThis.fetch=realFetch;});
   process.env.PORT='0';process.env.BILLING_ENABLED='false';process.env.TMDB_API_KEY='';process.env.WATCHMODE_API_KEY='';
   for(const enabled of [false,true]){
     process.env.MEMBERSHIP_ENABLED=String(enabled);

@@ -1,0 +1,3330 @@
+{
+  "capturedAt": "2026-11-05T04:46:10.213203+00:00",
+  "results": [
+    {
+      "id": 2133751,
+      "source": "tmdb",
+      "sourceId": 213375,
+      "name": "VisionQuest",
+      "type": "series",
+      "year": "2026",
+      "releaseDate": "2026-10-13",
+      "desc": "With a bounty on his head, Vision must confront his nature and resist Ultron's influence to survive.",
+      "poster": "https://image.tmdb.org/t/p/w500/WGyAyBPncfuu8MZhLY9RtfZPM0.jpg",
+      "providers": [
+        {
+          "id": 337,
+          "name": "Disney Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Sci-Fi & Fantasy",
+        "Drama"
+      ],
+      "genreIds": [
+        10765,
+        18
+      ],
+      "communityRating": 8.7,
+      "voteCount": 261,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 6162,
+          "name": "Paul Bettany",
+          "character": "Vision"
+        },
+        {
+          "id": 13548,
+          "name": "James Spader",
+          "character": "Ultron"
+        },
+        {
+          "id": 2307679,
+          "name": "Ruaridh Mollica",
+          "character": "Thomas"
+        },
+        {
+          "id": 19277,
+          "name": "Todd Stashwick",
+          "character": "Paladin"
+        },
+        {
+          "id": 5089882,
+          "name": "Lauren Morais",
+          "character": "Lisa Molinari"
+        },
+        {
+          "id": 107734,
+          "name": "Orla Brady",
+          "character": "F.R.I.D.A.Y."
+        },
+        {
+          "id": 1543364,
+          "name": "Diane Morgan",
+          "character": "Handler"
+        },
+        {
+          "id": 1730562,
+          "name": "Henry Lewis",
+          "character": "D.U.M.-E."
+        },
+        {
+          "id": 1730563,
+          "name": "Jonathan Sayer",
+          "character": "U."
+        },
+        {
+          "id": 4570,
+          "name": "Emily Hampshire",
+          "character": "E.D.I.T.H."
+        }
+      ],
+      "creators": [
+        "Terry Matalas"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1252001,
+          "name": "Terry Matalas"
+        }
+      ],
+      "status": "Returning Series",
+      "seasonCount": 1,
+      "episodeCount": 8,
+      "seasons": [
+        {
+          "name": "Miniseries",
+          "episodes": 8,
+          "date": "2026-10-13"
+        }
+      ]
+    },
+    {
+      "id": 2895171,
+      "source": "tmdb",
+      "sourceId": 289517,
+      "name": "Dead-End Job",
+      "type": "series",
+      "year": "2026",
+      "releaseDate": "2026-10-30",
+      "desc": "Drowning in debt, a young man takes lucrative part-time jobs from a mysterious agency — only to find his hustle for more money turning nightmarish.",
+      "poster": "https://image.tmdb.org/t/p/w500/wUvzMC7EToPgci31ZZRCeqCmQ6d.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Mystery"
+      ],
+      "genreIds": [
+        9648
+      ],
+      "communityRating": 7.7,
+      "voteCount": 44,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1879169,
+          "name": "Lee Jae-wook",
+          "character": "Byeon Hyeok-jun"
+        },
+        {
+          "id": 1787992,
+          "name": "Go Min-si",
+          "character": "Eum Yeon-joo"
+        },
+        {
+          "id": 2704830,
+          "name": "Kim Min-ha",
+          "character": "Byeon Ji-yoon"
+        },
+        {
+          "id": 1046863,
+          "name": "Lee Hee-jun",
+          "character": "Head of Spider Staffing Agency"
+        }
+      ],
+      "creators": [
+        "Han Jun-hee"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1457187,
+          "name": "Han Jun-hee"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 1,
+      "episodeCount": 8,
+      "seasons": [
+        {
+          "name": "Limited Series",
+          "episodes": 8,
+          "date": "2026-10-30"
+        }
+      ]
+    },
+    {
+      "id": 2792461,
+      "source": "tmdb",
+      "sourceId": 279246,
+      "name": "The Remarried Empress",
+      "type": "series",
+      "year": "2026",
+      "releaseDate": "2026-11-03",
+      "desc": "Beloved Empress Navier rules the Eastern Empire alongside Emperor Sovieshu. But when Sovieshu falls for a runaway slave and demands a divorce, Navier will agree on one condition: that she's given approval to remarry rival Prince Heinrey of the Western Kingdom.",
+      "poster": "https://image.tmdb.org/t/p/w500/zn3IXZzGavH3qle3o3g1r32eXDy.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Drama",
+        "Sci-Fi & Fantasy"
+      ],
+      "genreIds": [
+        18,
+        10765
+      ],
+      "communityRating": 8,
+      "voteCount": 5,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 116175,
+          "name": "Shin Min-a",
+          "character": "Navier Ellie Trovi"
+        },
+        {
+          "id": 150125,
+          "name": "Ju Ji-hoon",
+          "character": "Sovieshu Vict"
+        },
+        {
+          "id": 1095818,
+          "name": "Lee Jong-suk",
+          "character": "Heinrey Alles Lazlo"
+        },
+        {
+          "id": 1257142,
+          "name": "Lee Se-young",
+          "character": "Rashta Isqua"
+        },
+        {
+          "id": 2133921,
+          "name": "Lee Bong-ryeon",
+          "character": ""
+        },
+        {
+          "id": 1500616,
+          "name": "Choi Dae-hoon",
+          "character": ""
+        },
+        {
+          "id": 2463266,
+          "name": "Jeong Young-joo",
+          "character": ""
+        },
+        {
+          "id": 1872629,
+          "name": "Park Ho-san",
+          "character": ""
+        },
+        {
+          "id": 4385997,
+          "name": "Nam Yoon-ho",
+          "character": ""
+        },
+        {
+          "id": 3350076,
+          "name": "Ahn Tae-hwan",
+          "character": ""
+        },
+        {
+          "id": 2774992,
+          "name": "Ha Do-kwon",
+          "character": ""
+        },
+        {
+          "id": 6600491,
+          "name": "한이수",
+          "character": ""
+        }
+      ],
+      "creators": [],
+      "creatorProfiles": [],
+      "status": "Returning Series",
+      "seasonCount": 1,
+      "episodeCount": 10,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 10,
+          "date": "2026-11-03"
+        }
+      ]
+    },
+    {
+      "id": 966771,
+      "source": "tmdb",
+      "sourceId": 96677,
+      "name": "Lupin",
+      "type": "series",
+      "year": "2021",
+      "releaseDate": "2021-01-08",
+      "desc": "Inspired by the adventures of Arsène Lupin, gentleman thief Assane Diop sets out to avenge his father for an injustice inflicted by a wealthy family.",
+      "poster": "https://image.tmdb.org/t/p/w500/h6Z2oogE4mJk2uffdtIlLhb0EHx.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Crime",
+        "Drama",
+        "Mystery"
+      ],
+      "genreIds": [
+        80,
+        18,
+        9648
+      ],
+      "communityRating": 7.679,
+      "voteCount": 2774,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 78423,
+          "name": "Omar Sy",
+          "character": "Assane Diop"
+        },
+        {
+          "id": 4390,
+          "name": "Ludivine Sagnier",
+          "character": "Claire Laurent"
+        },
+        {
+          "id": 586916,
+          "name": "Antoine Gouy",
+          "character": "Benjamin Férel"
+        },
+        {
+          "id": 1372661,
+          "name": "Soufiane Guerrab",
+          "character": "Youssef Guédira"
+        },
+        {
+          "id": 2280476,
+          "name": "Shirine Boutella",
+          "character": "Sofia Belkacem"
+        },
+        {
+          "id": 2004136,
+          "name": "Théo Christine",
+          "character": "Raoul Diop"
+        },
+        {
+          "id": 3016267,
+          "name": "Laïka Blanc-Francard",
+          "character": "Adèle Kapoor"
+        }
+      ],
+      "creators": [
+        "George Kay",
+        "François Uzan",
+        "Marie Roussin",
+        "Florent Meyer",
+        "Tigran Rosine"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1287248,
+          "name": "George Kay"
+        },
+        {
+          "id": 1618156,
+          "name": "François Uzan"
+        },
+        {
+          "id": 1409018,
+          "name": "Marie Roussin"
+        },
+        {
+          "id": 1449284,
+          "name": "Florent Meyer"
+        },
+        {
+          "id": 3051535,
+          "name": "Tigran Rosine"
+        }
+      ],
+      "status": "Returning Series",
+      "seasonCount": 3,
+      "episodeCount": 25,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 10,
+          "date": "2021-01-08"
+        },
+        {
+          "name": "Part 3",
+          "episodes": 7,
+          "date": "2023-10-05"
+        },
+        {
+          "name": "Part 4",
+          "episodes": 8,
+          "date": "2026-10-23"
+        }
+      ]
+    },
+    {
+      "id": 15719550,
+      "source": "tmdb",
+      "sourceId": 1571955,
+      "name": "Collision Course",
+      "type": "movie",
+      "year": "2026",
+      "releaseDate": "2026-10-30",
+      "desc": "Spain, 2013. After robbing a bank, a getaway crash reveals the hidden side of each thief, exposing betrayals and lies that began long before the heist.",
+      "poster": "https://image.tmdb.org/t/p/w500/s2eAK0uiODjlNUSIiOBwdp3at2u.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 122,
+      "genres": [
+        "Thriller",
+        "Drama",
+        "Crime"
+      ],
+      "genreIds": [
+        53,
+        18,
+        80
+      ],
+      "communityRating": 6.574,
+      "voteCount": 54,
+      "certification": "R",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1425019,
+          "name": "Laia Costa",
+          "character": "Carla Mencía"
+        },
+        {
+          "id": 24977,
+          "name": "Karra Elejalde",
+          "character": "Pedro"
+        },
+        {
+          "id": 28511,
+          "name": "Luis Zahera",
+          "character": "Ernesto"
+        },
+        {
+          "id": 33411,
+          "name": "Tamar Novas",
+          "character": "Tomás"
+        },
+        {
+          "id": 224874,
+          "name": "Álvaro Cervantes",
+          "character": "Raúl"
+        },
+        {
+          "id": 1604,
+          "name": "Lluís Homar",
+          "character": "Luis"
+        },
+        {
+          "id": 224518,
+          "name": "Luz Valdenebro",
+          "character": "Lola"
+        },
+        {
+          "id": 1412355,
+          "name": "Víctor Duplá",
+          "character": "Pablo"
+        },
+        {
+          "id": 1074580,
+          "name": "Jorge Cabrera",
+          "character": "Turrientes"
+        },
+        {
+          "id": 2775604,
+          "name": "Mónica Miranda",
+          "character": "Lucía"
+        },
+        {
+          "id": 141018,
+          "name": "Ismael Martínez",
+          "character": "Berni"
+        },
+        {
+          "id": 2788540,
+          "name": "Chete Guzmán",
+          "character": "Portero Ernesto"
+        }
+      ],
+      "creators": [
+        "Daniel Sánchez Arévalo"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 34017,
+          "name": "Daniel Sánchez Arévalo"
+        }
+      ],
+      "status": "Released",
+      "seasonCount": null,
+      "episodeCount": null,
+      "seasons": []
+    },
+    {
+      "id": 23161,
+      "source": "tmdb",
+      "sourceId": 2316,
+      "name": "The Office",
+      "type": "series",
+      "year": "2005",
+      "releaseDate": "2005-03-24",
+      "desc": "The everyday lives of office employees in the Scranton, Pennsylvania branch of the fictional Dunder Mifflin Paper Company.",
+      "poster": "https://image.tmdb.org/t/p/w500/7DJKHzAi83BmQrWLrYYOqcoKfhR.jpg",
+      "providers": [
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.6,
+      "voteCount": 5670,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 11678,
+          "name": "Rainn Wilson",
+          "character": "Dwight Schrute"
+        },
+        {
+          "id": 17697,
+          "name": "John Krasinski",
+          "character": "Jim Halpert"
+        },
+        {
+          "id": 51856,
+          "name": "Jenna Fischer",
+          "character": "Pam Beesly"
+        },
+        {
+          "id": 27105,
+          "name": "Ed Helms",
+          "character": "Andy Bernard"
+        }
+      ],
+      "creators": [
+        "Greg Daniels"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1216630,
+          "name": "Greg Daniels"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 9,
+      "episodeCount": 186,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 6,
+          "date": "2005-03-24"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 22,
+          "date": "2005-09-20"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 23,
+          "date": "2006-09-21"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 14,
+          "date": "2007-09-27"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 26,
+          "date": "2008-09-25"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 24,
+          "date": "2009-09-17"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 24,
+          "date": "2010-09-23"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 24,
+          "date": "2011-09-22"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 23,
+          "date": "2012-09-20"
+        }
+      ]
+    },
+    {
+      "id": 11001,
+      "source": "tmdb",
+      "sourceId": 1100,
+      "name": "How I Met Your Mother",
+      "type": "series",
+      "year": "2005",
+      "releaseDate": "2005-09-19",
+      "desc": "A father recounts to his children - through a series of flashbacks - the journey he and his four best friends took leading up to him meeting their mother.",
+      "poster": "https://image.tmdb.org/t/p/w500/b34jPzmB0wZy7EjUZoleXOl2RRI.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.1,
+      "voteCount": 6050,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 144009,
+          "name": "Josh Radnor",
+          "character": "Ted Mosby"
+        },
+        {
+          "id": 41686,
+          "name": "Neil Patrick Harris",
+          "character": "Barney Stinson"
+        },
+        {
+          "id": 41088,
+          "name": "Jason Segel",
+          "character": "Marshall Eriksen"
+        },
+        {
+          "id": 21595,
+          "name": "Alyson Hannigan",
+          "character": "Lily Aldrin"
+        },
+        {
+          "id": 71189,
+          "name": "Cobie Smulders",
+          "character": "Robin Scherbatsky"
+        },
+        {
+          "id": 204392,
+          "name": "Cristin Milioti",
+          "character": "Tracy McConnell"
+        }
+      ],
+      "creators": [
+        "Craig Thomas",
+        "Carter Bays"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1217224,
+          "name": "Craig Thomas"
+        },
+        {
+          "id": 1217221,
+          "name": "Carter Bays"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 9,
+      "episodeCount": 208,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 22,
+          "date": "2005-09-19"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 22,
+          "date": "2006-09-18"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 20,
+          "date": "2007-09-24"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 24,
+          "date": "2008-09-22"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 24,
+          "date": "2009-09-21"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 24,
+          "date": "2010-09-20"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 24,
+          "date": "2011-09-19"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 24,
+          "date": "2012-09-24"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 24,
+          "date": "2013-09-23"
+        }
+      ]
+    },
+    {
+      "id": 14211,
+      "source": "tmdb",
+      "sourceId": 1421,
+      "name": "Modern Family",
+      "type": "series",
+      "year": "2009",
+      "releaseDate": "2009-09-23",
+      "desc": "The Pritchett-Dunphy-Tucker clan is a wonderfully large and blended family. They give us an honest and often hilarious look into the sometimes warm, sometimes twisted, embrace of the modern family.",
+      "poster": "https://image.tmdb.org/t/p/w500/k5Qg5rgPoKdh3yTJJrLtyoyYGwC.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 7.908,
+      "voteCount": 3604,
+      "certification": "TV-PG",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 18977,
+          "name": "Ed O'Neill",
+          "character": "Jay Pritchett"
+        },
+        {
+          "id": 63522,
+          "name": "Sofía Vergara",
+          "character": "Gloria Delgado-Pritchett"
+        },
+        {
+          "id": 31171,
+          "name": "Julie Bowen",
+          "character": "Claire Dunphy"
+        },
+        {
+          "id": 15232,
+          "name": "Ty Burrell",
+          "character": "Phil Dunphy"
+        },
+        {
+          "id": 204815,
+          "name": "Jesse Tyler Ferguson",
+          "character": "Mitchell Pritchett"
+        },
+        {
+          "id": 156962,
+          "name": "Eric Stonestreet",
+          "character": "Cameron Tucker"
+        },
+        {
+          "id": 91351,
+          "name": "Sarah Hyland",
+          "character": "Haley Dunphy"
+        },
+        {
+          "id": 42160,
+          "name": "Ariel Winter",
+          "character": "Alex Dunphy"
+        },
+        {
+          "id": 147710,
+          "name": "Nolan Gould",
+          "character": "Luke Dunphy"
+        },
+        {
+          "id": 206737,
+          "name": "Rico Rodriguez",
+          "character": "Manny Delgado"
+        },
+        {
+          "id": 1224228,
+          "name": "Aubrey Anderson-Emmons",
+          "character": "Lily Tucker-Pritchett"
+        },
+        {
+          "id": 1676910,
+          "name": "Jeremy Maguire",
+          "character": "Joe Pritchett"
+        }
+      ],
+      "creators": [
+        "Steven Levitan",
+        "Christopher Lloyd"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1215785,
+          "name": "Steven Levitan"
+        },
+        {
+          "id": 1205496,
+          "name": "Christopher Lloyd"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 11,
+      "episodeCount": 250,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 24,
+          "date": "2009-09-23"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 24,
+          "date": "2010-09-22"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 24,
+          "date": "2011-09-21"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 24,
+          "date": "2012-09-26"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 24,
+          "date": "2013-09-25"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 24,
+          "date": "2014-09-24"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 22,
+          "date": "2015-09-23"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 22,
+          "date": "2016-09-21"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 22,
+          "date": "2017-09-27"
+        },
+        {
+          "name": "Season 10",
+          "episodes": 22,
+          "date": "2018-09-26"
+        },
+        {
+          "name": "Season 11",
+          "episodes": 18,
+          "date": "2019-09-25"
+        }
+      ]
+    },
+    {
+      "id": 14001,
+      "source": "tmdb",
+      "sourceId": 1400,
+      "name": "Seinfeld",
+      "type": "series",
+      "year": "1989",
+      "releaseDate": "1989-07-05",
+      "desc": "A stand-up comedian and his three offbeat friends weather the pitfalls and payoffs of life in New York City in the '90s. It's a show about nothing.",
+      "poster": "https://image.tmdb.org/t/p/w500/aCw8ONfyz3AhngVQa1E2Ss4KSUQ.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.248,
+      "voteCount": 2503,
+      "certification": "TV-PG",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 16377,
+          "name": "Jerry Seinfeld",
+          "character": "Jerry Seinfeld"
+        },
+        {
+          "id": 1206,
+          "name": "Jason Alexander",
+          "character": "George Costanza"
+        },
+        {
+          "id": 50807,
+          "name": "Michael Richards",
+          "character": "Cosmo Kramer"
+        },
+        {
+          "id": 15886,
+          "name": "Julia Louis-Dreyfus",
+          "character": "Elaine Benes"
+        }
+      ],
+      "creators": [
+        "Jerry Seinfeld",
+        "Larry David"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 16377,
+          "name": "Jerry Seinfeld"
+        },
+        {
+          "id": 16376,
+          "name": "Larry David"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 9,
+      "episodeCount": 180,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 5,
+          "date": "1989-07-05"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 12,
+          "date": "1991-01-23"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 23,
+          "date": "1991-09-18"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 24,
+          "date": "1992-08-12"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 22,
+          "date": "1993-09-16"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 24,
+          "date": "1994-09-22"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 24,
+          "date": "1995-09-21"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 22,
+          "date": "1996-09-19"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 24,
+          "date": "1997-09-25"
+        }
+      ]
+    },
+    {
+      "id": 14241,
+      "source": "tmdb",
+      "sourceId": 1424,
+      "name": "Orange Is the New Black",
+      "type": "series",
+      "year": "2013",
+      "releaseDate": "2013-07-11",
+      "desc": "A crime she committed in her youthful past sends Piper Chapman to a women's prison, where she trades her comfortable New York life for one of unexpected camaraderie and conflict in an eccentric group of fellow inmates.",
+      "poster": "https://image.tmdb.org/t/p/w500/ekaa7YjGPTkFLcPhwWXTnARuCEU.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Drama",
+        "Comedy",
+        "Crime"
+      ],
+      "genreIds": [
+        18,
+        35,
+        80
+      ],
+      "communityRating": 7.639,
+      "voteCount": 2946,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 221809,
+          "name": "Taylor Schilling",
+          "character": "Piper Chapman"
+        },
+        {
+          "id": 18974,
+          "name": "Laura Prepon",
+          "character": "Alex Vause"
+        },
+        {
+          "id": 35317,
+          "name": "Kate Mulgrew",
+          "character": "Galina 'Red' Reznikov"
+        },
+        {
+          "id": 10871,
+          "name": "Natasha Lyonne",
+          "character": "Nicky Nichols"
+        },
+        {
+          "id": 162503,
+          "name": "Selenis Leyva",
+          "character": "Gloria Mendoza"
+        },
+        {
+          "id": 65421,
+          "name": "Elizabeth Rodriguez",
+          "character": "Aleida Diaz"
+        },
+        {
+          "id": 1026947,
+          "name": "Dascha Polanco",
+          "character": "Dayanara Diaz"
+        },
+        {
+          "id": 1075037,
+          "name": "Danielle Brooks",
+          "character": "Tasha 'Taystee' Jefferson"
+        },
+        {
+          "id": 1332680,
+          "name": "Uzo Aduba",
+          "character": "Suzanne 'Crazy Eyes' Warren"
+        },
+        {
+          "id": 95519,
+          "name": "Nick Sandow",
+          "character": "Joe Caputo"
+        },
+        {
+          "id": 1443625,
+          "name": "Jackie Cruz",
+          "character": "Marisol 'Flaca' Gonzales"
+        },
+        {
+          "id": 1028560,
+          "name": "Yael Stone",
+          "character": "Lorna Morello"
+        }
+      ],
+      "creators": [
+        "Jenji Kohan"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1214409,
+          "name": "Jenji Kohan"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 7,
+      "episodeCount": 91,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 13,
+          "date": "2013-07-11"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 13,
+          "date": "2014-06-06"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 13,
+          "date": "2015-06-11"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 13,
+          "date": "2016-06-17"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 13,
+          "date": "2017-06-09"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 13,
+          "date": "2018-07-27"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 13,
+          "date": "2019-07-26"
+        }
+      ]
+    },
+    {
+      "id": 4561,
+      "source": "tmdb",
+      "sourceId": 456,
+      "name": "The Simpsons",
+      "type": "series",
+      "year": "1989",
+      "releaseDate": "1989-12-17",
+      "desc": "Set in Springfield, the average American town, the show focuses on the antics and everyday adventures of the Simpson family; Homer, Marge, Bart, Lisa and Maggie, as well as a virtual cast of thousands. Since the beginning, the series has been a pop culture icon, attracting hundreds of celebrities to guest star. The show has also made name for itself in its fearless satirical take on politics, media and American life in general.",
+      "poster": "https://image.tmdb.org/t/p/w500/tf0CUEynk6GfmrlHIQKQ5mfFP5P.jpg",
+      "providers": [
+        {
+          "id": 337,
+          "name": "Disney Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Animation",
+        "Comedy"
+      ],
+      "genreIds": [
+        16,
+        35
+      ],
+      "communityRating": 8.026,
+      "voteCount": 11141,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 198,
+          "name": "Dan Castellaneta",
+          "character": "Homer Simpson / Abe Simpson / Barney Gumble / Krusty the Clown / Groundskeeper Willie / Mayor Quimby (voice)"
+        },
+        {
+          "id": 199,
+          "name": "Julie Kavner",
+          "character": "Marge Simpson / Patty Bouvier / Selma Bouvier / Jacqueline Bouvier (voice)"
+        },
+        {
+          "id": 200,
+          "name": "Nancy Cartwright",
+          "character": "Bart Simpson / Maggie Simpson / Nelson Muntz / Ralph Wiggum (voice)"
+        },
+        {
+          "id": 5586,
+          "name": "Yeardley Smith",
+          "character": "Lisa Simpson / Maggie Simpson (voice)"
+        },
+        {
+          "id": 5587,
+          "name": "Hank Azaria",
+          "character": "Moe Szyslak / Chief Wiggum / Apu / Comic Book Guy / Carl Carlson / Superintendent Chalmers (voice)"
+        },
+        {
+          "id": 6008,
+          "name": "Harry Shearer",
+          "character": "Ned Flanders / Mr. Burns / Smithers / Principal Skinner / Lenny Leonard (voice)"
+        }
+      ],
+      "creators": [
+        "Matt Groening"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 5741,
+          "name": "Matt Groening"
+        }
+      ],
+      "status": "Returning Series",
+      "seasonCount": 38,
+      "episodeCount": 816,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 13,
+          "date": "1989-12-17"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 22,
+          "date": "1990-10-11"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 24,
+          "date": "1991-09-19"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 22,
+          "date": "1992-09-24"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 22,
+          "date": "1993-09-30"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 25,
+          "date": "1994-09-04"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 25,
+          "date": "1995-09-17"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 25,
+          "date": "1996-10-27"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 25,
+          "date": "1997-09-21"
+        },
+        {
+          "name": "Season 10",
+          "episodes": 23,
+          "date": "1998-08-23"
+        },
+        {
+          "name": "Season 11",
+          "episodes": 22,
+          "date": "1999-09-26"
+        },
+        {
+          "name": "Season 12",
+          "episodes": 21,
+          "date": "2000-11-01"
+        },
+        {
+          "name": "Season 13",
+          "episodes": 22,
+          "date": "2001-11-06"
+        },
+        {
+          "name": "Season 14",
+          "episodes": 22,
+          "date": "2002-11-03"
+        },
+        {
+          "name": "Season 15",
+          "episodes": 22,
+          "date": "2003-11-02"
+        },
+        {
+          "name": "Season 16",
+          "episodes": 21,
+          "date": "2004-11-07"
+        },
+        {
+          "name": "Season 17",
+          "episodes": 22,
+          "date": "2005-09-11"
+        },
+        {
+          "name": "Season 18",
+          "episodes": 22,
+          "date": "2006-09-10"
+        },
+        {
+          "name": "Season 19",
+          "episodes": 20,
+          "date": "2007-09-23"
+        },
+        {
+          "name": "Season 20",
+          "episodes": 21,
+          "date": "2008-09-28"
+        },
+        {
+          "name": "Season 21",
+          "episodes": 23,
+          "date": "2009-09-27"
+        },
+        {
+          "name": "Season 22",
+          "episodes": 22,
+          "date": "2010-09-26"
+        },
+        {
+          "name": "Season 23",
+          "episodes": 22,
+          "date": "2011-09-25"
+        },
+        {
+          "name": "Season 24",
+          "episodes": 22,
+          "date": "2012-09-30"
+        },
+        {
+          "name": "Season 25",
+          "episodes": 22,
+          "date": "2013-09-29"
+        },
+        {
+          "name": "Season 26",
+          "episodes": 22,
+          "date": "2014-09-28"
+        },
+        {
+          "name": "Season 27",
+          "episodes": 22,
+          "date": "2015-09-27"
+        },
+        {
+          "name": "Season 28",
+          "episodes": 22,
+          "date": "2016-09-25"
+        },
+        {
+          "name": "Season 29",
+          "episodes": 21,
+          "date": "2017-10-01"
+        },
+        {
+          "name": "Season 30",
+          "episodes": 23,
+          "date": "2018-09-30"
+        },
+        {
+          "name": "Season 31",
+          "episodes": 22,
+          "date": "2019-09-29"
+        },
+        {
+          "name": "Season 32",
+          "episodes": 22,
+          "date": "2020-09-27"
+        },
+        {
+          "name": "Season 33",
+          "episodes": 22,
+          "date": "2021-09-26"
+        },
+        {
+          "name": "Season 34",
+          "episodes": 22,
+          "date": "2022-09-25"
+        },
+        {
+          "name": "Season 35",
+          "episodes": 18,
+          "date": "2023-10-01"
+        },
+        {
+          "name": "Season 36",
+          "episodes": 18,
+          "date": "2024-09-29"
+        },
+        {
+          "name": "Season 37",
+          "episodes": 15,
+          "date": "2025-09-28"
+        },
+        {
+          "name": "Season 38",
+          "episodes": 15,
+          "date": "2026-09-27"
+        }
+      ]
+    },
+    {
+      "id": 619231,
+      "source": "tmdb",
+      "sourceId": 61923,
+      "name": "Star vs. the Forces of Evil",
+      "type": "series",
+      "year": "2015",
+      "releaseDate": "2015-01-18",
+      "desc": "Intergalactic warrior Star Butterfly arrives on Earth to live with the Diaz family. She continues to battle villains throughout the universe and high school, mainly to protect her extremely powerful wand, an object that still confuses her.",
+      "poster": "https://image.tmdb.org/t/p/w500/dKFL1AOdKNoazqZDg1zq2z69Lx1.jpg",
+      "providers": [
+        {
+          "id": 337,
+          "name": "Disney Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 11,
+      "genres": [
+        "Action & Adventure",
+        "Animation",
+        "Comedy",
+        "Sci-Fi & Fantasy",
+        "Family"
+      ],
+      "genreIds": [
+        10759,
+        16,
+        35,
+        10765,
+        10751
+      ],
+      "communityRating": 8.364,
+      "voteCount": 1539,
+      "certification": "TV-Y7",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1214430,
+          "name": "Eden Sher",
+          "character": "Star Butterfly (voice)"
+        },
+        {
+          "id": 1478004,
+          "name": "Adam McArthur",
+          "character": "Marco Diaz (voice)"
+        },
+        {
+          "id": 21088,
+          "name": "Alan Tudyk",
+          "character": "Ludo / King River Butterfly (voice)"
+        }
+      ],
+      "creators": [
+        "Daron Nefcy"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1416299,
+          "name": "Daron Nefcy"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 4,
+      "episodeCount": 140,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 24,
+          "date": "2015-01-18"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 41,
+          "date": "2016-07-11"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 38,
+          "date": "2017-07-15"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 37,
+          "date": "2019-03-10"
+        }
+      ]
+    },
+    {
+      "id": 14341,
+      "source": "tmdb",
+      "sourceId": 1434,
+      "name": "Family Guy",
+      "type": "series",
+      "year": "1999",
+      "releaseDate": "1999-01-31",
+      "desc": "Sick, twisted, politically incorrect and Freakin' Sweet animated series featuring the adventures of the dysfunctional Griffin family. Bumbling Peter and long-suffering Lois have three kids. Stewie (a brilliant but sadistic baby bent on killing his mother and taking over the world), Meg (the oldest, and is the most unpopular girl in town) and Chris (the middle kid, he's not very bright but has a passion for movies). The final member of the family is Brian - a talking dog and much more than a pet, he keeps Stewie in check whilst sipping Martinis and sorting through his own life issues.",
+      "poster": "https://image.tmdb.org/t/p/w500/3PFsEuAiyLkWsP4GG6dIV37Q6gu.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Animation",
+        "Comedy"
+      ],
+      "genreIds": [
+        16,
+        35
+      ],
+      "communityRating": 7.415,
+      "voteCount": 5188,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 52139,
+          "name": "Seth MacFarlane",
+          "character": "Peter Griffin / Brian Griffin / Stewie Griffin / Glenn Quagmire (voice)"
+        },
+        {
+          "id": 24357,
+          "name": "Alex Borstein",
+          "character": "Lois Griffin / Tricia Takanawa / Loretta Brown / Barbara Pewterschmidt (voice)"
+        },
+        {
+          "id": 18973,
+          "name": "Mila Kunis",
+          "character": "Meg Griffin (voice)"
+        },
+        {
+          "id": 13922,
+          "name": "Seth Green",
+          "character": "Chris Griffin (voice)"
+        },
+        {
+          "id": 9657,
+          "name": "Patrick Warburton",
+          "character": "Joe Swanson (voice)"
+        },
+        {
+          "id": 3249539,
+          "name": "Arif Zahir",
+          "character": "Cleveland Brown (voice)"
+        }
+      ],
+      "creators": [
+        "Seth MacFarlane"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 52139,
+          "name": "Seth MacFarlane"
+        }
+      ],
+      "status": "Returning Series",
+      "seasonCount": 24,
+      "episodeCount": 456,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 7,
+          "date": "1999-01-31"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 21,
+          "date": "1999-09-23"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 22,
+          "date": "2001-07-11"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 30,
+          "date": "2005-05-01"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 18,
+          "date": "2006-09-10"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 12,
+          "date": "2007-09-23"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 16,
+          "date": "2008-09-28"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 20,
+          "date": "2009-09-27"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 18,
+          "date": "2010-09-26"
+        },
+        {
+          "name": "Season 10",
+          "episodes": 23,
+          "date": "2011-09-25"
+        },
+        {
+          "name": "Season 11",
+          "episodes": 22,
+          "date": "2012-09-30"
+        },
+        {
+          "name": "Season 12",
+          "episodes": 21,
+          "date": "2013-09-29"
+        },
+        {
+          "name": "Season 13",
+          "episodes": 18,
+          "date": "2014-09-28"
+        },
+        {
+          "name": "Season 14",
+          "episodes": 20,
+          "date": "2015-09-27"
+        },
+        {
+          "name": "Season 15",
+          "episodes": 20,
+          "date": "2016-09-25"
+        },
+        {
+          "name": "Season 16",
+          "episodes": 20,
+          "date": "2017-10-01"
+        },
+        {
+          "name": "Season 17",
+          "episodes": 20,
+          "date": "2018-09-30"
+        },
+        {
+          "name": "Season 18",
+          "episodes": 20,
+          "date": "2019-09-29"
+        },
+        {
+          "name": "Season 19",
+          "episodes": 20,
+          "date": "2020-09-27"
+        },
+        {
+          "name": "Season 20",
+          "episodes": 20,
+          "date": "2021-09-26"
+        },
+        {
+          "name": "Season 21",
+          "episodes": 20,
+          "date": "2022-09-25"
+        },
+        {
+          "name": "Season 22",
+          "episodes": 15,
+          "date": "2023-10-01"
+        },
+        {
+          "name": "Season 23",
+          "episodes": 18,
+          "date": "2025-02-16"
+        },
+        {
+          "name": "Season 24",
+          "episodes": 15,
+          "date": "2026-02-15"
+        }
+      ]
+    },
+    {
+      "id": 615991,
+      "source": "tmdb",
+      "sourceId": 61599,
+      "name": "The Librarians",
+      "type": "series",
+      "year": "2014",
+      "releaseDate": "2014-12-07",
+      "desc": "A group of librarians set off on adventures in an effort to save mysterious, ancient artifacts. Based on the series of \"The Librarian\" movies.",
+      "poster": "https://image.tmdb.org/t/p/w500/jnEzRcKFqaSXLAP87gVKTXawwGg.jpg",
+      "providers": [
+        {
+          "id": 73,
+          "name": "Tubi TV",
+          "type": "Ad-supported",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Action & Adventure",
+        "Drama",
+        "Comedy"
+      ],
+      "genreIds": [
+        10759,
+        18,
+        35
+      ],
+      "communityRating": 7.162,
+      "voteCount": 547,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 11008,
+          "name": "Rebecca Romijn",
+          "character": "Eve Baird"
+        },
+        {
+          "id": 71198,
+          "name": "Christian Kane",
+          "character": "Jake Stone"
+        },
+        {
+          "id": 1382755,
+          "name": "John Harlan Kim",
+          "character": "Ezekiel Jones"
+        },
+        {
+          "id": 51936,
+          "name": "Lindy Booth",
+          "character": "Cassandra Cillian"
+        },
+        {
+          "id": 14101,
+          "name": "John Larroquette",
+          "character": "Jenkins"
+        }
+      ],
+      "creators": [
+        "John Rogers"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 19535,
+          "name": "John Rogers"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 4,
+      "episodeCount": 42,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 10,
+          "date": "2014-12-07"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 10,
+          "date": "2015-11-01"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 10,
+          "date": "2016-11-20"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 12,
+          "date": "2017-12-13"
+        }
+      ]
+    },
+    {
+      "id": 670751,
+      "source": "tmdb",
+      "sourceId": 67075,
+      "name": "Mob Psycho 100",
+      "type": "series",
+      "year": "2016",
+      "releaseDate": "2016-07-12",
+      "desc": "Shigeo Kageyama, a.k.a. \"Mob,\" is a boy who has trouble expressing himself, but who happens to be a powerful esper. Mob is determined to live a normal life and keeps his ESP suppressed, but when his emotions surge to a level of 100%, something terrible happens to him! As he's surrounded by false espers, evil spirits, and mysterious organizations, what will Mob think? What choices will he make?",
+      "poster": "https://image.tmdb.org/t/p/w500/vR7hwaGQ0ySRoq1WobiNRaPs4WO.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 283,
+          "name": "Crunchyroll",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 24,
+      "genres": [
+        "Animation",
+        "Action & Adventure",
+        "Comedy",
+        "Sci-Fi & Fantasy"
+      ],
+      "genreIds": [
+        16,
+        10759,
+        35,
+        10765
+      ],
+      "communityRating": 8.489,
+      "voteCount": 1404,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1649209,
+          "name": "Setsuo Ito",
+          "character": "Shigeo 'Mob' Kageyama (voice)"
+        },
+        {
+          "id": 9705,
+          "name": "Takahiro Sakurai",
+          "character": "Arataka Reigen (voice)"
+        },
+        {
+          "id": 19588,
+          "name": "Miyu Irino",
+          "character": "Ritsu Kageyama (voice)"
+        },
+        {
+          "id": 40451,
+          "name": "Akio Otsuka",
+          "character": "Dimple (voice)"
+        }
+      ],
+      "creators": [],
+      "creatorProfiles": [],
+      "status": "Ended",
+      "seasonCount": 3,
+      "episodeCount": 37,
+      "seasons": [
+        {
+          "name": "Mob Psycho",
+          "episodes": 12,
+          "date": "2016-07-12"
+        },
+        {
+          "name": "Mob Psycho II",
+          "episodes": 13,
+          "date": "2019-01-07"
+        },
+        {
+          "name": "Mob Psycho III",
+          "episodes": 12,
+          "date": "2022-10-06"
+        }
+      ]
+    },
+    {
+      "id": 611181,
+      "source": "tmdb",
+      "sourceId": 61118,
+      "name": "You're the Worst",
+      "type": "series",
+      "year": "2014",
+      "releaseDate": "2014-07-17",
+      "desc": "Narcissistic, brash, and self-destructive Jimmy Shive-Overly thinks all relationships are doomed. Cynical, people-pleasing, and stubborn Gretchen Cutler knows that relationships aren't for her. So when they meet at a wedding, it's only natural that the two of them go home together.",
+      "poster": "https://image.tmdb.org/t/p/w500/whXfP89yXz4AwQ9dzWCTGcl9YvV.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 26,
+      "genres": [
+        "Comedy",
+        "Drama"
+      ],
+      "genreIds": [
+        35,
+        18
+      ],
+      "communityRating": 7.4,
+      "voteCount": 271,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 62879,
+          "name": "Chris Geere",
+          "character": "Jimmy Shive-Overly"
+        },
+        {
+          "id": 133451,
+          "name": "Aya Cash",
+          "character": "Gretchen Cutler"
+        },
+        {
+          "id": 972079,
+          "name": "Desmin Borges",
+          "character": "Edgar Quintero"
+        },
+        {
+          "id": 588972,
+          "name": "Kether Donohue",
+          "character": "Lindsay Jillian"
+        }
+      ],
+      "creators": [
+        "Stephen Falk"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1347018,
+          "name": "Stephen Falk"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 5,
+      "episodeCount": 62,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 10,
+          "date": "2014-07-17"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 13,
+          "date": "2015-09-09"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 13,
+          "date": "2016-09-01"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 13,
+          "date": "2017-09-06"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 13,
+          "date": "2019-01-09"
+        }
+      ]
+    },
+    {
+      "id": 24901,
+      "source": "tmdb",
+      "sourceId": 2490,
+      "name": "The IT Crowd",
+      "type": "series",
+      "year": "2006",
+      "releaseDate": "2006-02-03",
+      "desc": "The comedic misadventures of Roy, Moss, and their grifting supervisor Jen, a 'motley crew' of IT support workers at a large corporation headed by a hotheaded yuppie.",
+      "poster": "https://image.tmdb.org/t/p/w500/qtxL0ZLAZN1nd0kOpcu8V32bsU4.jpg",
+      "providers": [
+        {
+          "id": 73,
+          "name": "Tubi TV",
+          "type": "Ad-supported",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.169,
+      "voteCount": 1724,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 40477,
+          "name": "Chris O'Dowd",
+          "character": "Roy Trenneman"
+        },
+        {
+          "id": 98103,
+          "name": "Richard Ayoade",
+          "character": "Maurice Moss"
+        },
+        {
+          "id": 74158,
+          "name": "Katherine Parkinson",
+          "character": "Jen Barber"
+        },
+        {
+          "id": 1488236,
+          "name": "Matt Berry",
+          "character": "Douglas Reynholm"
+        }
+      ],
+      "creators": [
+        "Graham Linehan"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 98107,
+          "name": "Graham Linehan"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 4,
+      "episodeCount": 24,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 6,
+          "date": "2006-02-03"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 6,
+          "date": "2007-08-24"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 6,
+          "date": "2008-11-21"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 6,
+          "date": "2010-06-25"
+        }
+      ]
+    },
+    {
+      "id": 16681,
+      "source": "tmdb",
+      "sourceId": 1668,
+      "name": "Friends",
+      "type": "series",
+      "year": "1994",
+      "releaseDate": "1994-09-22",
+      "desc": "Six young people from New York City, on their own and struggling to survive in the real world, find the companionship, comfort and support they get from each other to be the perfect antidote to the pressures of life.",
+      "poster": "https://image.tmdb.org/t/p/w500/2koX1xLkpTQM4IZebYvKysFW1Nh.jpg",
+      "providers": [
+        {
+          "id": 1899,
+          "name": "HBO Max",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.406,
+      "voteCount": 9555,
+      "certification": "TV-14",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 4491,
+          "name": "Jennifer Aniston",
+          "character": "Rachel Green"
+        },
+        {
+          "id": 14405,
+          "name": "Courteney Cox",
+          "character": "Monica Geller"
+        },
+        {
+          "id": 14406,
+          "name": "Lisa Kudrow",
+          "character": "Phoebe Buffay"
+        },
+        {
+          "id": 14407,
+          "name": "Matt LeBlanc",
+          "character": "Joey Tribbiani"
+        },
+        {
+          "id": 14408,
+          "name": "Matthew Perry",
+          "character": "Chandler Bing"
+        },
+        {
+          "id": 14409,
+          "name": "David Schwimmer",
+          "character": "Ross Geller"
+        }
+      ],
+      "creators": [
+        "Marta Kauffman",
+        "David Crane"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 163461,
+          "name": "Marta Kauffman"
+        },
+        {
+          "id": 1216352,
+          "name": "David Crane"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 10,
+      "episodeCount": 228,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 24,
+          "date": "1994-09-22"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 24,
+          "date": "1995-09-21"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 25,
+          "date": "1996-09-16"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 23,
+          "date": "1997-09-25"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 23,
+          "date": "1998-09-24"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 23,
+          "date": "1999-09-23"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 23,
+          "date": "2000-10-12"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 23,
+          "date": "2001-09-27"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 23,
+          "date": "2002-09-26"
+        },
+        {
+          "name": "Season 10",
+          "episodes": 17,
+          "date": "2003-09-25"
+        }
+      ]
+    },
+    {
+      "id": 20041,
+      "source": "tmdb",
+      "sourceId": 2004,
+      "name": "Malcolm in the Middle",
+      "type": "series",
+      "year": "2000",
+      "releaseDate": "2000-01-09",
+      "desc": "A gifted young teen tries to survive life with his dimwitted, dysfunctional family.",
+      "poster": "https://image.tmdb.org/t/p/w500/ckLLIsNy3Z0Go1PYHA2PHzVymUA.jpg",
+      "providers": [
+        {
+          "id": 337,
+          "name": "Disney Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Comedy"
+      ],
+      "genreIds": [
+        35
+      ],
+      "communityRating": 8.464,
+      "voteCount": 5035,
+      "certification": "TV-PG",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 51391,
+          "name": "Frankie Muniz",
+          "character": "Malcolm"
+        },
+        {
+          "id": 27725,
+          "name": "Jane Kaczmarek",
+          "character": "Lois"
+        },
+        {
+          "id": 17419,
+          "name": "Bryan Cranston",
+          "character": "Hal"
+        },
+        {
+          "id": 51392,
+          "name": "Justin Berfield",
+          "character": "Reese"
+        },
+        {
+          "id": 17190,
+          "name": "Erik Per Sullivan",
+          "character": "Dewey"
+        },
+        {
+          "id": 35769,
+          "name": "Christopher Masterson",
+          "character": "Francis"
+        }
+      ],
+      "creators": [
+        "Linwood Boomer"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 40629,
+          "name": "Linwood Boomer"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 7,
+      "episodeCount": 151,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 16,
+          "date": "2000-01-09"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 25,
+          "date": "2000-11-05"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 22,
+          "date": "2001-11-11"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 22,
+          "date": "2002-11-03"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 22,
+          "date": "2003-11-02"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 22,
+          "date": "2004-11-07"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 22,
+          "date": "2005-09-30"
+        }
+      ]
+    },
+    {
+      "id": 633331,
+      "source": "tmdb",
+      "sourceId": 63333,
+      "name": "The Last Kingdom",
+      "type": "series",
+      "year": "2015",
+      "releaseDate": "2015-10-10",
+      "desc": "A show of heroic deeds and epic battles with a thematic depth that embraces politics, religion, warfare, courage, love, loyalty and our universal search for identity. Combining real historical figures and events with fictional characters, it is the story of how a people combined their strength under one of the most iconic kings of history in order to reclaim their land for themselves and build a place they call home.",
+      "poster": "https://image.tmdb.org/t/p/w500/8eJf0hxgIhE6QSxbtuNCekTddy1.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 60,
+      "genres": [
+        "Action & Adventure",
+        "Drama",
+        "War & Politics"
+      ],
+      "genreIds": [
+        10759,
+        18,
+        10768
+      ],
+      "communityRating": 8.3,
+      "voteCount": 2079,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1273309,
+          "name": "Alexander Dreymon",
+          "character": "Uhtred of Bebbanburg"
+        },
+        {
+          "id": 1574968,
+          "name": "Eliza Butterworth",
+          "character": "Aelswith"
+        },
+        {
+          "id": 1799858,
+          "name": "Mark Rowley",
+          "character": "Finan"
+        },
+        {
+          "id": 3451119,
+          "name": "Ruby Hartley",
+          "character": "Stiorra"
+        },
+        {
+          "id": 1362119,
+          "name": "James Northcote",
+          "character": "Aldhelm"
+        },
+        {
+          "id": 1156305,
+          "name": "Arnas Fedaravičius",
+          "character": "Sihtric"
+        },
+        {
+          "id": 1756015,
+          "name": "Harry Gilby",
+          "character": "Aethelstan"
+        },
+        {
+          "id": 1742597,
+          "name": "Timothy Innes",
+          "character": "King Edward"
+        },
+        {
+          "id": 1587318,
+          "name": "Stefanie Martini",
+          "character": "Eadith"
+        },
+        {
+          "id": 3594113,
+          "name": "Phia Saban",
+          "character": "Aelfwynn"
+        },
+        {
+          "id": 383624,
+          "name": "Adrian Schiller",
+          "character": "Aethelhelm"
+        },
+        {
+          "id": 2121703,
+          "name": "Jaakko Ohtonen",
+          "character": "Wolland"
+        }
+      ],
+      "creators": [
+        "Stephen Butchard"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1240815,
+          "name": "Stephen Butchard"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 5,
+      "episodeCount": 46,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 8,
+          "date": "2015-10-10"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 8,
+          "date": "2017-03-16"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 10,
+          "date": "2018-11-19"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 10,
+          "date": "2020-04-26"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 10,
+          "date": "2022-03-09"
+        }
+      ]
+    },
+    {
+      "id": 442171,
+      "source": "tmdb",
+      "sourceId": 44217,
+      "name": "Vikings",
+      "type": "series",
+      "year": "2013",
+      "releaseDate": "2013-03-03",
+      "desc": "The adventures of Ragnar Lothbrok, the greatest hero of his age. The series tells the sagas of Ragnar's band of Viking brothers and his family, as he rises to become King of the Viking tribes. As well as being a fearless warrior, Ragnar embodies the Norse traditions of devotion to the gods. Legend has it that he was a direct descendant of Odin, the god of war and warriors.",
+      "poster": "https://image.tmdb.org/t/p/w500/bQLrHIRNEkE3PdIWQrZHynQZazu.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Action & Adventure",
+        "Drama",
+        "War & Politics"
+      ],
+      "genreIds": [
+        10759,
+        18,
+        10768
+      ],
+      "communityRating": 8.105,
+      "voteCount": 7988,
+      "certification": "TV-MA",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1609347,
+          "name": "Alex Høgh Andersen",
+          "character": "Ivar Lothbrok / Ivar the Boneless"
+        },
+        {
+          "id": 1394429,
+          "name": "Jordan Patrick Smith",
+          "character": "Ubbe Lothbrok"
+        },
+        {
+          "id": 1372317,
+          "name": "Marco Ilsø",
+          "character": "Hvitserk Lothbrok"
+        },
+        {
+          "id": 11263,
+          "name": "Peter Franzén",
+          "character": "King Harald Finehair"
+        },
+        {
+          "id": 2074237,
+          "name": "Georgia Hirst",
+          "character": "Torvi"
+        },
+        {
+          "id": 562730,
+          "name": "Danila Kozlovsky",
+          "character": "Prince Oleg of Novgorod"
+        }
+      ],
+      "creators": [
+        "Michael Hirst"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 37631,
+          "name": "Michael Hirst"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 6,
+      "episodeCount": 89,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 9,
+          "date": "2013-03-03"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 10,
+          "date": "2014-02-27"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 10,
+          "date": "2015-02-19"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 20,
+          "date": "2016-02-18"
+        },
+        {
+          "name": "Season 5",
+          "episodes": 20,
+          "date": "2017-11-29"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 20,
+          "date": "2019-12-04"
+        }
+      ]
+    },
+    {
+      "id": 1550,
+      "source": "tmdb",
+      "sourceId": 155,
+      "name": "The Dark Knight",
+      "type": "movie",
+      "year": "2008",
+      "releaseDate": "2008-07-16",
+      "desc": "Batman raises the stakes in his war on crime. With the help of Lt. Jim Gordon and District Attorney Harvey Dent, Batman sets out to dismantle the remaining criminal organizations that plague the streets. The partnership proves to be effective, but they soon find themselves prey to a reign of chaos unleashed by a rising criminal mastermind known to the terrified citizens of Gotham as the Joker.",
+      "poster": "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+      "providers": [
+        {
+          "id": 1899,
+          "name": "HBO Max",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": 152,
+      "genres": [
+        "Action",
+        "Thriller",
+        "Crime"
+      ],
+      "genreIds": [
+        28,
+        53,
+        80
+      ],
+      "communityRating": 8.539,
+      "voteCount": 37226,
+      "certification": "PG-13",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 3894,
+          "name": "Christian Bale",
+          "character": "Bruce Wayne"
+        },
+        {
+          "id": 1810,
+          "name": "Heath Ledger",
+          "character": "Joker"
+        },
+        {
+          "id": 6383,
+          "name": "Aaron Eckhart",
+          "character": "Harvey Dent"
+        },
+        {
+          "id": 3895,
+          "name": "Michael Caine",
+          "character": "Alfred"
+        },
+        {
+          "id": 1579,
+          "name": "Maggie Gyllenhaal",
+          "character": "Rachel"
+        },
+        {
+          "id": 64,
+          "name": "Gary Oldman",
+          "character": "Gordon"
+        },
+        {
+          "id": 192,
+          "name": "Morgan Freeman",
+          "character": "Lucius Fox"
+        },
+        {
+          "id": 53651,
+          "name": "Monique Gabriela Curnen",
+          "character": "Ramirez"
+        },
+        {
+          "id": 57597,
+          "name": "Ron Dean",
+          "character": "Wuertz"
+        },
+        {
+          "id": 2037,
+          "name": "Cillian Murphy",
+          "character": "Scarecrow"
+        },
+        {
+          "id": 101015,
+          "name": "Chin Han",
+          "character": "Lau"
+        },
+        {
+          "id": 21316,
+          "name": "Nestor Carbonell",
+          "character": "Mayor"
+        }
+      ],
+      "creators": [
+        "Christopher Nolan"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 525,
+          "name": "Christopher Nolan"
+        }
+      ],
+      "status": "Released",
+      "seasonCount": null,
+      "episodeCount": null,
+      "seasons": []
+    },
+    {
+      "id": 319911,
+      "source": "tmdb",
+      "sourceId": 31991,
+      "name": "WWE NXT",
+      "type": "series",
+      "year": "2010",
+      "releaseDate": "2010-02-23",
+      "desc": "Wrestlers will portray heroes or villains as they follow a series of events that build tension and culminate in a wrestling match or series of matches.",
+      "poster": "https://image.tmdb.org/t/p/w500/9nLBX5Bf7PW4FAaWJLXpFFdeTlV.jpg",
+      "providers": [
+        {
+          "id": 73,
+          "name": "Tubi TV",
+          "type": "Ad-supported",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Action & Adventure",
+        "Drama",
+        "Reality"
+      ],
+      "genreIds": [
+        10759,
+        18,
+        10764
+      ],
+      "communityRating": 6.623,
+      "voteCount": 134,
+      "certification": "NR",
+      "certificationCountry": "US",
+      "cast": [],
+      "creators": [
+        "Paul Levesque",
+        "Vince McMahon"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 115788,
+          "name": "Paul Levesque"
+        },
+        {
+          "id": 57342,
+          "name": "Vince McMahon"
+        }
+      ],
+      "status": "Returning Series",
+      "seasonCount": 20,
+      "episodeCount": 905,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 15,
+          "date": "2010-02-23"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 13,
+          "date": "2010-06-08"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 13,
+          "date": "2010-09-07"
+        },
+        {
+          "name": "Season 4",
+          "episodes": 13,
+          "date": "2010-12-07"
+        },
+        {
+          "name": "Redemption",
+          "episodes": 67,
+          "date": "2011-03-08"
+        },
+        {
+          "name": "Season 6",
+          "episodes": 28,
+          "date": "2012-06-20"
+        },
+        {
+          "name": "Season 7",
+          "episodes": 52,
+          "date": "2013-01-02"
+        },
+        {
+          "name": "Season 8",
+          "episodes": 52,
+          "date": "2014-01-01"
+        },
+        {
+          "name": "Season 9",
+          "episodes": 53,
+          "date": "2015-01-01"
+        },
+        {
+          "name": "Season 10",
+          "episodes": 51,
+          "date": "2016-01-06"
+        },
+        {
+          "name": "Season 11",
+          "episodes": 52,
+          "date": "2017-01-04"
+        },
+        {
+          "name": "Season 12",
+          "episodes": 52,
+          "date": "2018-01-03"
+        },
+        {
+          "name": "Season 13",
+          "episodes": 57,
+          "date": "2019-01-02"
+        },
+        {
+          "name": "Season 14",
+          "episodes": 58,
+          "date": "2020-01-01"
+        },
+        {
+          "name": "Season 15",
+          "episodes": 57,
+          "date": "2021-01-06"
+        },
+        {
+          "name": "Season 16",
+          "episodes": 57,
+          "date": "2022-01-04"
+        },
+        {
+          "name": "Season 17",
+          "episodes": 58,
+          "date": "2023-01-03"
+        },
+        {
+          "name": "Season 18",
+          "episodes": 53,
+          "date": "2024-01-02"
+        },
+        {
+          "name": "Season 19",
+          "episodes": 52,
+          "date": "2025-01-07"
+        },
+        {
+          "name": "Season 20",
+          "episodes": 52,
+          "date": "2026-01-06"
+        }
+      ]
+    },
+    {
+      "id": 671751,
+      "source": "tmdb",
+      "sourceId": 67175,
+      "name": "Elena of Avalor",
+      "type": "series",
+      "year": "2016",
+      "releaseDate": "2016-07-22",
+      "desc": "The story of a brave teenager who has saved her kingdom from an evil sorceress and must now learn to rule as a crown princess until she’s old enough to be queen.",
+      "poster": "https://image.tmdb.org/t/p/w500/rnMgIX5Uc9S4r8WvZZByczz2kF7.jpg",
+      "providers": [
+        {
+          "id": 337,
+          "name": "Disney Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": "",
+      "runtime": null,
+      "genres": [
+        "Animation",
+        "Kids",
+        "Sci-Fi & Fantasy",
+        "Action & Adventure"
+      ],
+      "genreIds": [
+        16,
+        10762,
+        10765,
+        10759
+      ],
+      "communityRating": 6.4,
+      "voteCount": 87,
+      "certification": "TV-Y",
+      "certificationCountry": "US",
+      "cast": [
+        {
+          "id": 1224238,
+          "name": "Aimee Carrero",
+          "character": "Princess Elena (voice)"
+        },
+        {
+          "id": 974169,
+          "name": "Jenna Ortega",
+          "character": "Princess Isabel (voice)"
+        },
+        {
+          "id": 51382,
+          "name": "Chris Parnell",
+          "character": "Migs (voice)"
+        },
+        {
+          "id": 111513,
+          "name": "Yvette Nicole Brown",
+          "character": "Luna (voice)"
+        },
+        {
+          "id": 59784,
+          "name": "Carlos Alazraqui",
+          "character": "Skylar (voice)"
+        },
+        {
+          "id": 1217885,
+          "name": "Emiliano Díez",
+          "character": "Francisco (voice)"
+        },
+        {
+          "id": 168881,
+          "name": "Julia Vera",
+          "character": "Luisa (voice)"
+        },
+        {
+          "id": 1552817,
+          "name": "Christian Lanz",
+          "character": "Chancellor Esteban (voice)"
+        },
+        {
+          "id": 188347,
+          "name": "Jorge Diaz",
+          "character": "Gabe (voice)"
+        },
+        {
+          "id": 143346,
+          "name": "Keith Ferguson",
+          "character": "Zuzo (voice)"
+        },
+        {
+          "id": 54696,
+          "name": "Joe Nuñez",
+          "character": "Armando (voice)"
+        },
+        {
+          "id": 38560,
+          "name": "Lou Diamond Phillips",
+          "character": "Victor Delgado (voice)"
+        }
+      ],
+      "creators": [
+        "Craig Gerber"
+      ],
+      "creatorProfiles": [
+        {
+          "id": 1257848,
+          "name": "Craig Gerber"
+        }
+      ],
+      "status": "Ended",
+      "seasonCount": 3,
+      "episodeCount": 81,
+      "seasons": [
+        {
+          "name": "Season 1",
+          "episodes": 26,
+          "date": "2016-07-22"
+        },
+        {
+          "name": "Season 2",
+          "episodes": 24,
+          "date": "2017-10-14"
+        },
+        {
+          "name": "Season 3",
+          "episodes": 31,
+          "date": "2019-10-07"
+        }
+      ]
+    },
+    {
+      "id": 43861,
+      "source": "tmdb",
+      "sourceId": 4386,
+      "name": "Baywatch",
+      "type": "series",
+      "year": "1989",
+      "releaseDate": "1989-04-23",
+      "desc": "Join the Baywatch lifeguards on their thrilling adventures filled with beautiful beaches and those iconic red swimsuits.",
+      "poster": "https://image.tmdb.org/t/p/w500/34t8WxHn1OcIVpcTxmjYmjX9tE4.jpg",
+      "providers": [
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 73,
+          "name": "Tubi TV",
+          "type": "Ad-supported",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 59201,
+      "source": "tmdb",
+      "sourceId": 5920,
+      "name": "The Mentalist",
+      "type": "series",
+      "year": "2008",
+      "releaseDate": "2008-09-23",
+      "desc": "Patrick Jane, a former celebrity psychic medium, uses his razor sharp skills of observation and expertise at \"reading\" people to solve serious crimes with the California Bureau of Investigation.",
+      "poster": "https://image.tmdb.org/t/p/w500/acYXu4KaDj1NIkMgObnhe4C4a0T.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 607351,
+      "source": "tmdb",
+      "sourceId": 60735,
+      "name": "The Flash",
+      "type": "series",
+      "year": "2014",
+      "releaseDate": "2014-10-07",
+      "desc": "After being struck by lightning, CSI investigator Barry Allen awakens from a nine-month coma to discover he has been  granted the gift of super speed.  Teaming up with S.T.A.R. Labs, Barry takes on the persona of The Flash, the Fastest  Man Alive, to protect his city.",
+      "poster": "https://image.tmdb.org/t/p/w500/yZevl2vHQgmosfwUdVNzviIfaWS.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 181651,
+      "source": "tmdb",
+      "sourceId": 18165,
+      "name": "The Vampire Diaries",
+      "type": "series",
+      "year": "2009",
+      "releaseDate": "2009-09-10",
+      "desc": "The story of two vampire brothers obsessed with the same girl, who bears a striking resemblance to the beautiful but ruthless vampire they knew and loved in 1864.",
+      "poster": "https://image.tmdb.org/t/p/w500/aBkVgChtyyJaHyZh1gfd8DbzQon.jpg",
+      "providers": [
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 1899,
+          "name": "HBO Max",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 14081,
+      "source": "tmdb",
+      "sourceId": 1408,
+      "name": "House",
+      "type": "series",
+      "year": "2004",
+      "releaseDate": "2004-11-16",
+      "desc": "Dr. Gregory House, a drug-addicted, unconventional, misanthropic medical genius, leads a team of diagnosticians at the fictional Princeton–Plainsboro Teaching Hospital in New Jersey.",
+      "poster": "https://image.tmdb.org/t/p/w500/3Cz7ySOQJmqiuTdrc6CY0r65yDI.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 8731,
+      "source": "tmdb",
+      "sourceId": 873,
+      "name": "Columbo",
+      "type": "series",
+      "year": "1971",
+      "releaseDate": "1971-09-15",
+      "desc": "Columbo is a friendly, verbose, disheveled-looking police detective who is consistently underestimated by his suspects. Despite his unprepossessing appearance and apparent absentmindedness, he shrewdly solves all of his cases and secures all evidence needed for indictment. His formidable eye for detail and meticulously dedicated approach often become clear to the killer only late in the storyline.",
+      "poster": "https://image.tmdb.org/t/p/w500/2JCD8vab3fircOU8cM2HJCxfv4I.jpg",
+      "providers": [
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 73,
+          "name": "Tubi TV",
+          "type": "Ad-supported",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 27341,
+      "source": "tmdb",
+      "sourceId": 2734,
+      "name": "Law & Order: Special Victims Unit",
+      "type": "series",
+      "year": "1999",
+      "releaseDate": "1999-09-20",
+      "desc": "In the criminal justice system, sexually-based offenses are considered especially heinous. In New York City, the dedicated detectives who investigate these vicious felonies are members of an elite squad known as the Special Victims Unit. These are their stories.",
+      "poster": "https://image.tmdb.org/t/p/w500/pHNhUwSXuDQ9jPZOCb8SgJaQZsc.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 198851,
+      "source": "tmdb",
+      "sourceId": 19885,
+      "name": "Sherlock",
+      "type": "series",
+      "year": "2010",
+      "releaseDate": "2010-07-25",
+      "desc": "A modern update finds the famous sleuth and his doctor partner solving crime in 21st century London.",
+      "poster": "https://image.tmdb.org/t/p/w500/7WTsnHkbA0FaG6R9twfFde0I9hl.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 781911,
+      "source": "tmdb",
+      "sourceId": 78191,
+      "name": "You",
+      "type": "series",
+      "year": "2018",
+      "releaseDate": "2018-09-09",
+      "desc": "A dangerously charming, obsessive man goes to extreme measures to insert himself into the lives of women who fascinate him.",
+      "poster": "https://image.tmdb.org/t/p/w500/oANi0vEE92nuijiZQgPZ88FSxqQ.jpg",
+      "providers": [
+        {
+          "id": 8,
+          "name": "Netflix",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 466481,
+      "source": "tmdb",
+      "sourceId": 46648,
+      "name": "True Detective",
+      "type": "series",
+      "year": "2014",
+      "releaseDate": "2014-01-12",
+      "desc": "An American anthology police detective series utilizing multiple timelines in which investigations seem to unearth personal and professional secrets of those involved, both within or outside the law.",
+      "poster": "https://image.tmdb.org/t/p/w500/cuV2O5ZyDLHSOWzg3nLVljp1ubw.jpg",
+      "providers": [
+        {
+          "id": 1899,
+          "name": "HBO Max",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 40571,
+      "source": "tmdb",
+      "sourceId": 4057,
+      "name": "Criminal Minds",
+      "type": "series",
+      "year": "2005",
+      "releaseDate": "2005-09-22",
+      "desc": "An elite team of FBI profilers analyze the country's most twisted criminal minds, anticipating their next moves before they strike again. The Behavioral Analysis Unit's most experienced agent is David Rossi, a founding member of the BAU who returns to help the team solve new cases.",
+      "poster": "https://image.tmdb.org/t/p/w500/hWSb4UnIjlTvnvrP98NbFSO60HA.jpg",
+      "providers": [
+        {
+          "id": 15,
+          "name": "Hulu",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    },
+    {
+      "id": 16221,
+      "source": "tmdb",
+      "sourceId": 1622,
+      "name": "Supernatural",
+      "type": "series",
+      "year": "2005",
+      "releaseDate": "2005-09-13",
+      "desc": "When they were boys, Sam and Dean Winchester lost their mother to a mysterious and demonic supernatural force. Subsequently, their father raised them to be soldiers. He taught them about the paranormal evil that lives in the dark corners and on the back roads of America ... and he taught them how to kill it. Now, the Winchester brothers crisscross the country in their '67 Chevy Impala, battling every kind of supernatural threat they encounter along the way. ",
+      "poster": "https://image.tmdb.org/t/p/w500/8iixmfGx5EIFPdpNvB2JvI3VIqX.jpg",
+      "providers": [
+        {
+          "id": 386,
+          "name": "Peacock Premium",
+          "type": "Subscription",
+          "source": "tmdb"
+        },
+        {
+          "id": 387,
+          "name": "Peacock Premium Plus",
+          "type": "Subscription",
+          "source": "tmdb"
+        }
+      ],
+      "watchUrl": ""
+    }
+  ]
+}

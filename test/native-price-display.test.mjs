@@ -20,9 +20,10 @@ test('partial, malformed, mixed-currency and no-discount product data never inve
  for(const value of [{},{monthly:products.monthly},{...products,annual:{...products.annual,currencyCode:'EUR'}},{...products,annual:{...products.annual,price:40}},{...products,monthly:{...products.monthly,price:NaN}}])assert.equal(nativeAnnualSavings(value),'');
 });
 
-test('both paid homepage cards label website USD reference separately from native quotes',async()=>{
- const {readFile}=await import('node:fs/promises');const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
- assert.equal((html.match(/data-su-web-reference hidden/g)||[]).length,2);
- assert.match(html,/Website pricing \(USD reference\) — not an App Store or Google Play price/);
- assert.match(html,/\$2\.99/);assert.match(html,/\$30/);assert.match(html,/SAVE 16%/);assert.match(html,/Save \$5\.88 a year/);
+test('homepage omits paid plan controls on web and native',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ for(const file of ['index.html','backend/index.html','www/index.html']){
+  const html=await readFile(new URL('../'+file,import.meta.url),'utf8');
+  assert.doesNotMatch(html,/data-su-membership="(?:monthly|annual)"|data-su-store-price=/);
+ }
 });

@@ -22,3 +22,15 @@ test('failed availability checks never write a false removal baseline',async()=>
  }});
  await alerts.tick();assert.equal(paths.some(x=>x.includes('record_availability_check')),false);
 });
+test('background alerts keep all selected providers during free launch',async()=>{
+ let recorded;
+ const env={SUPABASE_URL:'https://example.invalid',SUPABASE_PUBLISHABLE_KEY:'public',SUPABASE_SECRET_KEY:'secret'};
+ const alerts=createAvailabilityAlerts({env,membership:{enabled:true,freeLaunchEnabled:async()=>true},catalog:{async availability(){return {providers:[{name:'Amazon Prime Video',type:'Subscription'}]};}},fetcher:async(url,options)=>{
+  const path=new URL(url).pathname;
+  if(path.endsWith('/availability_alerts'))return Response.json([{user_id:'user',title_id:'6030',source_id:603,media_type:'movie',checked_at:null}]);
+  if(path.endsWith('/availability_preferences'))return Response.json([{user_id:'user',country:'GB',service_ids:['prime'],updated_at:new Date().toISOString()}]);
+  if(path.endsWith('/record_availability_check')){recorded=JSON.parse(options.body);return Response.json(null);}
+  throw Error('A live free launch must not restrict through paid entitlement lookup');
+ }});
+ await alerts.tick();assert.deepEqual(recorded.p_services,['prime']);assert.equal(recorded.p_country,'GB');
+});
