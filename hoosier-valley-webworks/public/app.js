@@ -1,7 +1,6 @@
 const inquiry = document.querySelector("#inquiry");
-const destination = document.querySelector('meta[name="inquiry-email"]')?.content.trim();
-const directEmail = document.querySelector("#direct-email");
-const status = document.querySelector("#form-status");
+const submitButton = document.querySelector("#inquiry-button");
+const formStatus = document.querySelector("#form-status");
 
 document.querySelectorAll("[data-service]").forEach((link) => {
   link.addEventListener("click", () => {
@@ -16,41 +15,47 @@ document.querySelectorAll("[data-project]").forEach((link) => {
   });
 });
 
-if (destination) {
-  directEmail.href = `mailto:${destination}`;
-  directEmail.textContent = destination;
-  directEmail.hidden = false;
-  document.querySelector("#inquiry-button").textContent = "Open email draft";
-  document.querySelector("#form-note").textContent = "Review and send the draft from your email app.";
-}
-
-inquiry.addEventListener("submit", (event) => {
+inquiry.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const fields = new FormData(inquiry);
-  const subject = `Project inquiry — ${fields.get("service")}`;
-  const body = [
-    `Name: ${fields.get("name").trim()}`,
-    `Email: ${fields.get("email").trim()}`,
-    `Service: ${fields.get("service")}`,
-    "",
-    fields.get("details").trim(),
-  ].join("\n");
+  if (submitButton.disabled) return;
 
-  if (destination) {
-    window.location.href = `mailto:${destination}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    status.textContent = "Your email app can open the draft. You can also email me directly using the address on this page.";
+  const submission = Object.fromEntries(new FormData(inquiry));
+  submission.name = submission.name.trim();
+  submission.email = submission.email.trim();
+  submission.details = submission.details.trim();
+  if (submission.service === "Free demo") {
+    submission._subject = "New Hoosier Valley Webworks free demo request";
+  }
+
+  if (!submission.name || !submission.details) {
+    formStatus.textContent = "Enter your name and project details before sending.";
     return;
   }
 
-  const url = URL.createObjectURL(new Blob([`${subject}\n\n${body}\n`], { type: "text/plain" }));
-  const download = document.createElement("a");
-  download.href = url;
-  download.download = "project-brief.txt";
-  document.body.append(download);
-  download.click();
-  download.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  status.textContent = "Your project brief is ready. Check your downloads.";
+  submitButton.disabled = true;
+  submitButton.textContent = "Sending…";
+  formStatus.textContent = "Sending your inquiry…";
+
+  try {
+    const response = await fetch(inquiry.action, {
+      method: inquiry.method,
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(submission),
+      signal: AbortSignal.timeout(15000),
+    });
+    const result = await response.json();
+    if (!response.ok || (result.success !== true && result.success !== "true")) {
+      throw new Error("The form service did not accept the inquiry.");
+    }
+
+    inquiry.reset();
+    formStatus.textContent = "Thanks! Your inquiry was sent.";
+  } catch {
+    formStatus.textContent = "We couldn’t confirm that your inquiry was sent. Your details are still here. Please try again.";
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Send inquiry";
+  }
 });
 
-document.querySelector("#inquiry-button").disabled = false;
+submitButton.disabled = false;

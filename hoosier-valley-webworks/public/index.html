@@ -7,8 +7,7 @@
   <meta name="description" content="Website rebuilds, better user flows, security improvements, and custom mobile app development. Explore work on CUE Broadcast and StreamUnify.">
   <title>Hoosier Valley Webworks | Website Rebuilds &amp; Mobile Apps</title>
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="inquiry-email" content="hoosiervalleywebworks@gmail.com">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; img-src 'self' data:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'self' https://formsubmit.co; object-src 'none'; img-src 'self' data:">
   <link rel="icon" href="assets/indiana-favicon.png" type="image/png" sizes="64x64">
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
@@ -30,7 +29,7 @@
           <h1>Rebuild your site.<br><em>Build your app.</em></h1>
           <p class="intro">Rebuild your website around what customers need to do, strengthen the systems behind it, or build a custom app for iOS and Android.</p>
           <div class="actions">
-            <a class="button primary" href="#contact">Tell me about your project</a>
+            <a class="button primary" href="#contact" data-service="Free demo">Request a free demo</a>
             <a class="button outline" href="#work">See the work</a>
           </div>
         </div>
@@ -135,9 +134,11 @@
           <p class="eyebrow">START A PROJECT</p>
           <h2 id="contact-title">What do you want to improve?</h2>
           <p>Tell me what you’re working with, what’s getting in the way, and what you’d like to change.</p>
-          <a id="direct-email" class="text-link" hidden></a>
+          <span class="text-link">hoosiervalleywebworks@gmail.com</span>
         </div>
-        <form id="inquiry">
+        <form id="inquiry" method="post" action="https://formsubmit.co/ajax/hoosiervalleywebworks@gmail.com">
+          <input type="hidden" name="_subject" value="New Hoosier Valley Webworks inquiry">
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" hidden>
           <div class="form-row">
             <label>Name <input name="name" autocomplete="name" maxlength="100" required></label>
             <label>Email <input name="email" type="email" autocomplete="email" maxlength="150" required></label>
@@ -145,6 +146,7 @@
           <label>What do you need?
             <select name="service" required>
               <option value="">Choose a service</option>
+              <option>Free demo</option>
               <option>Website rebuild</option>
               <option>Website security</option>
               <option>Mobile app build or customization</option>
@@ -152,9 +154,8 @@
             </select>
           </label>
           <label>Project details <textarea name="details" rows="4" maxlength="1300" placeholder="Share a site link, a goal, or a problem to solve." required></textarea></label>
-          <div class="actions"><button type="submit" class="button primary" id="inquiry-button" disabled>Download project brief</button></div>
-          <p class="form-note" id="form-note">Save a copy of your project brief to share later. Details stay in your browser.</p>
-          <noscript><p class="form-note">Enable JavaScript to download your project brief.</p></noscript>
+          <div class="actions"><button type="submit" class="button primary" id="inquiry-button" disabled>Send inquiry</button></div>
+          <noscript><p class="form-note">Enable JavaScript to send your inquiry from this page.</p></noscript>
           <p id="form-status" class="form-status" role="status"></p>
         </form>
       </div>
