@@ -54,7 +54,7 @@ inquiry.addEventListener("submit", async (event) => {
     formStatus.textContent = "We couldn’t confirm that your inquiry was sent. Your details are still here. Please try again.";
   } finally {
     submitButton.disabled = false;
-    submitButton.textContent = "Send inquiry";
+    submitButton.textContent = "Submit";
   }
 });
 
