@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: hoosier-valley-webworks
+    runtime: static
+    buildCommand: test -s hoosier-valley-webworks/public/index.html
+    staticPublishPath: ./hoosier-valley-webworks/public
+    buildFilter:
+      paths:
+        - hoosier-valley-webworks/**
