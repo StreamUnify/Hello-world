@@ -1,6 +1,10 @@
+# Master platform scope
+
+**Master includes website, iOS, Android, and Xbox.** Preview changes before publishing. Package Xbox from the current shared UI with `npm run build:xbox`; validate the signed x64 package on the physical console as well as the website and mobile builds.
+
 # StreamUnify master membership release
 
-Master means website, iOS and Android. This release adds one account system, membership limits, an account watchlist, Stripe Checkout on the website, and native Apple/Google subscription verification and restoration. Provider subscriptions remain separate.
+Master means website, iOS, Android, and Xbox. This release adds one account system, membership limits, an account watchlist, Stripe Checkout on the website, and native Apple/Google subscription verification and restoration. Provider subscriptions remain separate.
 
 ## Pricing and products
 
