@@ -74,6 +74,17 @@ h3{font-size:1.48rem;letter-spacing:-.035em}
 .text-link{display:inline-block;color:var(--accent);font-weight:800;text-underline-offset:4px}
 .text-link:hover{text-decoration:underline}
 .service-card .text-link{margin-top:auto;font-size:.88rem}
+.security-section{padding-top:0}
+.security-grid{display:grid;grid-template-columns:1.15fr minmax(0,1fr);gap:16px}
+.security-panel{padding:clamp(19px,3.2vw,36px);border:1px solid var(--line);border-top:2px solid var(--red);background:radial-gradient(ellipse at top left,#2a1b1d,#151515 72%)}
+.security-panel h2{margin-bottom:13px}
+.security-panel p{max-width:57ch;color:var(--muted)}
+.security-panel .actions{gap:12px 18px;margin-top:18px}
+.security-report{scroll-margin-top:16px;border-top-color:#555;background:#151515}
+.security-report h2{font-size:clamp(1.55rem,2.55vw,2.35rem)}
+.security-report .report-price{font:700 2.65rem/1 var(--heading);color:var(--accent)}
+.security-report .button{margin-top:4px}
+@media(max-width:740px){.security-grid{grid-template-columns:1fr}.header-inner nav{column-gap:14px;flex-wrap:wrap}}
 .work-section{background:#101010;border-block:1px solid #333333}
 .work-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .work-card{scroll-margin-top:18px}

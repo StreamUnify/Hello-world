@@ -25,6 +25,8 @@ inquiry.addEventListener("submit", async (event) => {
   submission.details = submission.details.trim();
   if (submission.service === "Free demo") {
     submission._subject = "New Hoosier Valley Webworks free demo request";
+  } else if (submission.service === "Full website security report") {
+    submission._subject = "New Hoosier Valley Webworks full security report request";
   }
 
   if (!submission.name || !submission.details) {
