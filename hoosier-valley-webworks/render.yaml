@@ -7,3 +7,14 @@ services:
     buildFilter:
       paths:
         - hoosier-valley-webworks/**
+
+  - type: web
+    name: hoosier-valley-webworks-grade
+    runtime: node
+    plan: free
+    buildCommand: node --check hoosier-valley-webworks/checker/server.mjs
+    startCommand: node hoosier-valley-webworks/checker/server.mjs
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - hoosier-valley-webworks/checker/**

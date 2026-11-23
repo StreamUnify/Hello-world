@@ -7,12 +7,12 @@
   <meta name="description" content="Website rebuilds, better user flows, security improvements, and custom mobile app development. Explore work on CUE Broadcast and StreamUnify.">
   <title>Hoosier Valley Webworks | Website Rebuilds &amp; Mobile Apps</title>
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'self' https://formsubmit.co; object-src 'none'; img-src 'self' data:">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'self' https://formsubmit.co https://hoosier-valley-webworks-grade.onrender.com; object-src 'none'; img-src 'self' data:">
   <link rel="icon" href="assets/indiana-favicon.png" type="image/png" sizes="64x64">
   <link rel="stylesheet" href="styles.css?v=security-grade">
   <link rel="stylesheet" href="security-assessment.css">
   <script src="app.js?v=security-grade" defer></script>
-  <script src="security-grade.js" defer></script>
+  <script src="website-security-check.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -80,36 +80,13 @@
       <div class="security-grid">
         <div class="security-panel">
           <h2 id="security-grade-title">Check your website security grade</h2>
-          <p>Enter your website URL and answer at least one question to get a preliminary grade and your highest-priority fixes. Choose “Not sure” for any check you haven’t verified. This self-assessment runs in your browser.</p>
+          <p>Enter a website URL for a free check of its public HTTPS homepage and four common security headers.</p>
           <form id="security-assessment">
             <label>Website URL
               <input name="website" type="text" inputmode="url" autocomplete="url" placeholder="example.com" maxlength="250" required>
             </label>
-            <div class="form-row">
-              <label>Does your site always use HTTPS?
-                <select name="https">
-                  <option value="unknown">Not sure</option><option value="yes">Yes</option><option value="no">No</option>
-                </select>
-              </label>
-              <label>Do administrators use two-factor sign-in?
-                <select name="signin">
-                  <option value="unknown">Not sure</option><option value="yes">Yes</option><option value="no">No</option>
-                </select>
-              </label>
-              <label>Is admin access limited to people who need it?
-                <select name="permissions">
-                  <option value="unknown">Not sure</option><option value="yes">Yes</option><option value="no">No</option>
-                </select>
-              </label>
-              <label>Does the server validate what visitors submit in forms?
-                <select name="forms">
-                  <option value="unknown">Not sure</option><option value="yes">Yes</option><option value="no">No</option><option value="na">My site has no forms</option>
-                </select>
-              </label>
-            </div>
             <div class="actions">
               <button class="button primary" id="security-assessment-button" type="submit" disabled>Show my security grade</button>
-              <a class="text-link" href="#security-report">See full report pricing</a>
             </div>
             <noscript><p class="form-note">Enable JavaScript to calculate your grade on this page.</p></noscript>
           </form>
@@ -117,8 +94,8 @@
             <h3 id="security-result-title"></h3>
             <p id="security-result-summary"></p>
             <ol id="security-result-fixes"></ol>
-            <a class="text-link" href="#security-report">See the $500 full report</a>
           </div>
+          <p class="security-report-cta">If you would like a comprehensive grading attached with a full report, <a class="text-link" href="#security-report">click here</a></p>
         </div>
         <article class="security-panel security-report" id="security-report" aria-labelledby="security-report-title">
           <h2 id="security-report-title">Full website security report</h2>
