@@ -11,13 +11,16 @@ import {createCatalog,GENRES,catalogLanguage} from './catalog.mjs';
 import {CONTENT_RATINGS} from './content-ratings.mjs';
 const catalog=createCatalog();
 import {createMembership} from './membership.mjs';
+import {checkAccountDeletionEmail,createAccountDeletionEmail} from './account-deletion-email.mjs';
 import {createAvailabilityAlerts} from './availability-alerts.mjs';
 import {restrictCatalog,MembershipError} from './membership-policy.mjs';
 import {createAccountRoutes} from './account-routes.mjs';
 import {createBilling} from './billing.mjs';
 import {createStoreBilling} from './store-billing.mjs';
 import {legalPage} from './legal-pages.mjs';
-const membership=createMembership();
+const sendDeletionEmail=createAccountDeletionEmail();
+const membership=createMembership({sendDeletionEmail});
+if(membership.enabled&&process.env.RENDER==='true')void checkAccountDeletionEmail(sendDeletionEmail);
 const billing=createBilling();
 if(billing.enabled)billing.verifyConnections().then(()=>console.log('Billing connection checks passed')).catch(()=>console.error('Billing connection checks failed; keep memberships disabled'));
 const stores=createStoreBilling();
@@ -73,7 +76,7 @@ if((personId!==null&&(!/^[1-9][0-9]{0,9}$/.test(personId)||Number(personId)>2147
 const data=await catalog.search(searching?q:'',country,{language,moviesTvOnly:true,youtubeCreators:!membership.enabled||status?.plan==='premium',genre,rating,personId:personId===null?undefined:Number(personId),page:page===null?1:Number(page)});
 if(membership.enabled){if(searching){if(!Object.values(data.sources||{}).includes('ok'))throw new MembershipError(503,'catalog_unavailable','Search is temporarily unavailable. Your allowance was not used.');status=await membership.consumeSearch(actor,req.headers['x-search-id'],country+':'+(q.toLowerCase()||'genre:'+genre));}data.results=data.actor?data.results.map(item=>restrictCatalog([item],status)[0]||{...item,providers:[],watchUrl:''}):restrictCatalog(data.results,status);data.membership=status||{plan:'free',remaining:10,watchlist:false};}
 if(actor&&searching&&q&&personId===null&&page===null){try{await membership.rememberSearch(actor,q);}catch{data.recentSearchesSaved=false;}}
-return json(res,200,data)}if(u.pathname==='/streamunify-seamless-artwork.png'){
+return json(res,200,data)}if(u.pathname==='/streamunify-social-20261104.jpg'){const image=await readFile(path.join(root,'streamunify-social-20261104.jpg'));res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=3600','X-Content-Type-Options':'nosniff'});res.end(image);return;}if(u.pathname==='/streamunify-seamless-artwork.png'){
 const img=await readFile(path.join(root,'streamunify-seamless-artwork.png'));
 res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'public, max-age=3600'});
 res.end(img);

@@ -29,12 +29,14 @@
     "@capgo/native-purchases": "7.19.3",
     "@supabase/supabase-js": "2.118.0",
     "google-auth-library": "11.3.1",
+    "nodemailer": "10.4.0",
     "stripe": "23.0.1"
   },
   "devDependencies": {
     "@capacitor/android": "7.6.10",
     "@capacitor/cli": "7.6.10",
     "@capacitor/ios": "7.6.10",
+    "@electric-sql/pglite": "0.5.15",
     "esbuild": "0.25.12"
   }
 }

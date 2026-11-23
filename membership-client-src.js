@@ -2,7 +2,7 @@ import {accountFetch} from './account-network.mjs';
 import {nativePlanText} from './native-price-display.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {createRecentSearches} from './recent-searches-client.mjs';
-import {needsPasswordSetup,sendSignupEmail,saveVerifiedPassword} from './signup-flow.mjs';
+import {needsPasswordSetup,sendSignupEmail,saveVerifiedPassword,readPendingSignup,savePendingSignup,signupErrorMessage} from './signup-flow.mjs';
 import {isNative,nativePlatform,nativeRedirect,createNativeSessionStorage,prepareNativeStorage,configureNativeAuth,nativeProducts,buyNative,restoreNative,listenNativePurchases,manageNative} from './native-client.mjs';
 const apiBase=(window.STREAMUNIFY_API_BASE||'').replace(/\/$/,'');
 let client,config,status,user,busy=false;
@@ -26,6 +26,16 @@ let storePrices={},storePricesState='loading';
 const $=id=>document.getElementById(id);
 const message=text=>{$('accountMessage').textContent=text;};
 let authView='signin',recovery=false,resendAt=0;
+let signupStorage;try{signupStorage=sessionStorage;}catch{}
+const pendingSignup=readPendingSignup(signupStorage);
+if(pendingSignup){$('accountEmail').value=pendingSignup.email;authView='checkemail';resendAt=pendingSignup.sentAt+60000;}
+const trackSignup=stage=>window.dispatchEvent(new CustomEvent('su-signup-stage',{detail:{stage}}));
+function drawResend(){
+  const seconds=Math.max(0,Math.ceil((resendAt-Date.now())/1000));
+  $('accountResend').disabled=busy||seconds>0;
+  $('accountResend').textContent=seconds?`Resend available in ${seconds}s`:'Resend verification email';
+}
+setInterval(()=>{if(dialog.open&&authView==='checkemail')drawResend();},1000);
 let selectedPlan;try{selectedPlan=sessionStorage.getItem('su_selected_plan');}catch{}
 if(!['monthly','annual'].includes(selectedPlan))selectedPlan=null;
 const show=()=>{if(!dialog.open)dialog.showModal();};
@@ -64,7 +74,7 @@ button.onclick=()=>{if(!user&&authView!=='checkemail')setAuthView('signin');show
 $('accountClose').onclick=()=>dialog.close();
 $('accountSignup').onclick=()=>setAuthView('signup');
 $('accountSignin').onclick=()=>setAuthView('signin');
-$('accountChangeEmail').onclick=()=>setAuthView('signup');
+$('accountChangeEmail').onclick=()=>{savePendingSignup(signupStorage,null);setAuthView('signup');};
 $('accountContinue').onclick=()=>dialog.close();
 function draw(){
   drawHomepagePlans();
@@ -80,6 +90,7 @@ function draw(){
   $('accountPassword').autocomplete=setup?'new-password':'current-password';$('accountPassword').minLength=setup?12:10;
   $('confirmLabel').hidden=!setup;$('accountConfirm').required=setup;$('passwordHint').hidden=!setup;
   $('verificationInstructions').hidden=!waiting;$('verificationEmail').textContent=$('accountEmail').value.trim();
+  drawResend();
   $('accountSubmit').hidden=waiting;$('accountSubmit').textContent=setup?(recovery?'Save new password':'Create account'):signup?'Send verification link':'Sign in';
   $('accountSignup').hidden=signup||waiting||setup;$('accountSignin').hidden=!signup&&!waiting;$('accountReset').hidden=signup||waiting||setup;
   $('accountStatus').textContent=setup?'Your email is verified. Choose a password and enter it again to confirm.':waiting?'Waiting for email verification.':signup?'Start with your email. We’ll verify it before you create a password.':!user?'Sign in to your StreamUnify account.':status?.plan==='premium'?'Premium is active.':`${status?.remaining??10} of 10 searches remaining.${status?.reset_at?' Resets '+new Date(status.reset_at).toLocaleString()+'.':''}`;
@@ -102,19 +113,24 @@ async function api(path,options={}){
 async function refresh(){
   const {data:{session}}=await client.auth.getSession();user=session?.user;if(needsPasswordSetup(user)&&authView!=='password'){authView='password';show();}draw();status=user?await api('/api/account'):null;draw();window.dispatchEvent(new Event('membershipchange'));
 }
-async function action(fn){if(busy)return;busy=true;dialog.querySelectorAll('button:not(#accountClose)').forEach(b=>b.disabled=true);message('Please wait…');try{await fn();}catch(e){message(e.message||'Please try again');}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);drawHomepagePlans();}}
+async function action(fn){if(busy)return;busy=true;dialog.querySelectorAll('button:not(#accountClose)').forEach(b=>b.disabled=true);message('Please wait…');try{await fn();}catch(e){message(signupErrorMessage(e));}finally{busy=false;dialog.querySelectorAll('button').forEach(b=>b.disabled=false);drawResend();drawHomepagePlans();}}
 const signupRedirect=()=>native()?nativeRedirect:location.origin+'/';
 async function requestSignup(){
   if(!$('accountEmail').reportValidity())return;
   if(Date.now()<resendAt)throw Error('Please wait a minute before requesting another verification email.');
-  await sendSignupEmail(client,$('accountEmail').value.trim(),signupRedirect());
-  resendAt=Date.now()+60000;setAuthView('checkemail');message('Verification email sent. Check your inbox and spam or junk folder.');
+  trackSignup('email_requested');
+  try{await sendSignupEmail(client,$('accountEmail').value.trim(),signupRedirect());}
+  catch(error){trackSignup('email_request_failed');throw error;}
+  const sentAt=Date.now();savePendingSignup(signupStorage,{email:$('accountEmail').value.trim(),sentAt});
+  trackSignup('email_request_accepted');resendAt=sentAt+60000;setAuthView('checkemail');message('Verification email requested. Check your inbox and spam or junk folder. Use the newest email; delivery may take a few minutes.');
 }
 $('accountResend').onclick=()=>action(requestSignup);
 $('accountForm').onsubmit=e=>{e.preventDefault();action(async()=>{
   if(authView==='signup'){await requestSignup();return;}
   if(authView==='password'){
+    const completingSignup=!recovery&&needsPasswordSetup(user);
     await saveVerifiedPassword(client,$('accountPassword').value,$('accountConfirm').value);
+    savePendingSignup(signupStorage,null);if(completingSignup)trackSignup('completed');
     $('accountPassword').value='';$('accountConfirm').value='';recovery=false;authView='welcome';await refresh();
     message('Your password has been saved. Your account is ready. Continue with Free or choose Premium.');return;
   }

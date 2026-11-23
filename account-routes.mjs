@@ -10,7 +10,11 @@ export function createAccountRoutes(membership,billing,stores,alerts,catalog){
   return async(req,res,u,json)=>{
     if(!u.pathname.startsWith('/api/account')&&!u.pathname.startsWith('/api/watchlist')&&!u.pathname.startsWith('/api/availability-alerts')&&!u.pathname.startsWith('/api/billing')&&!u.pathname.startsWith('/api/stores/'))return false;
     res.setHeader('Cache-Control','no-store');
-    if(u.pathname==='/api/account/config'&&req.method==='GET'){json(res,200,{...membership.publicConfig(),billingEnabled:billing.enabled,stores:stores?.publicConfig()});return true;}
+    if(u.pathname==='/api/account/config'&&req.method==='GET'){
+      const freeLaunch=await membership.freeLaunchEnabled?.()===true;
+      const storeConfig=stores?.publicConfig();
+      json(res,200,{...membership.publicConfig(),freeLaunch,billingEnabled:billing.enabled&&!freeLaunch,billingManagementEnabled:billing.enabled,stores:freeLaunch&&storeConfig?{...storeConfig,apple:false,google:false}:storeConfig});return true;
+    }
     if(u.pathname==='/api/stores/apple/notifications'&&req.method==='POST'&&stores){await stores.appleNotification(await readBody(req,150000));json(res,200,{received:true});return true;}
     if(u.pathname==='/api/stores/google/notifications'&&req.method==='POST'&&stores){await stores.googleNotification(await readBody(req,150000),req.headers.authorization);json(res,200,{received:true});return true;}
     if(u.pathname==='/api/billing/webhook'&&req.method==='POST'){
@@ -37,7 +41,10 @@ export function createAccountRoutes(membership,billing,stores,alerts,catalog){
     else if(u.pathname==='/api/watchlist'&&req.method==='GET'){const rating=u.searchParams.get('rating')||'';if(rating&&!CONTENT_RATINGS.includes(rating))throw new MembershipError(400,'invalid_rating','Invalid content rating');let items=await membership.listWatchlist(actor);if(rating){const matching=await catalog.filterByRating(items.map(x=>x.snapshot),rating);const byId=new Map(matching.map(x=>[String(x.id),x]));items=items.filter(x=>byId.has(String(x.title_id))).map(x=>({...x,snapshot:byId.get(String(x.title_id))}));}json(res,200,{items});}
     else if(u.pathname==='/api/watchlist'&&req.method==='POST')json(res,200,{items:await membership.saveWatchlist(actor,await readBody(req))});
     else if(u.pathname==='/api/watchlist'&&req.method==='DELETE'){await membership.deleteWatchlist(actor,u.searchParams.get('id')||'');json(res,200,{ok:true});}
-    else if(u.pathname==='/api/billing/checkout'&&req.method==='POST')json(res,200,await billing.checkout(actor,(await readBody(req)).interval));
+    else if(u.pathname==='/api/billing/checkout'&&req.method==='POST'){
+      if(await membership.freeLaunchEnabled?.()===true)throw new MembershipError(409,'free_launch_active','StreamUnify is free during the launch period. No subscription is needed.');
+      json(res,200,await billing.checkout(actor,(await readBody(req)).interval));
+    }
     else if(u.pathname==='/api/billing/portal'&&req.method==='POST')json(res,200,await billing.portal(actor));
     else json(res,405,{error:'Method not allowed'});
     return true;

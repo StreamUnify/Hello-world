@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-const allowed=new Set(['https://streamunify.com','https://www.streamunify.com','https://hello-world-1-qz8g.onrender.com','capacitor://localhost','http://localhost','https://localhost']);
+const allowed=new Set(['https://streamunify.com','https://www.streamunify.com','https://hello-world-1-qz8g.onrender.com','capacitor://localhost','http://localhost','https://localhost','https://streamunify-xbox.example']);
 export function createSecurity({now=Date.now,trustProxy=process.env.RENDER==='true',maxKeys=10000,trustedHtml=''}={}){
  const buckets=new Map();
  const hashes=[...trustedHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].filter(x=>x[1].trim()).map(x=>"'sha256-"+createHash('sha256').update(x[1]).digest('base64')+"'");
