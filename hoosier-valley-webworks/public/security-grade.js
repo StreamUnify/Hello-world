@@ -44,8 +44,8 @@ assessment.addEventListener("submit", (event) => {
   const letter = grades.find(([minimum]) => score >= minimum)[1];
   const grade = letter === "A" && unknown.length ? "B" : letter;
 
-  assessmentTitle.textContent = answered < 2 ? "Not enough information to grade" : `Preliminary grade: ${grade}`;
-  assessmentSummary.textContent = `${site.hostname} · ${confirmed.length} safeguards reported in place, ${missing.length} missing, ${unknown.length} unknown.`;
+  assessmentTitle.textContent = answered === 0 ? "Answer one question to get your grade" : `Preliminary grade: ${grade}`;
+  assessmentSummary.textContent = `${site.hostname} · ${confirmed.length} safeguards reported in place, ${missing.length} missing, ${unknown.length} unknown. Grade coverage: ${answered} of ${applicable.length} applicable checks answered.`;
   const priorities = [...missing.map(({ fix }) => fix), ...unknown.map(({ verify }) => verify)].slice(0, 3);
   assessmentFixes.replaceChildren(...priorities.map((priority) => {
     const item = document.createElement("li");
