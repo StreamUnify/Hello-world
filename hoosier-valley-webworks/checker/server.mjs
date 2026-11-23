@@ -26,35 +26,64 @@ const checks = [
   ["Content type protection", (headers) => /^nosniff$/i.test(headers["x-content-type-options"] ?? ""), "Enable X-Content-Type-Options: nosniff."],
 ];
 
-async function inspect(host) {
+const redirectStatuses = new Set([301, 302, 303, 307, 308]);
+
+async function readHomepage(url, method, signal) {
+  const host = url.hostname;
   const addresses = await resolver.resolve4(host);
   if (!addresses.length || addresses.some((address) => reserved.check(address))) {
     throw new Error("Not a public destination");
   }
-  // Pin the connection to the validated address while verifying TLS for the public hostname.
-  const response = await new Promise((resolve, reject) => {
+  signal.throwIfAborted();
+
+  // Pin the connection to the validated address while verifying TLS for the hostname.
+  return new Promise((resolve, reject) => {
     const req = request({
-      hostname: host, servername: host, port: 443, path: "/", method: "HEAD",
+      hostname: host, servername: host, port: 443, path: url.pathname + url.search, method,
       family: 4, autoSelectFamily: false, agent: false, maxHeaderSize: 8192,
       lookup: (_host, _options, callback) => callback(null, addresses[0], 4),
-      signal: AbortSignal.timeout(6000),
+      signal,
       headers: { "User-Agent": "Hoosier Valley Webworks Public Header Check" },
     }, (res) => {
+      const response = { status: res.statusCode, headers: res.headers };
       res.destroy();
-      resolve(res);
+      resolve(response);
     });
     req.on("error", reject);
     req.end();
   });
+}
 
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+async function inspect(host) {
+  const signal = AbortSignal.timeout(12000);
+  const allowedHosts = new Set([host, host.startsWith("www.") ? host.slice(4) : `www.${host}`]);
+  let url = new URL(`https://${host}/`);
+  let response;
+  for (let redirects = 0; redirects <= 3; redirects += 1) {
+    response = await readHomepage(url, "HEAD", signal);
+    if (response.status === 405 || response.status === 501) {
+      response = await readHomepage(url, "GET", signal);
+    }
+    if (!redirectStatuses.has(response.status)) break;
+
+    const location = response.headers.location;
+    if (!location || redirects === 3) throw new Error("Homepage redirect could not be followed");
+    const next = new URL(location, url);
+    if (next.protocol !== "https:" || next.port || next.username || next.password
+        || !allowedHosts.has(next.hostname)) {
+      throw new Error("Homepage redirected outside the approved HTTPS addresses");
+    }
+    url = next;
+  }
+
+  if (response.status < 200 || response.status >= 300) {
     throw new Error("The homepage did not return a successful response");
   }
   const results = checks.map(([name, passes, recommendation]) => ({
     name, passed: passes(response.headers), recommendation,
   }));
   const passed = results.filter((check) => check.passed).length;
-  return { host, grade: ["F", "D", "C", "B", "A"][passed], passed, total: checks.length,
+  return { host: url.hostname, grade: ["F", "D", "C", "B", "A"][passed], passed, total: checks.length,
     fixes: results.filter((check) => !check.passed).slice(0, 3).map((check) => check.recommendation) };
 }
 
@@ -90,7 +119,7 @@ createServer((req, res) => {
   attempts.push(now);
   inspect(host).then(
     (result) => ({ status: 200, payload: result }),
-    () => ({ status: 422, payload: { error: "Couldn’t read the public HTTPS homepage. Try its final address, including www if it uses it." } }),
+    () => ({ status: 422, payload: { error: "The checker couldn’t reach a public HTTPS homepage at that address. If it redirects to a different domain, enter that destination directly." } }),
   ).then(({ status, payload }) => {
     if (cache.size >= 100) cache.delete(cache.keys().next().value);
     cache.set(host, { status, payload, expires: now + 120000 });
