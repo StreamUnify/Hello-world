@@ -1,0 +1,14 @@
+.pricing-heading h1{margin:0}
+.pricing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pricing-grid h2{font-size:clamp(1.45rem,2.6vw,2.1rem);margin-bottom:12px}
+.pricing-grid .pricing-amount{color:var(--text);font:700 clamp(1.9rem,4.4vw,3.3rem)/1.08 var(--heading);letter-spacing:-.05em}
+.pricing-grid .featured .pricing-amount,.pricing-grid #security-review .pricing-amount{color:var(--accent)}
+.pricing-grid .price-label{font-weight:800;margin-bottom:4px}
+.pricing-grid .service-card ul{margin-bottom:0}
+.pricing-grid .button{margin-top:5px}
+.pricing-grid .featured,.pricing-grid #security-review:target{border-top-color:var(--red);background:linear-gradient(137deg,#2b1a1d,#171516 67%)}
+#security-review{scroll-margin-top:18px}
+nav a[aria-current="page"]{color:var(--text);text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:6px}
+.pricing-footer{border-top:1px solid var(--line);padding-top:20px;margin-top:23px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.pricing-footer p{margin:0;color:var(--muted)}
+@media(max-width:640px){.pricing-grid{grid-template-columns:1fr}}

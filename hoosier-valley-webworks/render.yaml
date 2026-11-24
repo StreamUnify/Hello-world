@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: hoosier-valley-webworks
+    runtime: static
+    buildCommand: test -s hoosier-valley-webworks/public/index.html
+    staticPublishPath: ./hoosier-valley-webworks/public
+    headers:
+      - path: "/*"
+        name: Strict-Transport-Security
+        value: "max-age=31536000"
+      - path: "/*"
+        name: Content-Security-Policy
+        value: "default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'self' https://formsubmit.co https://hoosier-valley-webworks-grade.onrender.com; object-src 'none'; img-src 'self' data:; frame-ancestors 'none'"
+      - path: "/*"
+        name: X-Frame-Options
+        value: "DENY"
+      - path: "/"
+        name: Strict-Transport-Security
+        value: "max-age=31536000"
+      - path: "/"
+        name: Content-Security-Policy
+        value: "default-src 'self'; base-uri 'none'; form-action 'none'; connect-src 'self' https://formsubmit.co https://hoosier-valley-webworks-grade.onrender.com; object-src 'none'; img-src 'self' data:; frame-ancestors 'none'"
+      - path: "/"
+        name: X-Frame-Options
+        value: "DENY"
+    buildFilter:
+      paths:
+        - hoosier-valley-webworks/**
+
+  - type: web
+    name: hoosier-valley-webworks-grade
+    runtime: node
+    plan: free
+    buildCommand: node --check hoosier-valley-webworks/checker/server.mjs
+    startCommand: node hoosier-valley-webworks/checker/server.mjs
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - hoosier-valley-webworks/checker/**
